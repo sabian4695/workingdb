@@ -48,8 +48,8 @@ Do While Not rsSteps.EOF
         If matches <> rsStepActions!compareAction Then GoTo nextOne 'if it matches what it's supposed to be, then keep going
         
         If rsStepActions!stepAction = "deleteStep" Then
-            Call registerPartUpdates("tblPartSteps", rsSteps!recordID, "Deleted - stepAction", rsSteps!stepType, "", partNum, rsSteps!stepType)
-            CurrentDb().Execute "DELETE FROM tblPartSteps WHERE recordId = " & rsSteps!recordID
+            Call registerPartUpdates("tblPartSteps", rsSteps!recordId, "Deleted - stepAction", rsSteps!stepType, "", partNum, rsSteps!stepType)
+            CurrentDb().Execute "DELETE FROM tblPartSteps WHERE recordId = " & rsSteps!recordId
             If CurrentProject.AllForms("frmPartDashboard").IsLoaded Then Form_sfrmPartDashboard.Requery
         End If
     End If
