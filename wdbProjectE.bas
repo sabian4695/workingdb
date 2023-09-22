@@ -1,6 +1,85 @@
 Option Compare Database
 Option Explicit
 
+Public Function setProgressBarPROJECT()
+Dim percent As Double, width As Long
+width = 18774
+
+Dim rsSteps As Recordset
+Set rsSteps = CurrentDb().OpenRecordset("SELECT * from tblPartSteps WHERE partProjectId = " & Form_frmPartDashboard.recordID)
+
+Dim totalSteps, closedSteps
+rsSteps.MoveLast
+totalSteps = rsSteps.RecordCount
+
+rsSteps.filter = "status = 'Closed'"
+Set rsSteps = rsSteps.OpenRecordset
+If rsSteps.RecordCount = 0 Then
+    percent = 0
+    GoTo setBar
+End If
+rsSteps.MoveFirst
+rsSteps.MoveLast
+closedSteps = rsSteps.RecordCount
+percent = closedSteps / totalSteps
+
+setBar:
+Call setBarColorPercent(percent, "progressBarPROJECT", width)
+
+End Function
+
+Public Function setProgressBarSTEPS(gateId As Long)
+Dim percent As Double, width As Long
+width = 12906
+
+Dim rsSteps As Recordset
+Set rsSteps = CurrentDb().OpenRecordset("SELECT * from tblPartSteps WHERE partGateId = " & gateId)
+
+Dim totalSteps, closedSteps
+rsSteps.MoveLast
+totalSteps = rsSteps.RecordCount
+
+rsSteps.filter = "status = 'Closed'"
+Set rsSteps = rsSteps.OpenRecordset
+If rsSteps.RecordCount = 0 Then
+    percent = 0
+    GoTo setBar
+End If
+rsSteps.MoveFirst
+rsSteps.MoveLast
+closedSteps = rsSteps.RecordCount
+percent = closedSteps / totalSteps
+
+setBar:
+Call setBarColorPercent(percent, "progressBarSTEPS", width)
+
+End Function
+
+Function setBarColorPercent(percent As Double, controlName As String, barWidth As Long)
+
+If percent < 0.1 Then
+    Form_frmPartDashboard.Controls(controlName).width = 1
+Else
+    Form_frmPartDashboard.Controls(controlName).width = percent * barWidth
+End If
+
+Dim pColor
+Select Case True
+    Case percent < 0.25
+        pColor = RGB(210, 110, 90)
+    Case percent >= 0.25 And percent < 0.5
+        pColor = RGB(225, 170, 70)
+    Case percent >= 0.5 And percent < 0.75
+        pColor = RGB(200, 210, 100)
+    Case percent >= 0.75
+        pColor = RGB(125, 215, 100)
+End Select
+Form_frmPartDashboard.Controls(controlName).BackColor = pColor
+Form_frmPartDashboard.Controls(controlName & "_").BorderColor = pColor
+Form_frmPartDashboard.Controls(controlName).BorderColor = pColor
+
+End Function
+
 Function notifyPE(partNum As String, notiType As String, stepTitle As String) As Boolean
 notifyPE = False
 
