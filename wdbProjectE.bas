@@ -210,8 +210,10 @@ Dim SendItems As New clsOutlookCreateItem               ' outlook class
     
     strSubject = partNum & " Sales Kickoff Meeting"
     
-    Dim z As String
-    z = "\\homes\data\" & Environ("username") & "\" & Format(Date, "YYMMDD") & "_" & partNum & "_Part_Information.pdf"
+    Dim z As String, tempFold As String
+    tempFold = "\\data\mdbdata\WorkingDB\_docs\Temp\" & Environ("username") & "\"
+    If FolderExists(tempFold) = False Then MkDir (tempFold)
+    z = tempFold & Format(Date, "YYMMDD") & "_" & partNum & "_Part_Information.pdf"
     DoCmd.OpenReport "rptPartInformation", acViewPreview, , "[partNumber]='" & partNum & "'", acHidden
     DoCmd.OutputTo acOutputReport, "rptPartInformation", acFormatPDF, z, False
     DoCmd.Close acReport, "rptPartInformation"
@@ -223,7 +225,7 @@ Dim SendItems As New clsOutlookCreateItem               ' outlook class
     
 Dim FSO
 Set FSO = CreateObject("Scripting.FileSystemObject")
-Call FSO.DeleteFile(z)
+Call FSO.deleteFile(z)
     
 emailPartInfo = True
 err_handler:
