@@ -315,7 +315,7 @@ Exit Function
 tryOracle:
 Dim rsEmployee As Recordset
 Set rsEmployee = CurrentDb().OpenRecordset("SELECT FIRST_NAME, LAST_NAME, EMAIL_ADDRESS FROM APPS_XXCUS_USER_EMPLOYEES_V WHERE USER_NAME = '" & StrConv(userName, vbUpperCase) & "'")
-getEmail = rsEmployee!EMAIL_ADDRESS
+getEmail = Nz(rsEmployee!EMAIL_ADDRESS, "")
 
 End Function
 
