@@ -26,7 +26,7 @@ Private Declare PtrSafe Function ShowWindow Lib "user32" _
 (ByVal hwnd As Long, ByVal nCmdShow As Long) As Long
 
 Function logClick(modName As String, formName As String)
-If (CurrentProject.path = "H:\dev") Then
+If (CurrentProject.Path = "H:\dev") Then
     Exit Function
 End If
 
@@ -88,7 +88,7 @@ End Function
 
 Public Sub handleError(modName As String, activeCon As String, errDesc As String, errNum As Long)
 On Error Resume Next
-If (CurrentProject.path = "H:\dev") Then
+If (CurrentProject.Path = "H:\dev") Then
     MsgBox errDesc, vbOKOnly, "Error Code: " & errNum
     Exit Sub
 End If

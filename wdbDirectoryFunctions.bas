@@ -4,18 +4,18 @@ Option Explicit
 Declare PtrSafe Function ShellExecute Lib "shell32.dll" Alias "ShellExecuteA" (ByVal hwnd As Long, ByVal lpOperation As String, ByVal lpFile As String, ByVal lpParameters As String, _
     ByVal lpDirectory As String, ByVal lpnShowCmd As Long) As Long
 
-Public Sub openPath(path)
+Public Sub openPath(Path)
 On Error GoTo err_handler
-    If StrConv(Right(path, 4), vbLowerCase) = ".pdf" Then
-        Shell "explorer.exe " & path, vbNormalFocus
+    If StrConv(Right(Path, 4), vbLowerCase) = ".pdf" Then
+        Shell "explorer.exe " & Path, vbNormalFocus
         Exit Sub
     End If
     
     If userData("Beta") Then
         Dim objFSO As Object
         Set objFSO = CreateObject("Scripting.FileSystemObject")
-        If objFSO.FolderExists(path) Then
-            TempVars.Add "wdbFolderViewLink", path
+        If objFSO.FolderExists(Path) Then
+            TempVars.Add "wdbFolderViewLink", Path
             If CurrentProject.AllForms("frmFolderView").IsLoaded = True Then
                 DoCmd.Close acForm, "frmFolderView"
             End If
@@ -24,7 +24,7 @@ On Error GoTo err_handler
         End If
     End If
     
-    CreateObject("Shell.Application").open CVar(path)
+    CreateObject("Shell.Application").open CVar(Path)
 Exit Sub
 err_handler:
     Call handleError("modGlobal", "openPath", Err.description, Err.number)

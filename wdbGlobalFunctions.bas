@@ -15,7 +15,7 @@ End Function
 Function notificationsCount()
 
 Dim unRead
-unRead = DCount("recordID", "tblNotifications", "sentTo = '" & Environ("username") & "' AND readDate is null")
+unRead = DCount("ID", "tblNotificationsSP", "recipientUser = '" & Environ("username") & "' AND readDate is null")
 If unRead > 9 Then
     Form_DASHBOARD.Form.notifications.Caption = "9+"
 Else
@@ -191,14 +191,18 @@ CurrentDb().Execute "INSERT INTO tblCPC_UpdateTracking" & sqlColumns & sqlValues
 
 End Sub
 
-Function sendNotification(SendTo As String, notType As Integer, notPriority As Integer, desc As String, Optional appName As String = "", Optional appId As Long) As Boolean
+Function emailContentGen(subject As String, Title As String, subTitle As String, primaryMessage As String, detail1 As String, detail2 As String, detail3 As String) As String
+emailContentGen = subject & "," & Title & "," & subTitle & "," & primaryMessage & "," & detail1 & "," & detail2 & "," & detail3
+End Function
+
+Function sendNotification(SendTo As String, notType As Integer, notPriority As Integer, desc As String, emailContent As String, Optional appName As String = "", Optional appId As Long) As Boolean
 sendNotification = True
 
 On Error GoTo err_handler
 
 'has this person been notified about this thing today already?
 Dim rsNotifications As Recordset
-Set rsNotifications = CurrentDb().OpenRecordset("SELECT * from tblNotifications WHERE sentTo = '" & SendTo & "' AND description = '" & StrQuoteReplace(desc) & "' AND sentDate > #" & Date - 1 & "#")
+Set rsNotifications = CurrentDb().OpenRecordset("SELECT * from tblNotificationsSP WHERE recipientUser = '" & SendTo & "' AND notificationDescription = '" & StrQuoteReplace(desc) & "' AND sentDate > #" & Date - 1 & "#")
 If rsNotifications.RecordCount > 0 Then
     Dim msgTxt As String
     If rsNotifications!sentBy = Environ("username") Then
@@ -212,9 +216,9 @@ If rsNotifications.RecordCount > 0 Then
 End If
 
 Dim strValues
-strValues = "'" & SendTo & "','" & Environ("username") & "','" & Now() & "'," & notType & "," & notPriority & ",'" & StrQuoteReplace(desc) & "','" & appName & "'," & appId
+strValues = "'" & SendTo & "','" & getEmail(SendTo) & "','" & Environ("username") & "','" & getEmail(Environ("username")) & "','" & Now() & "'," & notType & "," & notPriority & ",'" & StrQuoteReplace(desc) & "','" & appName & "'," & appId & ",'" & emailContent & "'"
 
-CurrentDb().Execute "INSERT INTO tblNotifications(sentTo,sentBy,sentDate,type,priority,description,appName,appId) VALUES(" & strValues & ");"
+CurrentDb().Execute "INSERT INTO tblNotificationsSP(recipientUser,recipientEmail,senderUser,senderEmail,sentDate,notificationType,notificationPriority,notificationDescription,appName,appId,emailContent) VALUES(" & strValues & ");"
 
 Exit Function
 err_handler:
@@ -288,9 +292,8 @@ Do While Not rsPartSteps.EOF
     Dim body As String, stepTitle As String, partNum As String
     partNum = rsPartSteps!partNumber
     stepTitle = rsPartSteps!stepType
-    body = generateHTML("WDB Reminder", msg, stepTitle, "Part Number: " & partNum, "This is an automated message. Jokes included are for the purpose of making this reminder fun and light hearted.", "Sent On: " & CStr(Date), False, True)
-    Call sendNotification(rsPartSteps!responsible, 9, 2, "Please complete " & stepTitle & " for " & partNum, "Part Project", CInt(partNum))
-    Call sendSMTP(rsPermissions!userEmail, "Just a reminder...", body)
+    body = emailContentGen("WDB Reminder", msg, stepTitle, "Part Number: " & partNum, "This is an automated message. Jokes included are for the purpose of making this reminder fun and light hearted.", "Sent On: " & CStr(Date), "")
+    Call sendNotification(rsPartSteps!responsible, 9, 2, "Please complete " & stepTitle & " for " & partNum, body, "Part Project", CInt(partNum))
     
 nextRec:
     rsPartSteps.MoveNext
@@ -299,7 +302,7 @@ Loop
 SKIPALL:
 
 CurrentDb().Execute "INSERT INTO tblAnalytics (module,form,userName,dateUsed) VALUES ('firstTimeRun','Form_frmSplash','" & Environ("username") & "','" & Now() & "')"
-Call sendSMTP("brownj@us.nifco.com", "First Log In", "Today's First-Log-In scripts ran successfully. " & getFullName() & " was the user who logged in.", "NO")
+Call sendNotification("brownj", 1, 1, "Today's First-Log-In scripts ran successfully. " & getFullName() & " was the user who logged in.", emailContentGen("First Log-In", "First Log-In Scripts Ran", getFullName() & " triggered the action", "Success", "No further details", "", ""))
 
 End Sub
 

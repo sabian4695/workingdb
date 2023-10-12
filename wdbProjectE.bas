@@ -1,6 +1,71 @@
 Option Compare Database
 Option Explicit
 
+Public Function getDOH(partNum As String) As Long
+
+Dim db As Database
+Dim rsSupplyDemand As Recordset, rsPartInfo As Recordset, rsOnHand As Recordset
+Set db = CurrentDb
+Set rsSupplyDemand = db.OpenRecordset("SELECT sum([QTY_DUE]) AS openOrders FROM APPS_XXCUS_SUPPLY_DEMAND_V WHERE ITEM='" & partNum & "'")
+Dim openOrders
+openOrders = rsSupplyDemand!openOrders
+
+Set rsPartInfo = db.OpenRecordset("SELECT monthlyVolume from tblPartInfo WHERE partNumber = '" & partNum & "'")
+
+Dim monthlyVolCalc, monthlyVol
+monthlyVol = rsPartInfo!monthlyVolume
+If IsNull(openOrders) Or monthlyVol > openOrders Then
+    monthlyVolCalc = monthlyVol / 22
+Else
+    monthlyVolCalc = openOrders / 22
+End If
+
+
+Set rsOnHand = db.OpenRecordset("SELECT sum(TRANSACTION_QUANTITY) as TransQty FROM APPS_MTL_ONHAND_QUANTITIES WHERE INVENTORY_ITEM_ID = " & idNAM(partNum, "NAM"))
+getDOH = Nz(rsOnHand!TransQty, 0) / monthlyVolCalc
+
+
+rsPartInfo.Close
+rsSupplyDemand.Close
+rsOnHand.Close
+Set rsPartInfo = Nothing
+Set rsSupplyDemand = Nothing
+Set rsOnHand = Nothing
+
+End Function
+
+Public Function openOrdersByDay(partNum As String, dayNum As Long) As Double
+
+Dim filt As String
+
+Select Case dayNum
+    Case 1
+        filt = "REQUIREMENT_DATE>=Date() AND REQUIREMENT_DATE<=Date()+1"
+    Case 2
+        filt = "REQUIREMENT_DATE>Date()+1 AND REQUIREMENT_DATE<=Date()+2"
+    Case 3
+        filt = "REQUIREMENT_DATE>Date()+2 AND REQUIREMENT_DATE<=Date()+3"
+    Case 4
+        filt = "REQUIREMENT_DATE>Date()+3 AND REQUIREMENT_DATE<=Date()+4"
+    Case 5
+        filt = "REQUIREMENT_DATE>Date()+4 AND REQUIREMENT_DATE<=Date()+5"
+    Case 6
+        filt = "REQUIREMENT_DATE>Date()+6 AND REQUIREMENT_DATE<=Date()+11"
+    Case 0 'back orders
+        filt = "REQUIREMENT_DATE<Date()"
+End Select
+
+Dim db As Database
+Set db = CurrentDb
+Dim rsSupplyDemand As Recordset
+Set rsSupplyDemand = db.OpenRecordset("SELECT SUM([QTY_DUE]) AS QtyReq FROM APPS_XXCUS_SUPPLY_DEMAND_V WHERE ITEM = '" & partNum & "' AND " & filt, dbOpenSnapshot)
+openOrdersByDay = Nz(rsSupplyDemand!QtyReq, 0)
+
+rsSupplyDemand.Close
+Set rsSupplyDemand = Nothing
+
+End Function
+
 Public Function setProgressBarPROJECT()
 Dim percent As Double, width As Long
 width = 18774
@@ -97,9 +162,8 @@ Do While Not rsPartTeam.EOF
     
     'actually send notification
     Dim body As String
-    body = generateHTML("WDB Step Closed", "This step has been " & notiType, stepTitle, "Part Number: " & partNum, "Closed by: " & getFullName(), "Closed On: " & CStr(Date), False, True)
-    Call sendNotification(SendTo, 10, 2, stepTitle & " for " & partNum & " has been " & notiType, "Part Project", CLng(partNum))
-    Call sendSMTP(rsPermissions!userEmail, "WDB Step " & notiType, body)
+    body = emailContentGen("WDB Step " & notiType, "This step has been " & notiType, stepTitle, "Part Number: " & partNum, "Closed by: " & getFullName(), "Closed On: " & CStr(Date), "")
+    Call sendNotification(SendTo, 10, 2, stepTitle & " for " & partNum & " has been " & notiType, body, "Part Project", CLng(partNum))
     
 nextRec:
     rsPartTeam.MoveNext
