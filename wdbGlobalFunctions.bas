@@ -205,10 +205,10 @@ Dim rsNotifications As Recordset
 Set rsNotifications = CurrentDb().OpenRecordset("SELECT * from tblNotificationsSP WHERE recipientUser = '" & SendTo & "' AND notificationDescription = '" & StrQuoteReplace(desc) & "' AND sentDate > #" & Date - 1 & "#")
 If rsNotifications.RecordCount > 0 Then
     Dim msgTxt As String
-    If rsNotifications!sentBy = Environ("username") Then
+    If rsNotifications!senderUser = Environ("username") Then
         msgTxt = "Yo, you already did that today, let's wait 'til tomorrow to do it again."
     Else
-        msgTxt = SendTo & " has already been nudged about this today, by " & rsNotifications!sentBy & ". Let's wait until tomorrow to nudge them again."
+        msgTxt = SendTo & " has already been nudged about this today, by " & rsNotifications!senderUser & ". Let's wait until tomorrow to nudge them again."
     End If
     MsgBox msgTxt, vbInformation, "Hold on a minute..."
     sendNotification = False

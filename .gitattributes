@@ -1,3 +1,2 @@
 *.form diff=localizablestrings
-*.qry diff=localizablestrings
 *.rpt diff=localizablestrings
