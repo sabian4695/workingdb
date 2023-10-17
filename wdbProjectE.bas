@@ -66,6 +66,22 @@ Set rsSupplyDemand = Nothing
 
 End Function
 
+Public Function grabTitle(User) As String
+
+If IsNull(User) Then
+    grabTitle = ""
+    Exit Function
+End If
+
+Dim rsPermissions As Recordset
+Set rsPermissions = CurrentDb().OpenRecordset("SELECT * from tblPermissions where user = '" & User & "'")
+grabTitle = rsPermissions!Dept & " " & rsPermissions!Level
+
+rsPermissions.Close
+Set rsPermissions = Nothing
+
+End Function
+
 Public Function setProgressBarPROJECT()
 Dim percent As Double, width As Long
 width = 18774
@@ -232,27 +248,6 @@ issueCount = DCount("recordId", "tblPartIssues", "partNumber = '" & partNum & "'
 
 End Function
 
-Function partProjectFolder(partNum As String) As String
-
-Dim thousZeros, hundZeros, mainPath, fullFilePath
-
-thousZeros = Left(partNum, 2) & "000\"
-hundZeros = Left(partNum, 3) & "00\"
-mainPath = mainFolder("partTracking")
-fullFilePath = mainPath & thousZeros & hundZeros & partNum & "\"
-
-If FolderExists(fullFilePath) Then
-    partProjectFolder = fullFilePath
-Else
-'check each level!!
-    If FolderExists(mainPath & thousZeros) = False Then MkDir (mainPath & thousZeros)
-    If FolderExists(mainPath & thousZeros & hundZeros) = False Then MkDir (mainPath & thousZeros & hundZeros)
-    MkDir (fullFilePath)
-    partProjectFolder = fullFilePath
-End If
-
-End Function
-
 Function emailPartInfo(partNum As String, noteTxt As String) As Boolean
 On Error GoTo err_handler
 emailPartInfo = False
@@ -352,13 +347,17 @@ Set rs2 = CurrentDb.OpenRecordset("SELECT * FROM tblPartTeam WHERE partNumber = 
 strTo = ""
 
 Do While Not rs2.EOF
-    If rs2!person <> Environ("username") Then strTo = strTo & "{""email"":""" & getEmail(rs2!person) & """},"
+    If rs2!person <> Environ("username") Then strTo = strTo & getEmail(rs2!person) & "; "
     rs2.MoveNext
 Loop
 
-strTo = Left(strTo, Len(strTo) - 1)
+Dim SendItems As New clsOutlookCreateItem
+Set SendItems = New clsOutlookCreateItem
 
-If sendSMTP("", subjectLine, toolEmail, "", strTo) = False Then Exit Function
+SendItems.CreateMailItem SendTo:=strTo, _
+                             subject:=subjectLine, _
+                             HTMLBody:=toolEmail
+    Set SendItems = Nothing
 
 toolShipAuthorizationEmail = True
 

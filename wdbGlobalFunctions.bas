@@ -60,16 +60,12 @@ Else
 End If
 End Function
 
-Function generateHTML(Title As String, subTitle As String, primaryMessage As String, detail1 As String, detail2 As String, detail3 As String, hasLink As Boolean, isSMTP As Boolean) As String
+Function generateHTML(Title As String, subTitle As String, primaryMessage As String, detail1 As String, detail2 As String, detail3 As String, hasLink As Boolean) As String
 
 Dim tblHeading As String, tblFooter As String, strHTMLBody As String, extraFooter As String
 
 If hasLink Then
     primaryMessage = "<a href = '" & primaryMessage & "'>Check Folder</a>"
-End If
-
-If isSMTP Then
-    extraFooter = "<tr><td><p style=""color: rgb(192, 192, 192); text-align: center;"">This email address is not monitored, please do not reply to this email</p></td></tr>"
 End If
 
 tblHeading = "<table style=""width: 100%; margin: 0 auto; padding: 2em 3em; text-align: center; background-color: #fafafa;"">" & _
@@ -107,51 +103,6 @@ strHTMLBody = "" & _
 "</html>"
 
 generateHTML = strHTMLBody
-
-End Function
-
-Function sendSMTP(strTo As String, strSubject As String, strBody As String, Optional strCC As String, Optional customTo As String) As Boolean
-Dim reader As New XMLHTTP60
-Dim bodyR As String
-
-sendSMTP = True
-On Error GoTo err_handler
-
-If strCC <> "NO" Then
-    If strCC <> "" Then
-        strCC = """cc"":[{""email"":""" & strCC & """},{""email"":""" & getEmail(Environ("username")) & """}],"
-    Else
-        strCC = """cc"":[{""email"":""" & getEmail(Environ("username")) & """}],"
-    End If
-Else
-    strCC = ""
-End If
-
-If customTo <> "" Then
-    bodyR = "{ ""sender"":{""email"":""nifco.working.database@gmail.com""}, ""to"":[" & customTo & "]," & strCC & """htmlContent"":""" & Replace(strBody, """", "\""") & """, ""subject"":""" & strSubject & """}"
-Else
-    bodyR = "{ ""sender"":{""email"":""nifco.working.database@gmail.com""}, ""to"":[{""email"":""" & strTo & """}]," & strCC & """htmlContent"":""" & Replace(strBody, """", "\""") & """, ""subject"":""" & strSubject & """}"
-End If
-
-    reader.open "POST", "https://api.sendinblue.com/v3/smtp/email", False
-    reader.setRequestHeader "accept", "application/json"
-    reader.setRequestHeader "api-key", "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"
-    reader.setRequestHeader "content-type", "application/json"
-    reader.send bodyR
-        Do Until reader.ReadyState = 4
-            DoEvents
-        Loop
-If reader.status = 201 Then
-    sendSMTP = True
-Else
-    MsgBox reader.responseText, vbOKOnly, reader.status
-    sendSMTP = False
-End If
-
-Exit Function
-err_handler:
-sendSMTP = False
-MsgBox "something went wrong, sorry! Please let Jacob Brown know.", vbCritical, "Uh oh."
 
 End Function
 
