@@ -214,6 +214,9 @@ If rs1.RecordCount <> 0 Then Exit Sub
 
 'DO STUFF
 
+'CurrentDb().Execute ("Delete * from cubeCoreAnalytics")
+'CurrentDb().Execute ("INSERT INTO cubeCoreAnalytics (module,form,userName,dateUsed) SELECT module,form,userName,dateUsed FROM tblAnalytics WHERE dateUsed>#" & Date - 14 & "#")
+
 GoTo SKIPALL
 Dim rsPartSteps As Recordset, rsOverdueMsgs As Recordset, rsPermissions As Recordset, msg As String
 
@@ -251,9 +254,7 @@ nextRec:
 Loop
 
 SKIPALL:
-
 CurrentDb().Execute "INSERT INTO tblAnalytics (module,form,userName,dateUsed) VALUES ('firstTimeRun','Form_frmSplash','" & Environ("username") & "','" & Now() & "')"
-Call sendNotification("brownj", 1, 1, "Today's First-Log-In scripts ran successfully. " & getFullName() & " was the user who logged in.", emailContentGen("First Log-In", "First Log-In Scripts Ran", getFullName() & " triggered the action", "Success", "No further details", "", ""))
 
 End Sub
 
