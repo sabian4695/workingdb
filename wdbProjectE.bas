@@ -66,6 +66,71 @@ Set rsSupplyDemand = Nothing
 
 End Function
 
+Public Sub createPartProject(projId)
+
+Dim db As DAO.Database
+Dim rsProject As Recordset
+Dim rsStepTemplate As Recordset
+Dim rsApprovalsTemplate As Recordset
+Dim rsGateTemplate As Recordset
+Dim rsFiltApprovals As Recordset
+Dim rsFiltGates As Recordset
+Dim rsFiltSteps As Recordset
+Dim strInsert As String, strInsert1 As String, strInsert2 As String
+Set db = CurrentDb()
+Set rsStepTemplate = db.OpenRecordset("tblPartStepTemplate", dbOpenSnapshot)
+Set rsApprovalsTemplate = db.OpenRecordset("tblPartStepTemplateApprovals", dbOpenSnapshot)
+Set rsGateTemplate = db.OpenRecordset("tblPartGateTemplate", dbOpenSnapshot)
+Set rsProject = db.OpenRecordset("SELECT * from tblPartProject WHERE recordId = " & projId)
+
+Dim projTempId As Long, pNum As String, childPnum As String
+projTempId = rsProject!projectTemplateId
+pNum = rsProject!partNumber
+childPnum = Nz(rsProject!childPartNumber, "")
+
+rsGateTemplate.filter = "[projectTemplateId] = " & projTempId 'look at only this project template
+strInsert2 = "INSERT INTO tblPartTeam(partNumber,person) VALUES ('" & pNum & "','" & Environ("username") & "')"
+db.Execute strInsert2, dbFailOnError 'assign project engineer
+Set rsFiltGates = rsGateTemplate.OpenRecordset
+
+Do While Not rsFiltGates.EOF 'loop through gate template
+    strInsert = "INSERT INTO tblPartGates(projectId,partNumber,gateTitle) VALUES (" & projId & ",'" & pNum & "','" & rsFiltGates![gateTitle] & "')"
+    db.Execute strInsert, dbFailOnError
+    TempVars.Add "gateId", db.OpenRecordset("SELECT @@identity")(0).Value
+    
+    rsStepTemplate.filter = "[gateTemplateId] = " & rsFiltGates![recordID] 'filter to this gate template
+    Set rsFiltSteps = rsStepTemplate.OpenRecordset
+    Do While Not rsFiltSteps.EOF 'add all steps within this gate
+        If (IsNull(rsFiltSteps![Title]) = False And rsFiltSteps![Title] <> "") Then 'if title is empty, don't insert step
+            strInsert = "INSERT INTO tblPartSteps(partNumber,partProjectId,partGateId,stepType,openedBy,status,openDate,lastUpdatedDate,lastUpdatedBy,stepActionId,documentType) VALUES ('" & _
+                    pNum & "'," & projId & "," & TempVars!gateId & ",'" & StrQuoteReplace(rsFiltSteps![Title]) & "','" & Environ("username") & "','Not Started','" & Now() & "','" & Now() & "','" & Environ("username") & "'," & Nz(rsFiltSteps![stepActionId], "NULL") & "," & Nz(rsFiltSteps![documentType], "NULL") & ");"
+            db.Execute strInsert, dbFailOnError
+            If (rsFiltSteps![approvalRequired]) Then 'add approvals for steps if required
+                TempVars.Add "stepId", db.OpenRecordset("SELECT @@identity")(0).Value
+                rsApprovalsTemplate.filter = "[stepTemplateId] = " & rsFiltSteps![recordID] 'filter these values to this step template
+                Set rsFiltApprovals = rsApprovalsTemplate.OpenRecordset
+                
+                Do While Not rsFiltApprovals.EOF
+                    strInsert1 = "INSERT INTO tblPartTrackingApprovals(partNumber,requestedBy,requestedDate,specificPerson,approver,dept,reqLevel,tableName,tableRecordId) VALUES ('" & _
+                        pNum & "','" & Environ("username") & "','" & Now() & "'," & rsFiltApprovals![specificPerson] & ",'" & Nz(rsFiltApprovals![specificUsername], "") & "','" & Nz(rsFiltApprovals![Dept], "") & "','" & Nz(rsFiltApprovals![reqLevel], "") & "','tblPartSteps'," & TempVars!stepId & ");"
+                    
+                    CurrentDb().Execute strInsert1
+                    rsFiltApprovals.MoveNext
+                Loop
+            End If
+        End If
+        rsFiltSteps.MoveNext
+    Loop
+    rsFiltGates.MoveNext
+Loop
+
+rsFiltGates.Close
+Set rsFiltGates = Nothing
+rsStepTemplate.Close
+Set rsStepTemplate = Nothing
+
+End Sub
+
 Public Function grabTitle(User) As String
 
 If IsNull(User) Then
@@ -178,7 +243,7 @@ Do While Not rsPartTeam.EOF
     
     'actually send notification
     Dim body As String
-    body = emailContentGen("WDB Step " & notiType, "This step has been " & notiType, stepTitle, "Part Number: " & partNum, "Closed by: " & getFullName(), "Closed On: " & CStr(Date), "")
+    body = emailContentGen(partNum & " Step " & notiType, "WDB Step " & notiType, "This step has been " & notiType, stepTitle, "Part Number: " & partNum, "Closed by: " & getFullName(), "Closed On: " & CStr(Date))
     Call sendNotification(SendTo, 10, 2, stepTitle & " for " & partNum & " has been " & notiType, body, "Part Project", CLng(partNum))
     
 nextRec:
@@ -326,6 +391,13 @@ toolShipAuthorizationEmail = False
 Dim rsApprovals As Recordset
 Set rsApprovals = CurrentDb().OpenRecordset("Select * from tblPartTrackingApprovals WHERE tableName = 'tblPartSteps' AND tableRecordId = " & stepId)
 
+Dim approvalsBool
+approvalsBool = True
+If rsApprovals.RecordCount = 0 Then
+    approvalsBool = False
+    GoTo noApprovals
+End If
+
 Dim arr() As Variant, i As Long
 i = 0
 rsApprovals.MoveLast
@@ -338,9 +410,14 @@ Do While Not rsApprovals.EOF
     rsApprovals.MoveNext
 Loop
 
+noApprovals:
 Dim toolEmail As String, subjectLine As String
-toolEmail = generateEmailWarray("Tool Ship Authorization", toolNumber & " has been approved to ship", "Ship Method: " & shipMethod, "Approvals: ", arr)
 subjectLine = "Tool Ship Authorization"
+If approvalsBool Then
+    toolEmail = generateEmailWarray("Tool Ship Authorization", toolNumber & " has been approved to ship", "Ship Method: " & shipMethod, "Approvals: ", arr)
+Else
+    toolEmail = generateHTML("Tool Ship Authorization", toolNumber & " has been approved to ship", "Ship Method: " & shipMethod, "Approvals: none", "", "", False)
+End If
 
 Dim rs2 As Recordset, strTo As String
 Set rs2 = CurrentDb.OpenRecordset("SELECT * FROM tblPartTeam WHERE partNumber = '" & partNumber & "'", dbOpenSnapshot)

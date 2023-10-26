@@ -155,19 +155,21 @@ On Error GoTo err_handler
 Dim rsNotifications As Recordset
 Set rsNotifications = CurrentDb().OpenRecordset("SELECT * from tblNotificationsSP WHERE recipientUser = '" & SendTo & "' AND notificationDescription = '" & StrQuoteReplace(desc) & "' AND sentDate > #" & Date - 1 & "#")
 If rsNotifications.RecordCount > 0 Then
-    Dim msgTxt As String
-    If rsNotifications!senderUser = Environ("username") Then
-        msgTxt = "Yo, you already did that today, let's wait 'til tomorrow to do it again."
-    Else
-        msgTxt = SendTo & " has already been nudged about this today, by " & rsNotifications!senderUser & ". Let's wait until tomorrow to nudge them again."
+    If rsNotifications!notificationType = 1 Or rsNotifications!notificationType = 9 Then
+        Dim msgTxt As String
+        If rsNotifications!senderUser = Environ("username") Then
+            msgTxt = "Yo, you already did that today, let's wait 'til tomorrow to do it again."
+        Else
+            msgTxt = SendTo & " has already been nudged about this today, by " & rsNotifications!senderUser & ". Let's wait until tomorrow to nudge them again."
+        End If
+        MsgBox msgTxt, vbInformation, "Hold on a minute..."
+        sendNotification = False
+        Exit Function
     End If
-    MsgBox msgTxt, vbInformation, "Hold on a minute..."
-    sendNotification = False
-    Exit Function
 End If
 
 Dim strValues
-strValues = "'" & SendTo & "','" & getEmail(SendTo) & "','" & Environ("username") & "','" & getEmail(Environ("username")) & "','" & Now() & "'," & notType & "," & notPriority & ",'" & StrQuoteReplace(desc) & "','" & appName & "'," & appId & ",'" & emailContent & "'"
+strValues = "'" & SendTo & "','" & getEmail(SendTo) & "','" & Environ("username") & "','" & getEmail(Environ("username")) & "','" & Now() & "'," & notType & "," & notPriority & ",'" & StrQuoteReplace(desc) & "','" & appName & "'," & appId & ",'" & StrQuoteReplace(emailContent) & "'"
 
 CurrentDb().Execute "INSERT INTO tblNotificationsSP(recipientUser,recipientEmail,senderUser,senderEmail,sentDate,notificationType,notificationPriority,notificationDescription,appName,appId,emailContent) VALUES(" & strValues & ");"
 
@@ -246,7 +248,7 @@ Do While Not rsPartSteps.EOF
     Dim body As String, stepTitle As String, partNum As String
     partNum = rsPartSteps!partNumber
     stepTitle = rsPartSteps!stepType
-    body = emailContentGen("WDB Reminder", msg, stepTitle, "Part Number: " & partNum, "This is an automated message. Jokes included are for the purpose of making this reminder fun and light hearted.", "Sent On: " & CStr(Date), "")
+    body = emailContentGen("Just a reminder...", "WDB Reminder", msg, stepTitle, "Part Number: " & partNum, "This is an automated message. Jokes included are for the purpose of making this reminder fun and light hearted.", "Sent On: " & CStr(Date))
     Call sendNotification(rsPartSteps!responsible, 9, 2, "Please complete " & stepTitle & " for " & partNum, body, "Part Project", CInt(partNum))
     
 nextRec:
