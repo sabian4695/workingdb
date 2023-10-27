@@ -268,7 +268,7 @@ Do While Not rsSteps.EOF
     If rsStepActions!whenToRun = routineName Then 'this is the one!
         Dim matches, rsLookItUp As Recordset
         Set rsLookItUp = CurrentDb().OpenRecordset("SELECT " & rsStepActions!compareColumn & " FROM " & rsStepActions!compareTable & " WHERE partNumber = '" & partNum & "'")
-        matches = CStr(rsLookItUp(rsStepActions!compareColumn)) = rsStepActions!compareData
+        matches = CStr(Nz(rsLookItUp(rsStepActions!compareColumn), "")) = rsStepActions!compareData
         If matches <> rsStepActions!compareAction Then GoTo nextOne 'if it matches what it's supposed to be, then keep going
         
         If rsStepActions!stepAction = "deleteStep" Then
