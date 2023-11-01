@@ -1,6 +1,18 @@
 Option Compare Database
 Option Explicit
 
+Public Function deletePartProject(partNum As String) As Boolean
+
+Dim db As Database
+Set db = CurrentDb
+
+db.Execute "delete * from tblPartProject where partNumber = '" & partNum & "'"
+db.Execute "delete * from tblPartGates where partNumber = '" & partNum & "'"
+db.Execute "delete * from tblPartSteps where partNumber = '" & partNum & "'"
+
+
+End Function
+
 Public Function getDOH(partNum As String) As Long
 
 Dim db As Database

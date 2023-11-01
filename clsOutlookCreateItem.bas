@@ -137,12 +137,12 @@ Public Function AddFolderFromPath(PathString As String, _
     Dim FolderName As String
     Dim xFolder As Object   'Outlook.Folder
     Dim yFolder As Object   'Outlook.Folder
-    Dim Counter As Long
+    Dim counter As Long
     
     If Left(PathString, 2) = "\\" Then PathString = Mid(PathString, 3)
     PathArray = Split(PathString, "\\")
     
-    FolderName = PathArray(Counter)
+    FolderName = PathArray(counter)
     Set xFolder = Me.GetFolderFromPath(FolderName)
     If xFolder Is Nothing Then
         If FolderType = -999 Then
@@ -152,8 +152,8 @@ Public Function AddFolderFromPath(PathString As String, _
         End If
     End If
     
-    For Counter = 1 To UBound(PathArray)
-        FolderName = PathArray(Counter)
+    For counter = 1 To UBound(PathArray)
+        FolderName = PathArray(counter)
         Set yFolder = Me.GetSubFolder(xFolder, FolderName)
         If yFolder Is Nothing Then
             If FolderType = -999 Then
@@ -203,7 +203,7 @@ Public Function GetFolderFromPath(PathString As String) As Object 'Outlook.Folde
 '==============================================================================
     Dim PathArray As Variant
     Dim xFolder As Object 'Outlook.Folder
-    Dim Counter As Long
+    Dim counter As Long
     
     On Error GoTo ErrHandler
     
@@ -212,8 +212,8 @@ Public Function GetFolderFromPath(PathString As String) As Object 'Outlook.Folde
     
     Set xFolder = Me.OutlookApplication.Session.Folders.item(PathArray(0))
     
-    For Counter = 1 To UBound(PathArray)
-        Set xFolder = xFolder.Folders.item(PathArray(Counter))
+    For counter = 1 To UBound(PathArray)
+        Set xFolder = xFolder.Folders.item(PathArray(counter))
     Next
     
     Set GetFolderFromPath = xFolder
@@ -377,7 +377,7 @@ Public Function CreateContactItem(Optional lastName As String = "", Optional fir
 '                    any "missing" levels in the indicated path)
 '===============================================================================
     Dim olContact As Object     'Outlook.ContactItem
-    Dim Counter As Long
+    Dim counter As Long
     Dim CurrentProperty As String
     Dim ItemProp As Object      'Outlook.ItemProperty
     Dim TestFolder As Object    'Outlook.Folder
@@ -466,8 +466,8 @@ Public Function CreateContactItem(Optional lastName As String = "", Optional fir
 '-- process attachments.  For multiple files, use an array.  For a single file, use a string
         CurrentProperty = "Attachments"
         If IsArray(Attachments) Then
-            For Counter = LBound(Attachments) To UBound(Attachments)
-                .Attachments.Add Attachments(Counter)
+            For counter = LBound(Attachments) To UBound(Attachments)
+                .Attachments.Add Attachments(counter)
             Next
         Else
             If Not IsMissing(Attachments) Then
@@ -488,9 +488,9 @@ Public Function CreateContactItem(Optional lastName As String = "", Optional fir
 ' the code will still work if the property name is in the first element and property
 ' value is in the second
 '===============================================================================
-            For Counter = LBound(OtherProperties, 1) To UBound(OtherProperties, 1)
-                Set ItemProp = .ItemProperties.item(OtherProperties(Counter, LBound(OtherProperties, 2)))
-                ItemProp.Value = OtherProperties(Counter, UBound(OtherProperties, 2))
+            For counter = LBound(OtherProperties, 1) To UBound(OtherProperties, 1)
+                Set ItemProp = .ItemProperties.item(OtherProperties(counter, LBound(OtherProperties, 2)))
+                ItemProp.Value = OtherProperties(counter, UBound(OtherProperties, 2))
             Next
         End If
 '===============================================================================
@@ -611,7 +611,7 @@ Public Function CreateMailItem(SendTo As Variant, Optional CC As Variant = "", _
 '===============================================================================
     Dim olMsg As Object                 'Outlook.MailItem
     Dim olRecip As Object               'Outlook.Recipient
-    Dim Counter As Long
+    Dim counter As Long
     Dim CurrentProperty As String
     Dim ItemProp As Object              'Outlook.ItemProperty
     Dim SaveToFolder As Object          'Outlook.Folder
@@ -627,8 +627,8 @@ Public Function CreateMailItem(SendTo As Variant, Optional CC As Variant = "", _
 '-- collection.  If not, then if Len > 0 then pass in the string values via To, CC, and BCC
         CurrentProperty = "To"
         If IsArray(SendTo) Then
-            For Counter = LBound(SendTo) To UBound(SendTo)
-                Set olRecip = .Recipients.Add(SendTo(Counter))
+            For counter = LBound(SendTo) To UBound(SendTo)
+                Set olRecip = .Recipients.Add(SendTo(counter))
                 olRecip.Type = olTo
             Next
         Else
@@ -636,8 +636,8 @@ Public Function CreateMailItem(SendTo As Variant, Optional CC As Variant = "", _
         End If
         CurrentProperty = "CC"
         If IsArray(CC) Then
-            For Counter = LBound(CC) To UBound(CC)
-                Set olRecip = .Recipients.Add(CC(Counter))
+            For counter = LBound(CC) To UBound(CC)
+                Set olRecip = .Recipients.Add(CC(counter))
                 olRecip.Type = olCC
             Next
         Else
@@ -645,8 +645,8 @@ Public Function CreateMailItem(SendTo As Variant, Optional CC As Variant = "", _
         End If
         CurrentProperty = "BCC"
         If IsArray(BCC) Then
-            For Counter = LBound(BCC) To UBound(BCC)
-                Set olRecip = .Recipients.Add(BCC(Counter))
+            For counter = LBound(BCC) To UBound(BCC)
+                Set olRecip = .Recipients.Add(BCC(counter))
                 olRecip.Type = olBCC
             Next
         Else
@@ -658,8 +658,8 @@ Public Function CreateMailItem(SendTo As Variant, Optional CC As Variant = "", _
 '-- if string, adds from the string
         CurrentProperty = "ReplyRecipients"
         If IsArray(ReplyRecipients) Then
-            For Counter = LBound(ReplyRecipients) To UBound(ReplyRecipients)
-                Set olRecip = .ReplyRecipients.Add(ReplyRecipients(Counter))
+            For counter = LBound(ReplyRecipients) To UBound(ReplyRecipients)
+                Set olRecip = .ReplyRecipients.Add(ReplyRecipients(counter))
             Next
         Else
             If ReplyRecipients <> "" Then .ReplyRecipients.Add ReplyRecipients
@@ -678,8 +678,8 @@ Public Function CreateMailItem(SendTo As Variant, Optional CC As Variant = "", _
 '-- process attachments.  For multiple files, use an array.  For a single file, use a string
         CurrentProperty = "Attachments"
         If IsArray(Attachments) Then
-            For Counter = LBound(Attachments) To UBound(Attachments)
-                .Attachments.Add Attachments(Counter)
+            For counter = LBound(Attachments) To UBound(Attachments)
+                .Attachments.Add Attachments(counter)
             Next
         Else
             If Not IsMissing(Attachments) Then
@@ -743,9 +743,9 @@ Public Function CreateMailItem(SendTo As Variant, Optional CC As Variant = "", _
 ' the code will still work if the property name is in the first element and property
 ' value is in the second
 '===============================================================================
-            For Counter = LBound(OtherProperties, 1) To UBound(OtherProperties, 1)
-                Set ItemProp = .ItemProperties.item(OtherProperties(Counter, LBound(OtherProperties, 2)))
-                ItemProp.Value = OtherProperties(Counter, UBound(OtherProperties, 2))
+            For counter = LBound(OtherProperties, 1) To UBound(OtherProperties, 1)
+                Set ItemProp = .ItemProperties.item(OtherProperties(counter, LBound(OtherProperties, 2)))
+                ItemProp.Value = OtherProperties(counter, UBound(OtherProperties, 2))
             Next
         End If
         
@@ -839,7 +839,7 @@ Function CreateAppointmentItem(StartAt As Date, Optional duration As Long = 30, 
 ' This facilitates error logging
 '===============================================================================
     Dim olAppt As Object            'Outlook.AppointmentItem
-    Dim Counter As Long
+    Dim counter As Long
     Dim CurrentProperty As String
     Dim EndFromDuration As Date
     Dim olRecip As Object           'Outlook.Recipient
@@ -903,8 +903,8 @@ Function CreateAppointmentItem(StartAt As Date, Optional duration As Long = 30, 
 '-- may come in as arrays or strings
         CurrentProperty = "RequiredAttendees"
         If IsArray(RequiredAttendees) Then
-            For Counter = LBound(RequiredAttendees) To UBound(RequiredAttendees)
-                Set olRecip = .Recipients.Add(RequiredAttendees(Counter))
+            For counter = LBound(RequiredAttendees) To UBound(RequiredAttendees)
+                Set olRecip = .Recipients.Add(RequiredAttendees(counter))
                 olRecip.Type = olRequired
             Next
         Else
@@ -915,8 +915,8 @@ Function CreateAppointmentItem(StartAt As Date, Optional duration As Long = 30, 
         End If
         CurrentProperty = "OptionalAttendees"
         If IsArray(OptionalAttendees) Then
-            For Counter = LBound(OptionalAttendees) To UBound(OptionalAttendees)
-                Set olRecip = .Recipients.Add(OptionalAttendees(Counter))
+            For counter = LBound(OptionalAttendees) To UBound(OptionalAttendees)
+                Set olRecip = .Recipients.Add(OptionalAttendees(counter))
                 olRecip.Type = olOptional
             Next
         Else
@@ -927,8 +927,8 @@ Function CreateAppointmentItem(StartAt As Date, Optional duration As Long = 30, 
         End If
         CurrentProperty = "Resources"
         If IsArray(Resources) Then
-            For Counter = LBound(Resources) To UBound(Resources)
-                Set olRecip = .Recipients.Add(Resources(Counter))
+            For counter = LBound(Resources) To UBound(Resources)
+                Set olRecip = .Recipients.Add(Resources(counter))
                 olRecip.Type = olResource
             Next
         Else
@@ -939,8 +939,8 @@ Function CreateAppointmentItem(StartAt As Date, Optional duration As Long = 30, 
         End If
         CurrentProperty = "Organizer"
         If IsArray(Organizer) Then
-            For Counter = LBound(Organizer) To UBound(Organizer)
-                Set olRecip = .Recipients.Add(Organizer(Counter))
+            For counter = LBound(Organizer) To UBound(Organizer)
+                Set olRecip = .Recipients.Add(Organizer(counter))
                 olRecip.Type = olOrganizer
             Next
         Else
@@ -963,8 +963,8 @@ Function CreateAppointmentItem(StartAt As Date, Optional duration As Long = 30, 
 '-- process attachments.  For multiple files, use an array.  For a single file, use a string
         CurrentProperty = "Attachments"
         If IsArray(Attachments) Then
-            For Counter = LBound(Attachments) To UBound(Attachments)
-                .Attachments.Add Attachments(Counter)
+            For counter = LBound(Attachments) To UBound(Attachments)
+                .Attachments.Add Attachments(counter)
             Next
         Else
             If Attachments <> "" Then .Attachments.Add Attachments
@@ -1002,9 +1002,9 @@ Function CreateAppointmentItem(StartAt As Date, Optional duration As Long = 30, 
 ' the code will still work if the property name is in the first element and property
 ' value is in the second
 '===============================================================================
-            For Counter = LBound(OtherProperties, 1) To UBound(OtherProperties, 1)
-                Set ItemProp = .ItemProperties.item(OtherProperties(Counter, LBound(OtherProperties, 2)))
-                ItemProp.Value = OtherProperties(Counter, UBound(OtherProperties, 2))
+            For counter = LBound(OtherProperties, 1) To UBound(OtherProperties, 1)
+                Set ItemProp = .ItemProperties.item(OtherProperties(counter, LBound(OtherProperties, 2)))
+                ItemProp.Value = OtherProperties(counter, UBound(OtherProperties, 2))
             Next
         End If
 '===============================================================================
@@ -1096,7 +1096,7 @@ Function CreateNoteItem(body As String, Optional Categories As String = "", _
 '                    any "missing" levels in the indicated path)
 '===============================================================================
     Dim olNote As Object                'Outlook.NoteItem
-    Dim Counter As Long
+    Dim counter As Long
     Dim CurrentProperty As String
     Dim ItemProp As Object              'Outlook.ItemProperty
     Dim TestFolder As Object            'Outlook.Folder
@@ -1123,9 +1123,9 @@ Function CreateNoteItem(body As String, Optional Categories As String = "", _
 ' the code will still work if the property name is in the first element and property
 ' value is in the second
 '===============================================================================
-            For Counter = LBound(OtherProperties, 1) To UBound(OtherProperties, 1)
-                Set ItemProp = .ItemProperties.item(OtherProperties(Counter, LBound(OtherProperties, 2)))
-                ItemProp.Value = OtherProperties(Counter, UBound(OtherProperties, 2))
+            For counter = LBound(OtherProperties, 1) To UBound(OtherProperties, 1)
+                Set ItemProp = .ItemProperties.item(OtherProperties(counter, LBound(OtherProperties, 2)))
+                ItemProp.Value = OtherProperties(counter, UBound(OtherProperties, 2))
             Next
         End If
 '==============================================================================
@@ -1231,7 +1231,7 @@ Function CreateTaskItem(subject As String, Optional AssignTo As Variant = "", _
 '===============================================================================
     Dim olTask As Object            'Outlook.TaskItem
     Dim olRecip As Object           'Outlook.Recipient
-    Dim Counter As Long
+    Dim counter As Long
     Dim CurrentProperty As String
     Dim ItemProp As Object          'Outlook.ItemProperty
     Dim TestFolder As Object        'Outlook.Folder
@@ -1269,8 +1269,8 @@ Function CreateTaskItem(subject As String, Optional AssignTo As Variant = "", _
 '-- process Attachments.  For multiple files, use an array.  For a single file, use a string
         CurrentProperty = "Attachments"
         If IsArray(Attachments) Then
-            For Counter = LBound(Attachments) To UBound(Attachments)
-                .Attachments.Add Attachments(Counter)
+            For counter = LBound(Attachments) To UBound(Attachments)
+                .Attachments.Add Attachments(counter)
             Next
         Else
             If Not IsMissing(Attachments) Then
@@ -1287,13 +1287,13 @@ Function CreateTaskItem(subject As String, Optional AssignTo As Variant = "", _
         CurrentProperty = "AssignTo"
         If IsArray(AssignTo) Then
             .Assign
-            For Counter = LBound(AssignTo) To UBound(AssignTo)
-                .Recipients.Add AssignTo(Counter)
+            For counter = LBound(AssignTo) To UBound(AssignTo)
+                .Recipients.Add AssignTo(counter)
             Next
         Else
             If AssignTo <> "" Then
                 .Assign
-                .Recipients.Add AssignTo(Counter)
+                .Recipients.Add AssignTo(counter)
             End If
         End If
         
@@ -1310,9 +1310,9 @@ Function CreateTaskItem(subject As String, Optional AssignTo As Variant = "", _
 ' the code will still work if the property name is in the first element and property
 ' value is in the second
 '===============================================================================
-            For Counter = LBound(OtherProperties, 1) To UBound(OtherProperties, 1)
-                Set ItemProp = .ItemProperties.item(OtherProperties(Counter, LBound(OtherProperties, 2)))
-                ItemProp.Value = OtherProperties(Counter, UBound(OtherProperties, 2))
+            For counter = LBound(OtherProperties, 1) To UBound(OtherProperties, 1)
+                Set ItemProp = .ItemProperties.item(OtherProperties(counter, LBound(OtherProperties, 2)))
+                ItemProp.Value = OtherProperties(counter, UBound(OtherProperties, 2))
             Next
         End If
 '===============================================================================
