@@ -113,9 +113,9 @@ Do While Not rsFiltGates.EOF 'loop through gate template
     rsStepTemplate.filter = "[gateTemplateId] = " & rsFiltGates![recordId] 'filter to this gate template
     Set rsFiltSteps = rsStepTemplate.OpenRecordset
     Do While Not rsFiltSteps.EOF 'add all steps within this gate
-        If (IsNull(rsFiltSteps![title]) = False And rsFiltSteps![title] <> "") Then 'if title is empty, don't insert step
+        If (IsNull(rsFiltSteps![Title]) = False And rsFiltSteps![Title] <> "") Then 'if title is empty, don't insert step
             strInsert = "INSERT INTO tblPartSteps(partNumber,partProjectId,partGateId,stepType,openedBy,status,openDate,lastUpdatedDate,lastUpdatedBy,stepActionId,documentType) VALUES ('" & _
-                    pNum & "'," & projId & "," & TempVars!gateId & ",'" & StrQuoteReplace(rsFiltSteps![title]) & "','" & Environ("username") & "','Not Started','" & Now() & "','" & Now() & "','" & Environ("username") & "'," & Nz(rsFiltSteps![stepActionId], "NULL") & "," & Nz(rsFiltSteps![documentType], "NULL") & ");"
+                    pNum & "'," & projId & "," & TempVars!gateId & ",'" & StrQuoteReplace(rsFiltSteps![Title]) & "','" & Environ("username") & "','Not Started','" & Now() & "','" & Now() & "','" & Environ("username") & "'," & Nz(rsFiltSteps![stepActionId], "NULL") & "," & Nz(rsFiltSteps![documentType], "NULL") & ");"
             db.Execute strInsert, dbFailOnError
             If (rsFiltSteps![approvalRequired]) Then 'add approvals for steps if required
                 TempVars.Add "stepId", db.OpenRecordset("SELECT @@identity")(0).Value
@@ -452,7 +452,7 @@ toolShipAuthorizationEmail = True
 
 End Function
 
-Function generateEmailWarray(title As String, subTitle As String, primaryMessage As String, detailTitle As String, arr() As Variant) As String
+Function generateEmailWarray(Title As String, subTitle As String, primaryMessage As String, detailTitle As String, arr() As Variant) As String
 
 Dim tblHeading As String, tblFooter As String, strHTMLBody As String, extraFooter As String, detailTable As String
 
@@ -470,7 +470,7 @@ Next item
 
 tblHeading = "<table style=""width: 100%; margin: 0 auto; padding: 2em 3em; text-align: center; background-color: #fafafa;"">" & _
                             "<tbody>" & _
-                                "<tr><td><h2 style=""color: #414141; font-size: 28px; margin-top: 0;"">" & title & "</h2></td></tr>" & _
+                                "<tr><td><h2 style=""color: #414141; font-size: 28px; margin-top: 0;"">" & Title & "</h2></td></tr>" & _
                                 "<tr><td><p style=""color: rgb(73, 73, 73);"">" & subTitle & "</p></td></tr>" & _
                                  "<tr><td><table style=""padding: 1em; text-align: center;"">" & _
                                      "<tr><td style=""padding: 1em 1.5em; background: #FF6B00; "">" & primaryMessage & "</td></tr>" & _
