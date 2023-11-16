@@ -209,8 +209,10 @@ End Function
 
 Public Sub checkForFirstTimeRun()
 
+Dim db As Database
 Dim rs1 As Recordset
-Set rs1 = CurrentDb().OpenRecordset("SELECT * from tblAnalytics WHERE dateUsed > #" & Date - 1 & "# AND module = 'firstTimeRun'")
+Set db = CurrentDb()
+Set rs1 = db.OpenRecordset("SELECT * from tblAnalytics WHERE dateUsed > #" & Date - 1 & "# AND module = 'firstTimeRun'")
 
 If rs1.RecordCount <> 0 Then Exit Sub
 
@@ -220,10 +222,11 @@ If rs1.RecordCount <> 0 Then Exit Sub
 'CurrentDb().Execute ("INSERT INTO cubeCoreAnalytics (module,form,userName,dateUsed) SELECT module,form,userName,dateUsed FROM tblAnalytics WHERE dateUsed>#" & Date - 14 & "#")
 
 GoTo SKIPALL
-Dim rsPartSteps As Recordset, rsOverdueMsgs As Recordset, rsPermissions As Recordset, msg As String
+Dim rsPartSteps As Recordset, rsOverdueMsgs As Recordset, rsPermissions As Recordset, msg As String, rsPartTeam As Recordset
+Dim body As String, stepTitle As String, partNum As String
 
-Set rsPartSteps = CurrentDb().OpenRecordset("SELECT * from tblPartSteps WHERE responsible is not null AND closeDate is null AND dueDate is not null")
-Set rsOverdueMsgs = CurrentDb().OpenRecordset("SELECT recordId, partTrackingOverdueMessages from tblWdbExtras WHERE partTrackingOverdueMessages is not null")
+Set rsPartSteps = db.OpenRecordset("SELECT * from tblPartSteps WHERE responsible is not null AND closeDate is null AND dueDate is not null")
+Set rsOverdueMsgs = db.OpenRecordset("SELECT recordId, partTrackingOverdueMessages from tblWdbExtras WHERE partTrackingOverdueMessages is not null")
 
 Do While Not rsPartSteps.EOF
     Select Case rsPartSteps!dueDate
@@ -243,20 +246,26 @@ Do While Not rsPartSteps.EOF
             GoTo nextRec
     End Select
     
-    Set rsPermissions = CurrentDb().OpenRecordset("SELECT * from tblPermissions WHERE user = '" & rsPartSteps!responsible & "'")
+    Set rsPartTeam = db.OpenRecordset("select * from tblPartTeam where partNumber = '" & partNum & "'")
     
-    Dim body As String, stepTitle As String, partNum As String
-    partNum = rsPartSteps!partNumber
-    stepTitle = rsPartSteps!stepType
-    body = emailContentGen("Just a reminder...", "WDB Reminder", msg, stepTitle, "Part Number: " & partNum, "This is an automated message. Jokes included are for the purpose of making this reminder fun and light hearted.", "Sent On: " & CStr(Date))
-    Call sendNotification(rsPartSteps!responsible, 9, 2, "Please complete " & stepTitle & " for " & partNum, body, "Part Project", CInt(partNum))
+    Do While Not rsPartTeam.EOF
+        Set rsPermissions = db.OpenRecordset("select * from tblPermissions where user = '" & rsPartTeam!person & "'")
+        If rsPermissions!Dept = rsPartSteps!responsible Then
+            partNum = rsPartSteps!partNumber
+            stepTitle = rsPartSteps!stepType
+            body = emailContentGen("Just a reminder...", "WDB Reminder", msg, stepTitle, "Part Number: " & partNum, "This is an automated message. Jokes included are for the purpose of making this reminder fun and light hearted.", "Sent On: " & CStr(Date))
+            Call sendNotification(rsPartSteps!responsible, 9, 2, "Please complete " & stepTitle & " for " & partNum, body, "Part Project", CInt(partNum))
+        End If
+nextOne:
+        rsPartTeam.MoveNext
+    Loop
     
 nextRec:
     rsPartSteps.MoveNext
 Loop
 
 SKIPALL:
-CurrentDb().Execute "INSERT INTO tblAnalytics (module,form,userName,dateUsed) VALUES ('firstTimeRun','Form_frmSplash','" & Environ("username") & "','" & Now() & "')"
+db.Execute "INSERT INTO tblAnalytics (module,form,userName,dateUsed) VALUES ('firstTimeRun','Form_frmSplash','" & Environ("username") & "','" & Now() & "')"
 
 End Sub
 
