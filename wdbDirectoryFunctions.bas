@@ -30,6 +30,20 @@ err_handler:
     Call handleError("modGlobal", "openPath", Err.description, Err.number)
 End Sub
 
+Function createShortcut(lnkLocation As String, targetLocation As String, shortcutName As String)
+On Error GoTo err_handler
+
+With CreateObject("WScript.Shell").createShortcut(lnkLocation & ".lnk")
+    .TargetPath = targetLocation
+    .description = shortcutName
+     .save
+End With
+
+Exit Function
+err_handler:
+    Call handleError("modGlobal", "createShortcut", Err.description, Err.number)
+End Function
+
 Public Sub checkMkDir(mainFolder, partNum, Optional variableVal)
 On Error GoTo err_handler
 Dim FolName As String, fullPath As String
@@ -104,7 +118,7 @@ ElseIf partNum Like "[A-Z][A-Z]##[A-Z]##[A-Z]" Or partNum Like "[A-Z][A-Z]##[A-Z
     If FolderExists(strFilePath) = True Then
         Call openPath(strFilePath)
     Else
-        DoCmd.OpenForm "frmCreateDocHisFolder"
+        DoCmd.OpenForm "frmCreateDesignFolders"
     End If
 Else
     thousZeros = Left(partNum, 2) & "000\"
@@ -116,7 +130,7 @@ Else
     
     If Len(partNum) = 5 Or Right(partNum, 1) = "P" Then
         If Len(FolName) = 0 Then
-            DoCmd.OpenForm "frmCreateDocHisFolder"
+            DoCmd.OpenForm "frmCreateDesignFolders"
         Else
             Call openPath(strFilePath)
         End If
@@ -145,7 +159,7 @@ ElseIf Left(partNum, 8) Like "[A-Z][A-Z]##[A-Z]##[A-Z]" Or Left(partNum, 7) Like
     If FolderExists(strFilePath) = True Then
         Call openPath(strFilePath)
     Else
-        DoCmd.OpenForm "frmCreateModelV5Folder"
+        DoCmd.OpenForm "frmCreateDesignFolders"
     End If
 Else
     thousZeros = Left(partNum, 2) & "000\"
@@ -162,7 +176,7 @@ tryagain:
                 partNum = Left(partNum, 5)
                 GoTo tryagain
             End If
-            DoCmd.OpenForm "frmCreateModelV5Folder"
+            DoCmd.OpenForm "frmCreateDesignFolders"
         Else
             Call openPath(strFilePath)
         End If
