@@ -3,6 +3,39 @@ Option Explicit
 
 Public bClone As Boolean
 
+Public Function addWeekdays(dateInput As Date, daysToAdd As Integer) As Date
+On Error GoTo err_handler
+
+Dim intCounter As Integer, intDirection As Integer, datNewDate As Date, lngWeeks As Long, intDaysLeft As Integer
+datNewDate = dateInput
+
+If dateInput > 0 Then
+  intDirection = 1
+Else
+  intDirection = -1
+End If
+lngWeeks = Fix(Abs(daysToAdd) / 5)
+
+If lngWeeks > 0 Then datNewDate = datNewDate + lngWeeks * 7 * intDirection
+
+intDaysLeft = Abs(daysToAdd) - lngWeeks * 5
+
+For intCounter = 1 To intDaysLeft
+  datNewDate = datNewDate + 1 * intDirection
+  If intDirection > 0 Then
+    If Weekday(datNewDate) = 7 Then datNewDate = datNewDate + 2
+  Else
+    If Weekday(datNewDate) = 1 Then datNewDate = datNewDate - 2
+  End If
+Next intCounter
+
+addWeekdays = datNewDate
+
+Exit Function
+err_handler:
+    Call handleError("wdbGlobalFunctions", "addWeekdays", Err.description, Err.number)
+End Function
+
 Function getFullName() As String
 
 Dim rs1 As Recordset
@@ -60,7 +93,7 @@ Else
 End If
 End Function
 
-Function generateHTML(title As String, subTitle As String, primaryMessage As String, detail1 As String, detail2 As String, detail3 As String, hasLink As Boolean) As String
+Function generateHTML(Title As String, subTitle As String, primaryMessage As String, detail1 As String, detail2 As String, detail3 As String, hasLink As Boolean) As String
 
 Dim tblHeading As String, tblFooter As String, strHTMLBody As String, extraFooter As String
 
@@ -70,7 +103,7 @@ End If
 
 tblHeading = "<table style=""width: 100%; margin: 0 auto; padding: 2em 3em; text-align: center; background-color: #fafafa;"">" & _
                             "<tbody>" & _
-                                "<tr><td><h2 style=""color: #414141; font-size: 28px; margin-top: 0;"">" & title & "</h2></td></tr>" & _
+                                "<tr><td><h2 style=""color: #414141; font-size: 28px; margin-top: 0;"">" & Title & "</h2></td></tr>" & _
                                 "<tr><td><p style=""color: rgb(73, 73, 73);"">" & subTitle & "</p></td></tr>" & _
                                  "<tr><td><table style=""padding: 1em; text-align: center;"">" & _
                                      "<tr><td style=""padding: 1em 1.5em; background: #FF6B00; "">" & primaryMessage & "</td></tr>" & _
@@ -142,8 +175,8 @@ CurrentDb().Execute "INSERT INTO tblCPC_UpdateTracking" & sqlColumns & sqlValues
 
 End Sub
 
-Function emailContentGen(subject As String, title As String, subTitle As String, primaryMessage As String, detail1 As String, detail2 As String, detail3 As String) As String
-emailContentGen = subject & "," & title & "," & subTitle & "," & primaryMessage & "," & detail1 & "," & detail2 & "," & detail3
+Function emailContentGen(subject As String, Title As String, subTitle As String, primaryMessage As String, detail1 As String, detail2 As String, detail3 As String) As String
+emailContentGen = subject & "," & Title & "," & subTitle & "," & primaryMessage & "," & detail1 & "," & detail2 & "," & detail3
 End Function
 
 Function sendNotification(SendTo As String, notType As Integer, notPriority As Integer, desc As String, emailContent As String, Optional appName As String = "", Optional appId As Long) As Boolean

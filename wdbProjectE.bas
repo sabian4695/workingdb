@@ -2,6 +2,7 @@ Option Compare Database
 Option Explicit
 
 Public Function deletePartProject(partNum As String) As Boolean
+On Error GoTo err_handler
 
 Dim db As Database
 Set db = CurrentDb
@@ -10,10 +11,15 @@ db.Execute "delete * from tblPartProject where partNumber = '" & partNum & "'"
 db.Execute "delete * from tblPartGates where partNumber = '" & partNum & "'"
 db.Execute "delete * from tblPartSteps where partNumber = '" & partNum & "'"
 
+Debug.Print ("Done")
 
+Exit Function
+err_handler:
+    Call handleError("wdbProjectE", "deletePartProject", Err.description, Err.number)
 End Function
 
 Public Function getDOH(partNum As String) As Long
+On Error GoTo err_handler
 
 Dim db As Database
 Dim rsSupplyDemand As Recordset, rsPartInfo As Recordset, rsOnHand As Recordset
@@ -44,9 +50,13 @@ Set rsPartInfo = Nothing
 Set rsSupplyDemand = Nothing
 Set rsOnHand = Nothing
 
+Exit Function
+err_handler:
+    Call handleError("wdbProjectE", "getDOH", Err.description, Err.number)
 End Function
 
 Public Function openOrdersByDay(partNum As String, dayNum As Long) As Double
+On Error GoTo err_handler
 
 Dim filt As String
 
@@ -76,76 +86,79 @@ openOrdersByDay = Nz(rsSupplyDemand!QtyReq, 0)
 rsSupplyDemand.Close
 Set rsSupplyDemand = Nothing
 
+Exit Function
+err_handler:
+    Call handleError("wdbProjectE", "openOrdersByDay", Err.description, Err.number)
 End Function
 
-Public Sub createPartProject(projId)
+Public Function createPartProject(projId)
+On Error GoTo err_handler
 
 Dim db As DAO.Database
-Dim rsProject As Recordset
-Dim rsStepTemplate As Recordset
-Dim rsApprovalsTemplate As Recordset
-Dim rsGateTemplate As Recordset
-Dim rsFiltApprovals As Recordset
-Dim rsFiltGates As Recordset
-Dim rsFiltSteps As Recordset
-Dim strInsert As String, strInsert1 As String, strInsert2 As String
 Set db = CurrentDb()
-Set rsStepTemplate = db.OpenRecordset("tblPartStepTemplate", dbOpenSnapshot)
-Set rsApprovalsTemplate = db.OpenRecordset("tblPartStepTemplateApprovals", dbOpenSnapshot)
-Set rsGateTemplate = db.OpenRecordset("tblPartGateTemplate", dbOpenSnapshot)
+Dim rsProject As Recordset, rsStepTemplate As Recordset, rsApprovalsTemplate As Recordset, rsGateTemplate As Recordset
+Dim strInsert As String, strInsert1 As String
+Dim projTempId As Long, pNum As String, childPnum As String, runningDate As Date
+
 Set rsProject = db.OpenRecordset("SELECT * from tblPartProject WHERE recordId = " & projId)
 
-Dim projTempId As Long, pNum As String, childPnum As String
 projTempId = rsProject!projectTemplateId
 pNum = rsProject!partNumber
 childPnum = Nz(rsProject!childPartNumber, "")
+runningDate = rsProject!projectStartDate
 
-rsGateTemplate.filter = "[projectTemplateId] = " & projTempId 'look at only this project template
-strInsert2 = "INSERT INTO tblPartTeam(partNumber,person) VALUES ('" & pNum & "','" & Environ("username") & "')"
-db.Execute strInsert2, dbFailOnError 'assign project engineer
-Set rsFiltGates = rsGateTemplate.OpenRecordset
+db.Execute "INSERT INTO tblPartTeam(partNumber,person) VALUES ('" & pNum & "','" & Environ("username") & "')", dbFailOnError 'assign project engineer
+Set rsGateTemplate = db.OpenRecordset("Select * FROM tblPartGateTemplate WHERE [projectTemplateId] = " & projTempId, dbOpenSnapshot)
 
-Do While Not rsFiltGates.EOF 'loop through gate template
-    strInsert = "INSERT INTO tblPartGates(projectId,partNumber,gateTitle) VALUES (" & projId & ",'" & pNum & "','" & rsFiltGates![gateTitle] & "')"
-    db.Execute strInsert, dbFailOnError
+'--GO THROUGH EACH GATE
+Do While Not rsGateTemplate.EOF
+    '--ADD THIS GATE
+    db.Execute "INSERT INTO tblPartGates(projectId,partNumber,gateTitle) VALUES (" & projId & ",'" & pNum & "','" & rsGateTemplate![gateTitle] & "')", dbFailOnError
     TempVars.Add "gateId", db.OpenRecordset("SELECT @@identity")(0).Value
     
-    rsStepTemplate.filter = "[gateTemplateId] = " & rsFiltGates![recordId] 'filter to this gate template
-    Set rsFiltSteps = rsStepTemplate.OpenRecordset
-    Do While Not rsFiltSteps.EOF 'add all steps within this gate
-        If (IsNull(rsFiltSteps![title]) = False And rsFiltSteps![title] <> "") Then 'if title is empty, don't insert step
-            strInsert = "INSERT INTO tblPartSteps(partNumber,partProjectId,partGateId,stepType,openedBy,status,openDate,lastUpdatedDate,lastUpdatedBy,stepActionId,documentType,responsible) VALUES"
-            strInsert = strInsert & "('" & pNum & "'," & projId & "," & TempVars!gateId & ",'" & StrQuoteReplace(rsFiltSteps![title]) & "','" & Environ("username") & "','Not Started','"
-            strInsert = strInsert & Now() & "','" & Now() & "','" & Environ("username") & "'," & Nz(rsFiltSteps![stepActionId], "NULL") & ","
-            strInsert = strInsert & Nz(rsFiltSteps![documentType], "NULL") & ",'" & Nz(rsFiltSteps![responsible], "") & "');"
-            db.Execute strInsert, dbFailOnError
-            If (rsFiltSteps![approvalRequired]) Then 'add approvals for steps if required
-                TempVars.Add "stepId", db.OpenRecordset("SELECT @@identity")(0).Value
-                rsApprovalsTemplate.filter = "[stepTemplateId] = " & rsFiltSteps![recordId] 'filter these values to this step template
-                Set rsFiltApprovals = rsApprovalsTemplate.OpenRecordset
-                
-                Do While Not rsFiltApprovals.EOF
-                    strInsert1 = "INSERT INTO tblPartTrackingApprovals(partNumber,requestedBy,requestedDate,specificPerson,approver,dept,reqLevel,tableName,tableRecordId) VALUES ('" & _
-                        pNum & "','" & Environ("username") & "','" & Now() & "'," & rsFiltApprovals![specificPerson] & ",'" & Nz(rsFiltApprovals![specificUsername], "") & "','" & Nz(rsFiltApprovals![Dept], "") & "','" & Nz(rsFiltApprovals![reqLevel], "") & "','tblPartSteps'," & TempVars!stepId & ");"
-                    
-                    CurrentDb().Execute strInsert1
-                    rsFiltApprovals.MoveNext
-                Loop
-            End If
-        End If
-        rsFiltSteps.MoveNext
+    '--ADD STEPS FOR THIS GATE
+    Set rsStepTemplate = db.OpenRecordset("SELECT * from tblPartStepTemplate WHERE [gateTemplateId] = " & rsGateTemplate![recordId] & " ORDER BY indexOrder Asc", dbOpenSnapshot)
+    Do While Not rsStepTemplate.EOF
+        If (IsNull(rsStepTemplate![Title]) Or rsStepTemplate![Title] = "") Then GoTo nextStep
+        runningDate = addWeekdays(runningDate, Nz(rsStepTemplate![duration], 1))
+        strInsert = "INSERT INTO tblPartSteps" & _
+            "(partNumber,partProjectId,partGateId,stepType,openedBy,status,openDate,lastUpdatedDate,lastUpdatedBy,stepActionId,documentType,responsible,indexOrder,duration,dueDate) VALUES"
+        strInsert = strInsert & "('" & pNum & "'," & projId & "," & TempVars!gateId & ",'" & StrQuoteReplace(rsStepTemplate![Title]) & "','" & _
+            Environ("username") & "','Not Started','" & Now() & "','" & Now() & "','" & Environ("username") & "',"
+        strInsert = strInsert & Nz(rsStepTemplate![stepActionId], "NULL") & "," & Nz(rsStepTemplate![documentType], "NULL") & ",'" & _
+            Nz(rsStepTemplate![responsible], "") & "'," & rsStepTemplate![indexOrder] & "," & Nz(rsStepTemplate![duration], 1) & ",'" & runningDate & "');"
+        db.Execute strInsert, dbFailOnError
+        
+        '--ADD APPROVALS FOR THIS STEP
+        If Not rsStepTemplate![approvalRequired] Then GoTo nextStep
+        TempVars.Add "stepId", db.OpenRecordset("SELECT @@identity")(0).Value
+        Set rsApprovalsTemplate = db.OpenRecordset("SELECT * FROM tblPartStepTemplateApprovals WHERE [stepTemplateId] = " & rsStepTemplate![recordId], dbOpenSnapshot)
+        
+        Do While Not rsApprovalsTemplate.EOF
+            strInsert1 = "INSERT INTO tblPartTrackingApprovals(partNumber,requestedBy,requestedDate,specificPerson,approver,dept,reqLevel,tableName,tableRecordId) VALUES ('" & _
+                pNum & "','" & Environ("username") & "','" & Now() & "'," & rsApprovalsTemplate![specificPerson] & ",'" & Nz(rsApprovalsTemplate![specificUsername], "") & "','" & _
+                Nz(rsApprovalsTemplate![Dept], "") & "','" & Nz(rsApprovalsTemplate![reqLevel], "") & "','tblPartSteps'," & TempVars!stepId & ");"
+            CurrentDb().Execute strInsert1
+            rsApprovalsTemplate.MoveNext
+        Loop
+nextStep:
+        rsStepTemplate.MoveNext
     Loop
-    rsFiltGates.MoveNext
+    rsGateTemplate.MoveNext
 Loop
 
-rsFiltGates.Close
-Set rsFiltGates = Nothing
+rsGateTemplate.Close
+Set rsGateTemplate = Nothing
 rsStepTemplate.Close
 Set rsStepTemplate = Nothing
 
-End Sub
+Exit Function
+err_handler:
+    Call handleError("wdbProjectE", "createPartProject", Err.description, Err.number)
+End Function
 
 Public Function grabTitle(User) As String
+On Error GoTo err_handler
 
 If IsNull(User) Then
     grabTitle = ""
@@ -159,9 +172,14 @@ grabTitle = rsPermissions!Dept & " " & rsPermissions!Level
 rsPermissions.Close
 Set rsPermissions = Nothing
 
+Exit Function
+err_handler:
+    Call handleError("wdbProjectE", "grabTitle", Err.description, Err.number)
 End Function
 
 Public Function setProgressBarPROJECT()
+On Error GoTo err_handler
+
 Dim percent As Double, width As Long
 width = 18774
 
@@ -186,9 +204,14 @@ percent = closedSteps / totalSteps
 setBar:
 Call setBarColorPercent(percent, "progressBarPROJECT", width)
 
+Exit Function
+err_handler:
+    Call handleError("wdbProjectE", "setProgressBarPROJECT", Err.description, Err.number)
 End Function
 
 Public Function setProgressBarSTEPS(gateId As Long)
+On Error GoTo err_handler
+
 Dim percent As Double, width As Long
 width = 12906
 
@@ -213,9 +236,13 @@ percent = closedSteps / totalSteps
 setBar:
 Call setBarColorPercent(percent, "progressBarSTEPS", width)
 
+Exit Function
+err_handler:
+    Call handleError("wdbProjectE", "setProgressBarSTEPS", Err.description, Err.number)
 End Function
 
 Function setBarColorPercent(percent As Double, controlName As String, barWidth As Long)
+On Error GoTo err_handler
 
 If percent < 0.1 Then
     Form_frmPartDashboard.Controls(controlName).width = 1
@@ -238,9 +265,14 @@ Form_frmPartDashboard.Controls(controlName).BackColor = pColor
 Form_frmPartDashboard.Controls(controlName & "_").BorderColor = pColor
 Form_frmPartDashboard.Controls(controlName).BorderColor = pColor
 
+Exit Function
+err_handler:
+    Call handleError("wdbProjectE", "setBarColorPercent", Err.description, Err.number)
 End Function
 
 Function notifyPE(partNum As String, notiType As String, stepTitle As String) As Boolean
+On Error GoTo err_handler
+
 notifyPE = False
 
 Dim rsPartTeam As Recordset
@@ -265,9 +297,15 @@ nextRec:
 Loop
 
 notifyPE = True
+
+Exit Function
+err_handler:
+    Call handleError("wdbProjectE", "notifyPE", Err.description, Err.number)
 End Function
 
 Function scanSteps(partNum As String, routineName As String) As Boolean
+On Error GoTo err_handler
+
 scanSteps = False
 
 'this scans to see if there is a step action that needs to be deleted per its own requirements
@@ -297,9 +335,15 @@ nextOne:
 Loop
 
 scanSteps = True
+
+Exit Function
+err_handler:
+    Call handleError("wdbProjectE", "scanSteps", Err.description, Err.number)
 End Function
 
 Function iHaveOpenApproval(stepId As Long)
+On Error GoTo err_handler
+
 iHaveOpenApproval = False
 
 Dim rsPermissions As Recordset, rsApprovals As Recordset
@@ -308,9 +352,14 @@ Set rsApprovals = CurrentDb().OpenRecordset("SELECT * from tblPartTrackingApprov
 
 If rsApprovals.RecordCount > 0 Then iHaveOpenApproval = True
 
+Exit Function
+err_handler:
+    Call handleError("wdbProjectE", "iHaveOpenApproval", Err.description, Err.number)
 End Function
 
 Function iAmApprover(approvalId As Long) As Boolean
+On Error GoTo err_handler
+
 iAmApprover = False
 
 Dim rsPermissions As Recordset, rsApprovals As Recordset
@@ -319,12 +368,19 @@ Set rsApprovals = CurrentDb().OpenRecordset("SELECT * from tblPartTrackingApprov
 
 If rsApprovals.RecordCount > 0 Then iAmApprover = True
 
+Exit Function
+err_handler:
+    Call handleError("wdbProjectE", "iAmApprover", Err.description, Err.number)
 End Function
 
 Function issueCount(partNum As String) As Long
+On Error GoTo err_handler
 
 issueCount = DCount("recordId", "tblPartIssues", "partNumber = '" & partNum & "' AND [closeDate] is null")
 
+Exit Function
+err_handler:
+    Call handleError("wdbProjectE", "issueCount", Err.description, Err.number)
 End Function
 
 Function emailPartInfo(partNum As String, noteTxt As String) As Boolean
@@ -366,10 +422,15 @@ Set FSO = CreateObject("Scripting.FileSystemObject")
 Call FSO.deleteFile(z)
     
 emailPartInfo = True
+
+Exit Function
 err_handler:
+    Call handleError("wdbProjectE", "emailPartInfo", Err.description, Err.number)
 End Function
 
-Public Sub registerPartUpdates(table As String, ID As Variant, column As String, oldVal As Variant, newVal As Variant, partNumber As String, Optional tag1 As String = "", Optional tag2 As Variant = "")
+Public Function registerPartUpdates(table As String, ID As Variant, column As String, oldVal As Variant, newVal As Variant, partNumber As String, Optional tag1 As String = "", Optional tag2 As Variant = "")
+On Error GoTo err_handler
+
 Dim sqlColumns As String, sqlValues As String
 
 If (VarType(oldVal) = vbDate) Then oldVal = Format(oldVal, "mm/dd/yyyy")
@@ -397,9 +458,14 @@ End With
 rs1.Close
 Set rs1 = Nothing
 
-End Sub
+Exit Function
+err_handler:
+    Call handleError("wdbProjectE", "registerPartUpdates", Err.description, Err.number)
+End Function
 
 Function toolShipAuthorizationEmail(toolNumber As String, stepId As Long, shipMethod As String, partNumber As String) As Boolean
+On Error GoTo err_handler
+
 toolShipAuthorizationEmail = False
 
 Dim rsApprovals As Recordset
@@ -452,9 +518,13 @@ SendItems.CreateMailItem SendTo:=strTo, _
 
 toolShipAuthorizationEmail = True
 
+Exit Function
+err_handler:
+    Call handleError("wdbProjectE", "toolShipAuthorizationEmail", Err.description, Err.number)
 End Function
 
-Function generateEmailWarray(title As String, subTitle As String, primaryMessage As String, detailTitle As String, arr() As Variant) As String
+Function generateEmailWarray(Title As String, subTitle As String, primaryMessage As String, detailTitle As String, arr() As Variant) As String
+On Error GoTo err_handler
 
 Dim tblHeading As String, tblFooter As String, strHTMLBody As String, extraFooter As String, detailTable As String
 
@@ -472,7 +542,7 @@ Next item
 
 tblHeading = "<table style=""width: 100%; margin: 0 auto; padding: 2em 3em; text-align: center; background-color: #fafafa;"">" & _
                             "<tbody>" & _
-                                "<tr><td><h2 style=""color: #414141; font-size: 28px; margin-top: 0;"">" & title & "</h2></td></tr>" & _
+                                "<tr><td><h2 style=""color: #414141; font-size: 28px; margin-top: 0;"">" & Title & "</h2></td></tr>" & _
                                 "<tr><td><p style=""color: rgb(73, 73, 73);"">" & subTitle & "</p></td></tr>" & _
                                  "<tr><td><table style=""padding: 1em; text-align: center;"">" & _
                                      "<tr><td style=""padding: 1em 1.5em; background: #FF6B00; "">" & primaryMessage & "</td></tr>" & _
@@ -506,4 +576,7 @@ strHTMLBody = "" & _
 
 generateEmailWarray = strHTMLBody
 
+Exit Function
+err_handler:
+    Call handleError("wdbProjectE", "generateEmailWarray", Err.description, Err.number)
 End Function
