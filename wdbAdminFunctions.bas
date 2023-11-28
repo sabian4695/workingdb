@@ -25,18 +25,17 @@ ByVal dx As Long, ByVal dy As Long, ByVal fRepaint As Long) As Long
 Private Declare PtrSafe Function ShowWindow Lib "user32" _
 (ByVal hwnd As Long, ByVal nCmdShow As Long) As Long
 
-Function logClick(modName As String, formName As String)
-If (CurrentProject.Path = "H:\dev") Then
-    Exit Function
-End If
+Function logClick(modName As String, formName As String, Optional dataTag0 As String = "", Optional dataTag1 As String = "")
 
-If DLookup("paramVal", "tblDBinfoBE", "parameter = '" & "recordAnalytics'") = False Then
-    Exit Function
-End If
+If (CurrentProject.Path = "H:\dev") Then Exit Function
+If DLookup("paramVal", "tblDBinfoBE", "parameter = '" & "recordAnalytics'") = False Then Exit Function
 
-On Error Resume Next
+Dim dataTags As String
+dataTags = "'" & StrQuoteReplace(dataTag0) & "','" & StrQuoteReplace(dataTag1) & "'"
 
-CurrentDb().Execute "INSERT INTO tblAnalytics (module,form,userName,dateUsed) VALUES ('" & modName & "','" & formName & "','" & Environ("username") & "','" & Now() & "')"
+'On Error Resume Next
+CurrentDb().Execute "INSERT INTO tblAnalytics (module,form,userName,dateUsed,dataTag0,dataTag1) VALUES ('" & modName & "','" & formName & "','" & Environ("username") & "','" & Now() & "'," & dataTags & ")"
+
 End Function
 
 Function ap_DisableShift()

@@ -89,6 +89,7 @@ End Function
 
 Function FolderExists(sFile As Variant) As Boolean
 FolderExists = False
+If IsNull(sFile) Then Exit Function
 If Dir(sFile, vbDirectory) <> "" Then FolderExists = True
 End Function
 
