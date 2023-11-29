@@ -59,21 +59,17 @@ If FolName = "" Then FolName = partNum
 fullPath = mainFolder & FolName
 
 If Len(partNum) = 5 Or (partNum Like "D*" And Len(partNum) = 6) Then
-    If FolderExists(fullPath) = False Then
-        If MsgBox("This folder does not exist. Create folder?", vbYesNo, "Folder Does Not Exist") = vbYes Then
-            MkDir (fullPath)
-            MsgBox "Folder Created. Going to New Folder.", vbOKOnly, "Folder Created"
-            Call openPath(fullPath)
-        Else
-            If MsgBox("Folder Not Created. Do you want to go to the main folder?", vbYesNo, "Folder Not Created") = vbYes Then
-                Call openPath(mainFolder)
-                Exit Sub
-            Else
-                Exit Sub
-            End If
-        End If
-    Else
+    If FolderExists(fullPath) Then
         Call openPath(fullPath)
+        Exit Sub
+    End If
+    If MsgBox("This folder does not exist. Create folder?", vbYesNo, "Folder Does Not Exist") = vbYes Then
+        MkDir (fullPath)
+        MsgBox "Folder Created. Going to New Folder.", vbOKOnly, "Folder Created"
+        Call openPath(fullPath)
+    Else
+        If MsgBox("Folder Not Created. Do you want to go to the main folder?", vbYesNo, "Folder Not Created") = vbYes Then Call openPath(mainFolder)
+        Exit Sub
     End If
 Else
     Call openPath(mainFolder)

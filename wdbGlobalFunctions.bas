@@ -318,7 +318,6 @@ getEmail = Nz(rsEmployee!EMAIL_ADDRESS, "")
 
 End Function
 
-
 Function splitString(a, b, c) As String
     On Error GoTo errorCatch
     splitString = Split(a, b)(c)
