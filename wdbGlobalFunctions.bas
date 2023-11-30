@@ -3,33 +3,26 @@ Option Explicit
 
 Public bClone As Boolean
 
-Public Function addWeekdays(dateInput As Date, daysToAdd As Integer) As Date
+Public Function addWeekdays(dateInput As Date, daysToAdd As Long) As Date
 On Error GoTo err_handler
 
-Dim intCounter As Integer, intDirection As Integer, datNewDate As Date, lngWeeks As Long, intDaysLeft As Integer
-datNewDate = dateInput
+Dim i As Long, testDate As Date, daysLeft As Long, rsHolidays As Recordset
+testDate = dateInput
+daysLeft = daysToAdd
 
-If dateInput > 0 Then
-  intDirection = 1
-Else
-  intDirection = -1
-End If
-lngWeeks = Fix(Abs(daysToAdd) / 5)
+Do While daysLeft > 0
+    testDate = testDate + 1
+    If Weekday(testDate) = 7 Then ' IF SATURDAY -> skip to monday
+        testDate = testDate + 1
+        GoTo skipDate
+    End If
+    Set rsHolidays = CurrentDb().OpenRecordset("SELECT * from tblHolidays WHERE holidayDate = #" & testDate & "#")
+    If rsHolidays.RecordCount > 0 Then GoTo skipDate ' IF HOLIDAY -> skip to next day
+     daysLeft = daysLeft - 1
+skipDate:
+Loop
 
-If lngWeeks > 0 Then datNewDate = datNewDate + lngWeeks * 7 * intDirection
-
-intDaysLeft = Abs(daysToAdd) - lngWeeks * 5
-
-For intCounter = 1 To intDaysLeft
-  datNewDate = datNewDate + 1 * intDirection
-  If intDirection > 0 Then
-    If Weekday(datNewDate) = 7 Then datNewDate = datNewDate + 2
-  Else
-    If Weekday(datNewDate) = 1 Then datNewDate = datNewDate - 2
-  End If
-Next intCounter
-
-addWeekdays = datNewDate
+addWeekdays = testDate
 
 Exit Function
 err_handler:
