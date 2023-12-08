@@ -321,7 +321,7 @@ Public Sub UpdatePath(ByVal istrOldPath As String, ByVal istrNewPath As String, 
     For i = 1 To lngRecCnt
         If mRecords(i).FilePath = istrOldPath Then
             mRecords(i).FilePath = istrNewPath
-            mRecords(i).FileName = istrNewName
+            mRecords(i).fileName = istrNewName
         End If
         If mRecords(i).LinkTo = istrOldPath Then
             mRecords(i).LinkTo = istrNewPath
@@ -768,7 +768,7 @@ CONTINUE:
         If Trim(modSetting.gstrAutoInput) <> "0" And blnSetFileName = True And Trim(mRecords(i).Properties(lngIndex_DesignNo)) = "" Then
             
             Dim strLoadFileName As String
-            strLoadFileName = mRecords(i).FileName
+            strLoadFileName = mRecords(i).fileName
             mRecords(i).Properties(lngIndex_FileDataName) = strLoadFileName
             
         End If

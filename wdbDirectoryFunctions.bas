@@ -11,19 +11,6 @@ On Error GoTo err_handler
         Exit Sub
     End If
     
-    If userData("Beta") Then
-        Dim objFSO As Object
-        Set objFSO = CreateObject("Scripting.FileSystemObject")
-        If objFSO.FolderExists(Path) Then
-            TempVars.Add "wdbFolderViewLink", Path
-            If CurrentProject.AllForms("frmFolderView").IsLoaded = True Then
-                DoCmd.Close acForm, "frmFolderView"
-            End If
-            DoCmd.OpenForm "frmFolderView"
-            Exit Sub
-        End If
-    End If
-    
     CreateObject("Shell.Application").open CVar(Path)
 Exit Sub
 err_handler:
