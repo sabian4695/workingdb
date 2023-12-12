@@ -318,7 +318,7 @@ Private Function fncGetPropertyFromDrawing(ByRef iobjDrawDoc As Object, _
     typRecord.Level = 0
     typRecord.Amount = 1
     typRecord.FilePath = strFilePath
-    typRecord.fileName = strFileName
+    typRecord.FileName = strFileName
     typRecord.LinkTo = strDrawLinkTo
     typRecord.ModelDrawingID = strDrawingID
     typRecord.Properties = strProperties
@@ -749,7 +749,7 @@ Private Function fncGetPropertyFromProduct(ByRef iobjProduct As Object, ByVal ii
     typRecord.Level = iintLevel
     typRecord.Amount = 1
     typRecord.FilePath = strFilePath
-    typRecord.fileName = strFileName
+    typRecord.FileName = strFileName
     typRecord.partNumber = strPartNumber
     typRecord.InstanceName = strInstanceName
     typRecord.ModelDrawingID = strModelID
@@ -1623,7 +1623,7 @@ Public Function fncSaveData(ByRef iobjCatiaData As CATIAPropertyTable, _
             lngFileNameIndex = modMain.fncGetIndex(TITLE_FILEDATANAME) - 1
             blnIn3DEX = fncSavedIn3dex(strOldPath)
             If blnIn3DEX = True And _
-               typExcelRecord.fileName = typExcelRecord.Properties(lngFileNameIndex) Then
+               typExcelRecord.FileName = typExcelRecord.Properties(lngFileNameIndex) Then
                 GoTo CONTINUE
             End If
             
@@ -1702,7 +1702,7 @@ Private Function fncSaveAs(ByRef itypCATIARecord As Record, ByVal istrSaveDir As
       (strClassification = VALUE_REFERENCE Or _
        strClassification = VALUE_SUBPRODUCT Or _
        strClassification = VALUE_LAYOUT) Then
-        strFileName = itypExcelRecord.fileName
+        strFileName = itypExcelRecord.FileName
     Else
         strFileName = itypExcelRecord.Properties(lngFileNameIndex)
     End If
@@ -1808,7 +1808,7 @@ Public Function fncCheckBeforeSave(ByRef iobjExcelData As CATIAPropertyTable) As
            (strClassification = VALUE_REFERENCE Or _
             strClassification = VALUE_SUBPRODUCT Or _
             strClassification = VALUE_LAYOUT) Then
-            strFileName = typExcelRecord.fileName
+            strFileName = typExcelRecord.FileName
         Else
             strFileName = typExcelRecord.Properties(lngFileName) & "." & typExcelRecord.Properties(lngFileType)
         End If
@@ -1837,7 +1837,7 @@ Public Function fncCheckBeforeSave(ByRef iobjExcelData As CATIAPropertyTable) As
                (strTempClassification = VALUE_REFERENCE Or _
                 strTempClassification = VALUE_SUBPRODUCT Or _
                 strTempClassification = VALUE_LAYOUT) Then
-                strTempFileName = typTemp.fileName
+                strTempFileName = typTemp.FileName
             Else
                 '/ Classification
                 strTempFileName = typTemp.Properties(lngFileName)

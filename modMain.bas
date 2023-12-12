@@ -16,7 +16,7 @@ Public Type Record
     Level As String
     Amount As String
     FilePath As String
-    fileName As String
+    FileName As String
     LinkTo   As String
     LinkID   As String
     partNumber As String
@@ -640,7 +640,7 @@ Private Function fncWriteExcel(ByRef iobjRecords As CATIAPropertyTable, _
         If iobjRecords.fncItem(i, typRecord) = False Then
             Exit Function
         End If
-        forms!frmPLM.Form!fileName.Value = typRecord.fileName
+        forms!frmPLM.Form!FileName.Value = typRecord.FileName
         forms!frmPLM.Form!FileID.Value = typRecord.ID
         forms!frmPLM.Form!Lv.Value = typRecord.Level
         forms!frmPLM.Form!Amount.Value = typRecord.Amount
@@ -724,8 +724,8 @@ Private Function fncWriteExcelForUpdate(ByRef iobjRecords As CATIAPropertyTable)
         
         '/ FileName
         Dim objCell
-        If forms!frmPLM.Form!fileName.Value <> typRecord.fileName Then
-            forms!frmPLM.Form!fileName.Value = typRecord.fileName
+        If forms!frmPLM.Form!FileName.Value <> typRecord.FileName Then
+            forms!frmPLM.Form!FileName.Value = typRecord.FileName
         End If
         
         '/ FilePath
@@ -912,7 +912,7 @@ Private Function fncGetProperty() As CATIAPropertyTable
         typRecord.Amount = Nz(rs1![Amount], "")
         typRecord.LinkID = Nz(rs1![Link_ID], "")
         typRecord.FilePath = Nz(rs1![FilePath], "")
-        typRecord.fileName = Nz(rs1![fileName], "")
+        typRecord.FileName = Nz(rs1![FileName], "")
         typRecord.LinkTo = Nz(rs1![LinkTo], "")
         typRecord.partNumber = Nz(rs1![partNumber], "")
         typRecord.InstanceName = Nz(rs1![InstanceName], "")
@@ -963,7 +963,7 @@ Private Function fncIsBlankRecord(ByRef itypRecord As Record) As Boolean
         Exit Function
     ElseIf itypRecord.FilePath <> "" Then
         Exit Function
-    ElseIf itypRecord.fileName <> "" Then
+    ElseIf itypRecord.FileName <> "" Then
         Exit Function
     ElseIf itypRecord.LinkTo <> "" Then
         Exit Function

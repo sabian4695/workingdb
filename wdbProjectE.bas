@@ -523,6 +523,39 @@ err_handler:
     Call handleError("wdbProjectE", "toolShipAuthorizationEmail", Err.description, Err.number)
 End Function
 
+Function emailPartApprovalNotification(stepId As Long, partNumber As String) As Boolean
+On Error GoTo err_handler
+
+emailPartApprovalNotification = False
+
+Dim emailBody As String, subjectLine As String
+subjectLine = "Part Approval Notification"
+emailBody = generateHTML(subjectLine, partNumber & " has received customer approval", "Part Approved", "No extra details...", "", "", False)
+
+Dim rs2 As Recordset, strTo As String
+Set rs2 = CurrentDb.OpenRecordset("SELECT * FROM tblPartTeam WHERE partNumber = '" & partNumber & "'", dbOpenSnapshot)
+strTo = ""
+
+Do While Not rs2.EOF
+    If rs2!person <> Environ("username") Then strTo = strTo & getEmail(rs2!person) & "; "
+    rs2.MoveNext
+Loop
+
+Dim SendItems As New clsOutlookCreateItem
+Set SendItems = New clsOutlookCreateItem
+
+SendItems.CreateMailItem SendTo:=strTo, _
+                             subject:=subjectLine, _
+                             HTMLBody:=emailBody
+    Set SendItems = Nothing
+
+emailPartApprovalNotification = True
+
+Exit Function
+err_handler:
+    Call handleError("wdbProjectE", "emailPartApprovalNotification", Err.description, Err.number)
+End Function
+
 Function generateEmailWarray(Title As String, subTitle As String, primaryMessage As String, detailTitle As String, arr() As Variant) As String
 On Error GoTo err_handler
 
