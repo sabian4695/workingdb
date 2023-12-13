@@ -66,7 +66,7 @@ rs1.Close
 Set rs1 = Nothing
 End Function
 
-Function randomNumber(low As Integer, high As Integer) As Integer
+Function randomNumber(low As Long, high As Long) As Long
 Randomize
 randomNumber = Int((high - low + 1) * Rnd() + low)
 End Function
@@ -257,7 +257,7 @@ Set rsOverdueMsgs = db.OpenRecordset("SELECT recordId, partTrackingOverdueMessag
 Do While Not rsPartSteps.EOF
     Select Case rsPartSteps!dueDate
         Case Date
-            Dim count As Integer, whichVal As Integer
+            Dim count As Long, whichVal As Integer
             rsOverdueMsgs.MoveLast
             count = rsOverdueMsgs.RecordCount
             whichVal = randomNumber(1, count)
