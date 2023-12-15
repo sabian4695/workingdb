@@ -371,6 +371,21 @@ rs1.Close
 Set rs1 = Nothing
 End Function
 
+Function getDescriptionFromId(inventId As Long) As String
+Dim rs1 As Recordset
+
+getDescriptionFromId = ""
+If IsNull(inventId) Then Exit Function
+
+Set rs1 = CurrentDb.OpenRecordset("SELECT DESCRIPTION FROM APPS_MTL_SYSTEM_ITEMS WHERE INVENTORY_ITEM_ID = " & inventId, dbOpenSnapshot)
+If rs1.RecordCount = 0 Then GoTo exitFunction
+getDescriptionFromId = rs1("DESCRIPTION")
+
+exitFunction:
+rs1.Close
+Set rs1 = Nothing
+End Function
+
 Public Function StrQuoteReplace(strValue)
   StrQuoteReplace = Replace(strValue, "'", "''")
 End Function

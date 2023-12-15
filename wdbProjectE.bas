@@ -303,11 +303,10 @@ err_handler:
     Call handleError("wdbProjectE", "notifyPE", Err.description, Err.number)
 End Function
 
-Function scanSteps(partNum As String, routineName As String) As Boolean
+Function scanSteps(partNum As String, routineName As String, Optional identifier As Variant = "notFound") As Boolean
 On Error GoTo err_handler
 
 scanSteps = False
-
 'this scans to see if there is a step action that needs to be deleted per its own requirements
 
 Dim rsSteps As Recordset, rsStepActions As Recordset
@@ -317,17 +316,35 @@ If rsSteps.RecordCount = 0 Then Exit Function 'no steps have actions attached!
 
 Do While Not rsSteps.EOF
     Set rsStepActions = CurrentDb().OpenRecordset("SELECT * FROM tblPartStepActions WHERE recordId = " & rsSteps!stepActionId)
-    If rsStepActions!whenToRun = routineName Then 'this is the one!
-        Dim matches, rsLookItUp As Recordset
-        Set rsLookItUp = CurrentDb().OpenRecordset("SELECT " & rsStepActions!compareColumn & " FROM " & rsStepActions!compareTable & " WHERE partNumber = '" & partNum & "'")
+    If Nz(rsStepActions!whenToRun, "") <> routineName Then GoTo nextOne 'check if this is the right time to run this actions step
+    
+    Dim matches, rsLookItUp As Recordset, matchingCol As String, meetsCriteria As Boolean
+    matchingCol = "partNumber"
+    If identifier = "notFound" Then identifier = "'" & partNum & "'"
+    If routineName = "frmPartMoldingInfo_save" Then matchingCol = "recordId"
+    Set rsLookItUp = CurrentDb().OpenRecordset("SELECT " & rsStepActions!compareColumn & " FROM " & rsStepActions!compareTable & " WHERE " & matchingCol & " = " & identifier)
+    
+    meetsCriteria = False
+    
+    If InStr(rsStepActions!compareData, ",") > 0 Then 'check for multiple values - always seen as an OR command, not AND
+        'make an array of the values and check if any match
+        Dim checkIf() As String, item
+        checkIf = Split(rsStepActions!compareData, ",")
+        For Each item In checkIf
+            matches = CStr(Nz(rsLookItUp(rsStepActions!compareColumn), "")) = item
+            If matches Then meetsCriteria = True
+        Next item
+    Else
         matches = CStr(Nz(rsLookItUp(rsStepActions!compareColumn), "")) = rsStepActions!compareData
-        If matches <> rsStepActions!compareAction Then GoTo nextOne 'if it matches what it's supposed to be, then keep going
-        
-        If rsStepActions!stepAction = "deleteStep" Then
-            Call registerPartUpdates("tblPartSteps", rsSteps!recordId, "Deleted - stepAction", rsSteps!stepType, "", partNum, rsSteps!stepType)
-            CurrentDb().Execute "DELETE FROM tblPartSteps WHERE recordId = " & rsSteps!recordId
-            If CurrentProject.AllForms("frmPartDashboard").IsLoaded Then Form_sfrmPartDashboard.Requery
-        End If
+        If matches Then meetsCriteria = True
+    End If
+    
+    If meetsCriteria <> rsStepActions!compareAction Then GoTo nextOne
+    
+    If rsStepActions!stepAction = "deleteStep" Then
+        Call registerPartUpdates("tblPartSteps", rsSteps!recordId, "Deleted - stepAction", rsSteps!stepType, "", partNum, rsSteps!stepType)
+        CurrentDb().Execute "DELETE FROM tblPartSteps WHERE recordId = " & rsSteps!recordId
+        If CurrentProject.AllForms("frmPartDashboard").IsLoaded Then Form_sfrmPartDashboard.Requery
     End If
 
 nextOne:
