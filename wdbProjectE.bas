@@ -1,6 +1,51 @@
 Option Compare Database
 Option Explicit
 
+Public Function getCurrentStepDue(projID As Long) As String
+On Error Resume Next
+
+getCurrentStepDue = ""
+
+Dim rs1 As Recordset
+Set rs1 = CurrentDb().OpenRecordset("SELECT dueDate from tblPartSteps WHERE partProjectId = " & projID & " AND status <> 'closed'")
+
+getCurrentStepDue = Nz(rs1!dueDate, "")
+
+rs1.Close
+Set rs1 = Nothing
+
+End Function
+
+Public Function getCurrentStepTitle(projID As Long) As String
+On Error Resume Next
+
+getCurrentStepTitle = ""
+
+Dim rs1 As Recordset
+Set rs1 = CurrentDb().OpenRecordset("SELECT stepType from tblPartSteps WHERE partProjectId = " & projID & " AND status <> 'closed'")
+
+getCurrentStepTitle = Nz(rs1!stepType, "")
+
+rs1.Close
+Set rs1 = Nothing
+
+End Function
+
+Public Function getCurrentGateTitle(projID As Long) As String
+On Error Resume Next
+
+getCurrentGateTitle = ""
+
+Dim rs1 As Recordset
+Set rs1 = CurrentDb().OpenRecordset("SELECT gateTitle from tblPartGates WHERE projectId = " & projID & " AND actualDate is null")
+
+getCurrentGateTitle = Nz(rs1!gateTitle, "")
+
+rs1.Close
+Set rs1 = Nothing
+
+End Function
+
 Public Function deletePartProject(partNum As String) As Boolean
 On Error GoTo err_handler
 
@@ -91,7 +136,7 @@ err_handler:
     Call handleError("wdbProjectE", "openOrdersByDay", Err.description, Err.number)
 End Function
 
-Public Function createPartProject(projId)
+Public Function createPartProject(projID)
 On Error GoTo err_handler
 
 Dim db As DAO.Database
@@ -100,7 +145,7 @@ Dim rsProject As Recordset, rsStepTemplate As Recordset, rsApprovalsTemplate As 
 Dim strInsert As String, strInsert1 As String
 Dim projTempId As Long, pNum As String, childPnum As String, runningDate As Date
 
-Set rsProject = db.OpenRecordset("SELECT * from tblPartProject WHERE recordId = " & projId)
+Set rsProject = db.OpenRecordset("SELECT * from tblPartProject WHERE recordId = " & projID)
 
 projTempId = rsProject!projectTemplateId
 pNum = rsProject!partNumber
@@ -113,17 +158,17 @@ Set rsGateTemplate = db.OpenRecordset("Select * FROM tblPartGateTemplate WHERE [
 '--GO THROUGH EACH GATE
 Do While Not rsGateTemplate.EOF
     '--ADD THIS GATE
-    db.Execute "INSERT INTO tblPartGates(projectId,partNumber,gateTitle) VALUES (" & projId & ",'" & pNum & "','" & rsGateTemplate![gateTitle] & "')", dbFailOnError
+    db.Execute "INSERT INTO tblPartGates(projectId,partNumber,gateTitle) VALUES (" & projID & ",'" & pNum & "','" & rsGateTemplate![gateTitle] & "')", dbFailOnError
     TempVars.Add "gateId", db.OpenRecordset("SELECT @@identity")(0).Value
     
     '--ADD STEPS FOR THIS GATE
-    Set rsStepTemplate = db.OpenRecordset("SELECT * from tblPartStepTemplate WHERE [gateTemplateId] = " & rsGateTemplate![recordID] & " ORDER BY indexOrder Asc", dbOpenSnapshot)
+    Set rsStepTemplate = db.OpenRecordset("SELECT * from tblPartStepTemplate WHERE [gateTemplateId] = " & rsGateTemplate![recordId] & " ORDER BY indexOrder Asc", dbOpenSnapshot)
     Do While Not rsStepTemplate.EOF
         If (IsNull(rsStepTemplate![Title]) Or rsStepTemplate![Title] = "") Then GoTo nextStep
         runningDate = addWeekdays(runningDate, Nz(rsStepTemplate![duration], 1))
         strInsert = "INSERT INTO tblPartSteps" & _
             "(partNumber,partProjectId,partGateId,stepType,openedBy,status,openDate,lastUpdatedDate,lastUpdatedBy,stepActionId,documentType,responsible,indexOrder,duration,dueDate) VALUES"
-        strInsert = strInsert & "('" & pNum & "'," & projId & "," & TempVars!gateId & ",'" & StrQuoteReplace(rsStepTemplate![Title]) & "','" & _
+        strInsert = strInsert & "('" & pNum & "'," & projID & "," & TempVars!gateId & ",'" & StrQuoteReplace(rsStepTemplate![Title]) & "','" & _
             Environ("username") & "','Not Started','" & Now() & "','" & Now() & "','" & Environ("username") & "',"
         strInsert = strInsert & Nz(rsStepTemplate![stepActionId], "NULL") & "," & Nz(rsStepTemplate![documentType], "NULL") & ",'" & _
             Nz(rsStepTemplate![responsible], "") & "'," & rsStepTemplate![indexOrder] & "," & Nz(rsStepTemplate![duration], 1) & ",'" & runningDate & "');"
@@ -132,7 +177,7 @@ Do While Not rsGateTemplate.EOF
         '--ADD APPROVALS FOR THIS STEP
         If Not rsStepTemplate![approvalRequired] Then GoTo nextStep
         TempVars.Add "stepId", db.OpenRecordset("SELECT @@identity")(0).Value
-        Set rsApprovalsTemplate = db.OpenRecordset("SELECT * FROM tblPartStepTemplateApprovals WHERE [stepTemplateId] = " & rsStepTemplate![recordID], dbOpenSnapshot)
+        Set rsApprovalsTemplate = db.OpenRecordset("SELECT * FROM tblPartStepTemplateApprovals WHERE [stepTemplateId] = " & rsStepTemplate![recordId], dbOpenSnapshot)
         
         Do While Not rsApprovalsTemplate.EOF
             strInsert1 = "INSERT INTO tblPartTrackingApprovals(partNumber,requestedBy,requestedDate,dept,reqLevel,tableName,tableRecordId) VALUES ('" & _
@@ -184,7 +229,7 @@ Dim percent As Double, width As Long
 width = 18774
 
 Dim rsSteps As Recordset
-Set rsSteps = CurrentDb().OpenRecordset("SELECT * from tblPartSteps WHERE partProjectId = " & Form_frmPartDashboard.recordID)
+Set rsSteps = CurrentDb().OpenRecordset("SELECT * from tblPartSteps WHERE partProjectId = " & Form_frmPartDashboard.recordId)
 
 Dim totalSteps, closedSteps
 rsSteps.MoveLast
@@ -342,8 +387,8 @@ Do While Not rsSteps.EOF
     If meetsCriteria <> rsStepActions!compareAction Then GoTo nextOne
     
     If rsStepActions!stepAction = "deleteStep" Then
-        Call registerPartUpdates("tblPartSteps", rsSteps!recordID, "Deleted - stepAction", rsSteps!stepType, "", partNum, rsSteps!stepType)
-        CurrentDb().Execute "DELETE FROM tblPartSteps WHERE recordId = " & rsSteps!recordID
+        Call registerPartUpdates("tblPartSteps", rsSteps!recordId, "Deleted - stepAction", rsSteps!stepType, "", partNum, rsSteps!stepType)
+        CurrentDb().Execute "DELETE FROM tblPartSteps WHERE recordId = " & rsSteps!recordId
         If CurrentProject.AllForms("frmPartDashboard").IsLoaded Then Form_sfrmPartDashboard.Requery
     End If
 
