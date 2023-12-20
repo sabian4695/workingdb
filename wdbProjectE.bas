@@ -7,39 +7,9 @@ On Error Resume Next
 getCurrentStepDue = ""
 
 Dim rs1 As Recordset
-Set rs1 = CurrentDb().OpenRecordset("SELECT dueDate from tblPartSteps WHERE partProjectId = " & projID & " AND status <> 'closed'")
+Set rs1 = CurrentDb().OpenRecordset("SELECT Min(dueDate) as minDue from tblPartSteps WHERE partProjectId = " & projID & " AND status <> 'closed'")
 
-getCurrentStepDue = Nz(rs1!dueDate, "")
-
-rs1.Close
-Set rs1 = Nothing
-
-End Function
-
-Public Function getCurrentStepTitle(projID As Long) As String
-On Error Resume Next
-
-getCurrentStepTitle = ""
-
-Dim rs1 As Recordset
-Set rs1 = CurrentDb().OpenRecordset("SELECT stepType from tblPartSteps WHERE partProjectId = " & projID & " AND status <> 'closed'")
-
-getCurrentStepTitle = Nz(rs1!stepType, "")
-
-rs1.Close
-Set rs1 = Nothing
-
-End Function
-
-Public Function getCurrentGateTitle(projID As Long) As String
-On Error Resume Next
-
-getCurrentGateTitle = ""
-
-Dim rs1 As Recordset
-Set rs1 = CurrentDb().OpenRecordset("SELECT gateTitle from tblPartGates WHERE projectId = " & projID & " AND actualDate is null")
-
-getCurrentGateTitle = Nz(rs1!gateTitle, "")
+getCurrentStepDue = Nz(rs1!minDue, "")
 
 rs1.Close
 Set rs1 = Nothing
@@ -189,6 +159,7 @@ Do While Not rsGateTemplate.EOF
 nextStep:
         rsStepTemplate.MoveNext
     Loop
+    db.Execute "UPDATE tblPartGates SET plannedDate = '" & runningDate & "' WHERE recordId = " & TempVars!gateId 'set the planned date as the last step due date in this gate
     rsGateTemplate.MoveNext
 Loop
 
