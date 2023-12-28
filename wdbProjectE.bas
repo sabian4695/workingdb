@@ -1,13 +1,76 @@
 Option Compare Database
 Option Explicit
 
-Public Function getCurrentStepDue(projID As Long) As String
+Public Function getAttachmentsCount(stepId As Long) As Long
+On Error GoTo err_handler
+
+getAttachmentsCount = 0
+Dim rs1 As Recordset
+Set rs1 = CurrentDb().OpenRecordset("SELECT count(recordId) as countIt from tblPartAttachmentsSP WHERE [partStepId] = " & stepId)
+
+getAttachmentsCount = Nz(rs1!countIt, 0)
+
+err_handler:
+End Function
+
+Public Function getApprovalsComplete(stepId As Long, partNumber As String) As Long
+On Error GoTo err_handler
+
+getApprovalsComplete = 0
+Dim rs1 As Recordset
+Set rs1 = CurrentDb().OpenRecordset("SELECT count(approvedOn) as appCount from tblPartTrackingApprovals WHERE [partNumber] = '" & partNumber & "' AND [tableRecordId] = " & stepId & " AND [tableName] = 'tblPartSteps'")
+
+getApprovalsComplete = Nz(rs1!appCount, 0)
+
+err_handler:
+End Function
+
+Public Function getTotalApprovals(stepId As Long, partNumber As String) As Long
+On Error GoTo err_handler
+
+getTotalApprovals = 0
+Dim rs1 As Recordset
+Set rs1 = CurrentDb().OpenRecordset("SELECT count(recordId) as appCount from tblPartTrackingApprovals WHERE [partNumber] = '" & partNumber & "' AND [tableRecordId] = " & stepId & " AND [tableName] = 'tblPartSteps'")
+
+getTotalApprovals = Nz(rs1!appCount, 0)
+
+err_handler:
+End Function
+
+Public Function partDashGetDueDate(stepId As Long) As Date
+On Error GoTo err_handler
+
+partDashGetDueDate = Date
+Exit Function
+
+Dim projId As Long
+Dim rsStep As Recordset, rsGate As Recordset, rsSteps As Recordset, rsProject As Recordset
+Set rsStep = CurrentDb().OpenRecordset("SELECT * from tblPartSteps WHERE recordId = " & stepId)
+
+Set rsGate = CurrentDb().OpenRecordset("SELECT * from tblPartGates WHERE recordId = " & rsStep!partGateId)
+
+
+projId = rsStep!partProjectId
+If rsStep!indexOrder <> 1 Then GoTo notFirstInGate
+If Left(rsGate!gateTitle, 2) = "G1" Then 'first step in the first gate!
+    Set rsProject = CurrentDb().OpenRecordset("SELECT * from tblPartProject WHERE recordId = " & rsStep!partProjectId)
+    
+End If
+    
+notFirstInGate:
+
+Exit Function
+err_handler:
+    Call handleError("wdbProjectE", "partDashGetDueDate", Err.description, Err.number)
+End Function
+
+Public Function getCurrentStepDue(projId As Long) As String
 On Error Resume Next
 
 getCurrentStepDue = ""
 
 Dim rs1 As Recordset
-Set rs1 = CurrentDb().OpenRecordset("SELECT Min(dueDate) as minDue from tblPartSteps WHERE partProjectId = " & projID & " AND status <> 'closed'")
+Set rs1 = CurrentDb().OpenRecordset("SELECT Min(dueDate) as minDue from tblPartSteps WHERE partProjectId = " & projId & " AND status <> 'closed'")
 
 getCurrentStepDue = Nz(rs1!minDue, "")
 
@@ -106,7 +169,7 @@ err_handler:
     Call handleError("wdbProjectE", "openOrdersByDay", Err.description, Err.number)
 End Function
 
-Public Function createPartProject(projID)
+Public Function createPartProject(projId)
 On Error GoTo err_handler
 
 Dim db As DAO.Database
@@ -115,7 +178,7 @@ Dim rsProject As Recordset, rsStepTemplate As Recordset, rsApprovalsTemplate As 
 Dim strInsert As String, strInsert1 As String
 Dim projTempId As Long, pNum As String, childPnum As String, runningDate As Date
 
-Set rsProject = db.OpenRecordset("SELECT * from tblPartProject WHERE recordId = " & projID)
+Set rsProject = db.OpenRecordset("SELECT * from tblPartProject WHERE recordId = " & projId)
 
 projTempId = rsProject!projectTemplateId
 pNum = rsProject!partNumber
@@ -128,7 +191,7 @@ Set rsGateTemplate = db.OpenRecordset("Select * FROM tblPartGateTemplate WHERE [
 '--GO THROUGH EACH GATE
 Do While Not rsGateTemplate.EOF
     '--ADD THIS GATE
-    db.Execute "INSERT INTO tblPartGates(projectId,partNumber,gateTitle) VALUES (" & projID & ",'" & pNum & "','" & rsGateTemplate![gateTitle] & "')", dbFailOnError
+    db.Execute "INSERT INTO tblPartGates(projectId,partNumber,gateTitle) VALUES (" & projId & ",'" & pNum & "','" & rsGateTemplate![gateTitle] & "')", dbFailOnError
     TempVars.Add "gateId", db.OpenRecordset("SELECT @@identity")(0).Value
     
     '--ADD STEPS FOR THIS GATE
@@ -138,7 +201,7 @@ Do While Not rsGateTemplate.EOF
         runningDate = addWeekdays(runningDate, Nz(rsStepTemplate![duration], 1))
         strInsert = "INSERT INTO tblPartSteps" & _
             "(partNumber,partProjectId,partGateId,stepType,openedBy,status,openDate,lastUpdatedDate,lastUpdatedBy,stepActionId,documentType,responsible,indexOrder,duration,dueDate) VALUES"
-        strInsert = strInsert & "('" & pNum & "'," & projID & "," & TempVars!gateId & ",'" & StrQuoteReplace(rsStepTemplate![Title]) & "','" & _
+        strInsert = strInsert & "('" & pNum & "'," & projId & "," & TempVars!gateId & ",'" & StrQuoteReplace(rsStepTemplate![Title]) & "','" & _
             Environ("username") & "','Not Started','" & Now() & "','" & Now() & "','" & Environ("username") & "',"
         strInsert = strInsert & Nz(rsStepTemplate![stepActionId], "NULL") & "," & Nz(rsStepTemplate![documentType], "NULL") & ",'" & _
             Nz(rsStepTemplate![responsible], "") & "'," & rsStepTemplate![indexOrder] & "," & Nz(rsStepTemplate![duration], 1) & ",'" & runningDate & "');"
@@ -185,9 +248,6 @@ Dim rsPermissions As Recordset
 Set rsPermissions = CurrentDb().OpenRecordset("SELECT * from tblPermissions where user = '" & User & "'")
 grabTitle = rsPermissions!Dept & " " & rsPermissions!Level
 
-rsPermissions.Close
-Set rsPermissions = Nothing
-
 Exit Function
 err_handler:
     Call handleError("wdbProjectE", "grabTitle", Err.description, Err.number)
@@ -197,7 +257,7 @@ Public Function setProgressBarPROJECT()
 On Error GoTo err_handler
 
 Dim percent As Double, width As Long
-width = 18774
+width = 17994
 
 Dim rsSteps As Recordset
 Set rsSteps = CurrentDb().OpenRecordset("SELECT * from tblPartSteps WHERE partProjectId = " & Form_frmPartDashboard.recordId)
@@ -229,7 +289,7 @@ Public Function setProgressBarSTEPS(gateId As Long)
 On Error GoTo err_handler
 
 Dim percent As Double, width As Long
-width = 12906
+width = 12246
 
 Dim rsSteps As Recordset
 Set rsSteps = CurrentDb().OpenRecordset("SELECT * from tblPartSteps WHERE partGateId = " & gateId)
