@@ -10,6 +10,9 @@ Set rs1 = CurrentDb().OpenRecordset("SELECT count(recordId) as countIt from tblP
 
 getAttachmentsCount = Nz(rs1!countIt, 0)
 
+rs1.Close
+Set rs1 = Nothing
+
 err_handler:
 End Function
 
@@ -21,6 +24,9 @@ Dim rs1 As Recordset
 Set rs1 = CurrentDb().OpenRecordset("SELECT count(approvedOn) as appCount from tblPartTrackingApprovals WHERE [partNumber] = '" & partNumber & "' AND [tableRecordId] = " & stepId & " AND [tableName] = 'tblPartSteps'")
 
 getApprovalsComplete = Nz(rs1!appCount, 0)
+
+rs1.Close
+Set rs1 = Nothing
 
 err_handler:
 End Function
@@ -34,34 +40,31 @@ Set rs1 = CurrentDb().OpenRecordset("SELECT count(recordId) as appCount from tbl
 
 getTotalApprovals = Nz(rs1!appCount, 0)
 
+rs1.Close
+Set rs1 = Nothing
+
 err_handler:
 End Function
 
-Public Function partDashGetDueDate(stepId As Long) As Date
+Public Function recalcStepDueDates(projId As Long, oldDueDate As Date, moveBy As Long)
 On Error GoTo err_handler
 
-partDashGetDueDate = Date
-Exit Function
+Dim rsSteps As Recordset
+Set rsSteps = CurrentDb().OpenRecordset("Select dueDate from tblPartSteps Where partProjectId = " & projId & " AND dueDate > #" & oldDueDate & "#")
 
-Dim projId As Long
-Dim rsStep As Recordset, rsGate As Recordset, rsSteps As Recordset, rsProject As Recordset
-Set rsStep = CurrentDb().OpenRecordset("SELECT * from tblPartSteps WHERE recordId = " & stepId)
+Do While Not rsSteps.EOF
+    rsSteps.Edit
+    rsSteps!dueDate = addWorkdays(rsSteps!dueDate, moveBy)
+    rsSteps.Update
+    rsSteps.MoveNext
+Loop
 
-Set rsGate = CurrentDb().OpenRecordset("SELECT * from tblPartGates WHERE recordId = " & rsStep!partGateId)
-
-
-projId = rsStep!partProjectId
-If rsStep!indexOrder <> 1 Then GoTo notFirstInGate
-If Left(rsGate!gateTitle, 2) = "G1" Then 'first step in the first gate!
-    Set rsProject = CurrentDb().OpenRecordset("SELECT * from tblPartProject WHERE recordId = " & rsStep!partProjectId)
-    
-End If
-    
-notFirstInGate:
+rsSteps.Close
+Set rsSteps = Nothing
 
 Exit Function
 err_handler:
-    Call handleError("wdbProjectE", "partDashGetDueDate", Err.description, Err.number)
+    Call handleError("wdbProjectE", "recalcStepDueDates", Err.description, Err.number)
 End Function
 
 Public Function getCurrentStepDue(projId As Long) As String
@@ -198,7 +201,7 @@ Do While Not rsGateTemplate.EOF
     Set rsStepTemplate = db.OpenRecordset("SELECT * from tblPartStepTemplate WHERE [gateTemplateId] = " & rsGateTemplate![recordId] & " ORDER BY indexOrder Asc", dbOpenSnapshot)
     Do While Not rsStepTemplate.EOF
         If (IsNull(rsStepTemplate![Title]) Or rsStepTemplate![Title] = "") Then GoTo nextStep
-        runningDate = addWeekdays(runningDate, Nz(rsStepTemplate![duration], 1))
+        runningDate = addWorkdays(runningDate, Nz(rsStepTemplate![duration], 1))
         strInsert = "INSERT INTO tblPartSteps" & _
             "(partNumber,partProjectId,partGateId,stepType,openedBy,status,openDate,lastUpdatedDate,lastUpdatedBy,stepActionId,documentType,responsible,indexOrder,duration,dueDate) VALUES"
         strInsert = strInsert & "('" & pNum & "'," & projId & "," & TempVars!gateId & ",'" & StrQuoteReplace(rsStepTemplate![Title]) & "','" & _

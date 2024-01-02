@@ -3,17 +3,19 @@ Option Explicit
 
 Public bClone As Boolean
 
-Public Function addWeekdays(dateInput As Date, daysToAdd As Long) As Date
+Public Function addWorkdays(dateInput As Date, daysToAdd As Long) As Date
 On Error GoTo err_handler
 
-Dim i As Long, testDate As Date, daysLeft As Long, rsHolidays As Recordset
+Dim i As Long, testDate As Date, daysLeft As Long, rsHolidays As Recordset, intDirection
 testDate = dateInput
-daysLeft = daysToAdd
+daysLeft = Abs(daysToAdd)
+intDirection = 1
+If daysToAdd < 0 Then intDirection = -1
 
 Do While daysLeft > 0
-    testDate = testDate + 1
-    If Weekday(testDate) = 7 Then ' IF SATURDAY -> skip to monday
-        testDate = testDate + 1
+    testDate = testDate + intDirection
+    If Weekday(testDate) = 7 Or Weekday(testDate) = 1 Then ' IF WEEKEND -> skip
+        testDate = testDate + intDirection
         GoTo skipDate
     End If
     Set rsHolidays = CurrentDb().OpenRecordset("SELECT * from tblHolidays WHERE holidayDate = #" & testDate & "#")
@@ -22,11 +24,27 @@ Do While daysLeft > 0
 skipDate:
 Loop
 
-addWeekdays = testDate
+addWorkdays = testDate
 
 Exit Function
 err_handler:
-    Call handleError("wdbGlobalFunctions", "addWeekdays", Err.description, Err.number)
+    Call handleError("wdbGlobalFunctions", "addWorkdays", Err.description, Err.number)
+End Function
+
+Public Function countWorkdays(oldDate As Date, newDate As Date) As Long
+On Error GoTo err_handler
+
+Dim total, sunday, saturday, weekdays, holidays
+
+total = DateDiff("d", [oldDate], [newDate], vbSunday)
+sunday = DateDiff("ww", [oldDate], [newDate], 1)
+saturday = DateDiff("ww", [oldDate], [newDate], 7)
+holidays = DCount("recordId", "tblHolidays", "holidayDate > #" & oldDate - 1 & "# AND holidayDate < #" & newDate & "#")
+countWorkdays = total - sunday - saturday - holidays
+
+Exit Function
+err_handler:
+    Call handleError("wdbGlobalFunctions", "countWorkdays", Err.description, Err.number)
 End Function
 
 Function getFullName() As String
