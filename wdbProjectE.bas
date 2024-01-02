@@ -47,7 +47,7 @@ err_handler:
 End Function
 
 Public Function recalcStepDueDates(projId As Long, oldDueDate As Date, moveBy As Long)
-On Error GoTo err_handler
+On Error Resume Next
 
 Dim rsSteps As Recordset
 Set rsSteps = CurrentDb().OpenRecordset("Select dueDate from tblPartSteps Where partProjectId = " & projId & " AND dueDate > #" & oldDueDate & "#")
@@ -62,9 +62,6 @@ Loop
 rsSteps.Close
 Set rsSteps = Nothing
 
-Exit Function
-err_handler:
-    Call handleError("wdbProjectE", "recalcStepDueDates", Err.description, Err.number)
 End Function
 
 Public Function getCurrentStepDue(projId As Long) As String
