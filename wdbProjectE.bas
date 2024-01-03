@@ -6,7 +6,7 @@ On Error GoTo err_handler
 
 getAttachmentsCount = 0
 Dim rs1 As Recordset
-Set rs1 = CurrentDb().OpenRecordset("SELECT count(recordId) as countIt from tblPartAttachmentsSP WHERE [partStepId] = " & stepId)
+Set rs1 = CurrentDb().OpenRecordset("SELECT count(ID) as countIt from tblPartAttachmentsSP WHERE [partStepId] = " & stepId)
 
 getAttachmentsCount = Nz(rs1!countIt, 0)
 
