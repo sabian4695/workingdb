@@ -142,17 +142,17 @@ inputVal = CDbl(inputVal)
 Dim lookup As String
 
 Select Case columnName
-    Case "Request_Type"
+    Case "Request_Type", "cboRequestType"
         lookup = "DRStype"
     Case "DR_Level"
         lookup = "DRSdrLevels"
-    Case "Design_Responsibility"
+    Case "Design_Responsibility", "cboDesignResponsibility"
         lookup = "DRSdesignResponsibility"
-    Case "Part_Complexity"
+    Case "Part_Complexity", "cboComplexity"
         lookup = "DRSpartComplexity"
     Case "DRS_Location"
         lookup = "DRSdesignGroup"
-    Case "Assignee"
+    Case "Assignee", "cboAssignee"
         GoTo personLookup
     Case "cboChecker1"
         GoTo personLookup

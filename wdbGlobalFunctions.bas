@@ -3,6 +3,40 @@ Option Explicit
 
 Public bClone As Boolean
 
+Public Function registerWdbUpdates(table As String, ID As Variant, column As String, oldVal As Variant, newVal As Variant, Optional tag0 As String = "", Optional tag1 As Variant = "")
+On Error GoTo err_handler
+
+Dim sqlColumns As String, sqlValues As String
+
+If (VarType(oldVal) = vbDate) Then oldVal = Format(oldVal, "mm/dd/yyyy")
+If (VarType(newVal) = vbDate) Then newVal = Format(newVal, "mm/dd/yyyy")
+
+Dim rs1 As Recordset
+Set rs1 = CurrentDb().OpenRecordset("tblWdbUpdateTracking")
+
+With rs1
+    .addNew
+        !tableName = table
+        !tableRecordId = ID
+        !updatedBy = Environ("username")
+        !updatedDate = Now()
+        !columnName = column
+        !previousData = StrQuoteReplace(CStr(Nz(oldVal, "")))
+        !newData = StrQuoteReplace(CStr(Nz(newVal, "")))
+        !dataTag0 = StrQuoteReplace(tag0)
+        !dataTag1 = StrQuoteReplace(tag1)
+    .Update
+    .Bookmark = .lastModified
+End With
+
+rs1.Close
+Set rs1 = Nothing
+
+Exit Function
+err_handler:
+    Call handleError("wdbGlocalFunctions", "registerWdbUpdates", Err.description, Err.number)
+End Function
+
 Public Function addWorkdays(dateInput As Date, daysToAdd As Long) As Date
 On Error GoTo err_handler
 
