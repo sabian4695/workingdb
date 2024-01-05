@@ -302,6 +302,8 @@ If rs1.RecordCount <> 0 Then Exit Sub
 GoTo SKIPALL
 Dim rsPartSteps As Recordset, rsOverdueMsgs As Recordset, rsPermissions As Recordset, msg As String, rsPartTeam As Recordset
 Dim body As String, stepTitle As String, partNum As String
+Dim i
+i = 0
 
 Set rsPartSteps = db.OpenRecordset("SELECT * from tblPartSteps WHERE responsible is not null AND closeDate is null AND dueDate is not null")
 Set rsOverdueMsgs = db.OpenRecordset("SELECT recordId, partTrackingOverdueMessages from tblWdbExtras WHERE partTrackingOverdueMessages is not null")
@@ -309,31 +311,34 @@ Set rsOverdueMsgs = db.OpenRecordset("SELECT recordId, partTrackingOverdueMessag
 Do While Not rsPartSteps.EOF
     Select Case rsPartSteps!dueDate
         Case Date
+            msg = "This step is due today, please complete it!"
+        Case Is < Date
             Dim count As Long, whichVal As Integer
             rsOverdueMsgs.MoveLast
             count = rsOverdueMsgs.RecordCount
             whichVal = randomNumber(1, count)
             rsOverdueMsgs.MoveFirst
             rsOverdueMsgs.FindFirst "recordId = " & whichVal
-            msg = rsOverdueMsgs!partTrackingOverdueMessages
-        Case Is > Date
-            msg = "Yo, this step is due today, please complete!"
+            msg = rsOverdueMsgs!partTrackingOverdueMessages & " This step is overdue."
         Case Date + 7
-            msg = "This is your 1 week away warning, this step is due soon"
+            msg = "This is your 1 week warning, this step is due soon"
         Case Else
             GoTo nextRec
     End Select
+    partNum = rsPartSteps!partNumber
+    stepTitle = rsPartSteps!stepType
     
     Set rsPartTeam = db.OpenRecordset("select * from tblPartTeam where partNumber = '" & partNum & "'")
     
     Do While Not rsPartTeam.EOF
-        Set rsPermissions = db.OpenRecordset("select * from tblPermissions where user = '" & rsPartTeam!person & "'")
-        If rsPermissions!Dept = rsPartSteps!responsible Then
-            partNum = rsPartSteps!partNumber
-            stepTitle = rsPartSteps!stepType
-            body = emailContentGen("Just a reminder...", "WDB Reminder", msg, stepTitle, "Part Number: " & partNum, "This is an automated message. Jokes included are for the purpose of making this reminder fun and light hearted.", "Sent On: " & CStr(Date))
-            Call sendNotification(rsPartSteps!responsible, 9, 2, "Please complete " & stepTitle & " for " & partNum, body, "Part Project", CInt(partNum))
-        End If
+'        Set rsPermissions = db.OpenRecordset("select * from tblPermissions where user = '" & rsPartTeam!person & "'")
+'        If rsPermissions!Dept = rsPartSteps!responsible Then
+'            body = emailContentGen("Just a reminder...", "WDB Reminder", msg, stepTitle, "Part Number: " & partNum, "This is an automated message. Jokes included are for the purpose of making this reminder fun and light hearted.", "Sent On: " & CStr(Date))
+'            Call sendNotification(rsPartSteps!responsible, 9, 2, "Please complete " & stepTitle & " for " & partNum, body, "Part Project", CInt(partNum))
+'        End If
+    Debug.Print (msg & " " & rsPartSteps!dueDate)
+    i = i + 1
+    Debug.Print (i)
 nextOne:
         rsPartTeam.MoveNext
     Loop
@@ -341,6 +346,7 @@ nextOne:
 nextRec:
     rsPartSteps.MoveNext
 Loop
+Exit Sub
 
 SKIPALL:
 db.Execute "INSERT INTO tblAnalytics (module,form,userName,dateUsed) VALUES ('firstTimeRun','Form_frmSplash','" & Environ("username") & "','" & Now() & "')"
