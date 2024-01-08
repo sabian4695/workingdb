@@ -140,7 +140,7 @@ End Function
 
 Function generateHTML(Title As String, subTitle As String, primaryMessage As String, detail1 As String, detail2 As String, detail3 As String, hasLink As Boolean) As String
 
-Dim tblHeading As String, tblFooter As String, strHTMLBody As String, extraFooter As String
+Dim tblHeading As String, tblFooter As String, strHTMLBody As String
 
 If hasLink Then
     primaryMessage = "<a href = '" & primaryMessage & "'>Check Folder</a>"
@@ -173,7 +173,6 @@ strHTMLBody = "" & _
             "<tbody>" & _
                 "<tr><td>" & tblHeading & "</td></tr>" & _
                 "<tr><td>" & tblFooter & "</td></tr>" & _
-                extraFooter & _
                 "<tr><td><p style=""color: rgb(192, 192, 192); text-align: center;"">This email was created by  &copy; workingDB</p></td></tr>" & _
             "</tbody>" & _
         "</table>" & _
@@ -181,6 +180,86 @@ strHTMLBody = "" & _
 "</html>"
 
 generateHTML = strHTMLBody
+
+End Function
+
+Function dailySummary(Title As String, subTitle As String, lates() As String, todays() As String, nexts() As String) As String
+
+Dim tblHeading As String, tblStepOverview As String, strHTMLBody As String
+
+tblHeading = "<table style=""width: 100%; margin: 0 auto; padding: 2em 2em 1em 2em; text-align: center; background-color: #fafafa;"">" & _
+                            "<tbody>" & _
+                                "<tr><td><h2 style=""color: #414141; font-size: 28px; margin-top: 0;"">" & Title & "</h2></td></tr>" & _
+                                "<tr><td><p style=""color: rgb(73, 73, 73);"">Here is your daily summary!</p></td></tr>" & _
+                            "</tbody>" & _
+                        "</table>"
+                        
+Dim i As Long, lateTable As String, lateCount As Long, todayCount As Long, nextCount As Long, todayTable As String, nextTable As String, varStr As String
+i = 0
+lateCount = UBound(lates)
+todayCount = UBound(todays)
+nextCount = UBound(nexts)
+tblStepOverview = ""
+
+varStr = ""
+If lates(1) <> "" Then
+    For i = 1 To UBound(lates)
+        lateTable = lateTable & "<tr style=""border-collapse: collapse;"">" & _
+                                                "<td style=""padding: .1em 2em;"">" & Split(lates(i), ",")(0) & "</td>" & _
+                                                "<td style=""padding: .1em 2em;"">" & Split(lates(i), ",")(1) & "</td>" & _
+                                                "<td style=""padding: .1em 2em;  color: rgb(255,195,195);"">" & Split(lates(i), ",")(2) & "</td></tr>"
+    Next i
+    If lateCount > 1 Then varStr = "s"
+    tblStepOverview = tblStepOverview & "<table style=""width: 100%; margin: 0 auto; background: #2b2b2b; color: rgb(255,255,255);""><tr><th style=""padding: 1em; font-size: 20px; color: rgb(255,150,150); display: table-header-group;"" colspan=""3"">You have " & _
+                                                                lateCount & " step" & varStr & " overdue</th></tr><tbody>" & _
+                                                            "<tr style=""padding: .1em 2em;""><th style=""text-align: left"">Part Number</th><th style=""text-align: left"">Step</th><th style=""text-align: left"">Due</th></tr>" & lateTable & "</tbody></table>"
+End If
+
+varStr = ""
+If todays(1) <> "" Then
+    For i = 1 To UBound(todays)
+        todayTable = todayTable & "<tr style=""border-collapse: collapse;"">" & _
+                                                "<td style=""padding: .1em 2em;"">" & Split(todays(i), ",")(0) & "</td>" & _
+                                                "<td style=""padding: .1em 2em;"">" & Split(todays(i), ",")(1) & "</td>" & _
+                                                "<td style=""padding: .1em 2em;"">" & Split(todays(i), ",")(2) & "</td></tr>"
+    Next i
+    If todayCount > 1 Then varStr = "s"
+    tblStepOverview = tblStepOverview & "<table style=""width: 100%; margin: 0 auto; background: #2b2b2b; color: rgb(255,255,255);""><tr><th style=""padding: 1em; font-size: 20px; color: rgb(235,200,200); display: table-header-group;"" colspan=""3"">You have " & _
+                                                                todayCount & " step" & varStr & " due today</th></tr><tbody>" & _
+                                                            "<tr style=""padding: .1em 2em;""><th style=""text-align: left"">Part Number</th><th style=""text-align: left"">Step</th><th style=""text-align: left"">Due</th></tr>" & todayTable & "</tbody></table>"
+End If
+
+varStr = ""
+If nexts(1) <> "" Then
+    For i = 1 To UBound(nexts)
+        nextTable = nextTable & "<tr style=""border-collapse: collapse;"">" & _
+                                                "<td style=""padding: .1em 2em;"">" & Split(nexts(i), ",")(0) & "</td>" & _
+                                                "<td style=""padding: .1em 2em;"">" & Split(nexts(i), ",")(1) & "</td>" & _
+                                                "<td style=""padding: .1em 2em;"">" & Split(nexts(i), ",")(2) & "</td></tr>"
+    Next i
+    If nextCount > 1 Then varStr = "s"
+    tblStepOverview = tblStepOverview & "<table style=""width: 100%; margin: 0 auto; background: #2b2b2b; color: rgb(255,255,255);""><tr><th style=""padding: 1em; font-size: 20px; color: rgb(235,235,235); display: table-header-group;"" colspan=""3"">You have " & _
+                                                                nextCount & " step" & varStr & " overdue</th></tr><tbody>" & _
+                                                            "<tr style=""padding: .1em 2em;""><th style=""text-align: left"">Part Number</th><th style=""text-align: left"">Step</th><th style=""text-align: left"">Due</th></tr>" & nextTable & "</tbody></table>"
+End If
+                        
+
+strHTMLBody = "" & _
+"<!DOCTYPE html><html lang=""en"" xmlns=""http://www.w3.org/1999/xhtml"" xmlns:v=""urn:schemas-microsoft-com:vml"" xmlns:o=""urn:schemas-microsoft-com:office:office"">" & _
+    "<head><meta charset=""utf-8""><title>Working DB Notification</title></head>" & _
+    "<body style=""margin: 0 auto; Font-family: 'Montserrat', sans-serif; font-weight: 400; font-size: 15px; line-height: 1.8;"">" & _
+        "<table style=""max-width: 600px; margin: 0 auto; text-align: center; "">" & _
+            "<tbody>" & _
+                "<tr><td>" & tblHeading & "</td></tr>" & _
+                "<tr><td>" & tblStepOverview & "</td></tr>" & _
+                "<tr><td><p style=""color: rgb(192, 192, 192); text-align: center;"">If you wish to no longer receive these emails,  go into your account menu in the workingDB to disable daily summary notifications</p></td></tr>" & _
+                "<tr><td><p style=""color: rgb(192, 192, 192); text-align: center;"">This email was created by  &copy; workingDB</p></td></tr>" & _
+            "</tbody>" & _
+        "</table>" & _
+    "</body>" & _
+"</html>"
+
+dailySummary = strHTMLBody
 
 End Function
 
@@ -238,7 +317,7 @@ If rsNotifications.RecordCount > 0 Then
         If rsNotifications!senderUser = Environ("username") Then
             msgTxt = "Yo, you already did that today, let's wait 'til tomorrow to do it again."
         Else
-            msgTxt = SendTo & " has already been nudged about this today, by " & rsNotifications!senderUser & ". Let's wait until tomorrow to nudge them again."
+            msgTxt = SendTo & " has already been nudged about this today by " & rsNotifications!senderUser & ". Let's wait until tomorrow to nudge them again."
         End If
         MsgBox msgTxt, vbInformation, "Hold on a minute..."
         sendNotification = False
@@ -294,59 +373,56 @@ Set rs1 = db.OpenRecordset("SELECT * from tblAnalytics WHERE dateUsed > #" & Dat
 
 If rs1.RecordCount <> 0 Then Exit Sub
 
-'DO STUFF
+GoTo SKIPALL 'SKIP THIS WHILE IN BETA
 
-'CurrentDb().Execute ("Delete * from cubeCoreAnalytics")
-'CurrentDb().Execute ("INSERT INTO cubeCoreAnalytics (module,form,userName,dateUsed) SELECT module,form,userName,dateUsed FROM tblAnalytics WHERE dateUsed>#" & Date - 14 & "#")
+Dim rsPeople As Recordset, rsPartNumbers As Recordset, rsOpenSteps As Recordset
+Dim lateSteps() As String, todaySteps() As String, nextSteps() As String
+Dim li As Long, ti As Long, ni As Long
 
-GoTo SKIPALL
-Dim rsPartSteps As Recordset, rsOverdueMsgs As Recordset, rsPermissions As Recordset, msg As String, rsPartTeam As Recordset
-Dim body As String, stepTitle As String, partNum As String
-Dim i
-i = 0
+Set rsPeople = CurrentDb().OpenRecordset("SELECT * from tblPermissions WHERE Inactive = False")
+    li = 1
+    ti = 1
+    ni = 1
+    ReDim Preserve lateSteps(li)
+    ReDim Preserve todaySteps(ti)
+    ReDim Preserve nextSteps(ni)
+    lateSteps(li) = ""
+    todaySteps(ti) = ""
+    nextSteps(ni) = ""
 
-Set rsPartSteps = db.OpenRecordset("SELECT * from tblPartSteps WHERE responsible is not null AND closeDate is null AND dueDate is not null")
-Set rsOverdueMsgs = db.OpenRecordset("SELECT recordId, partTrackingOverdueMessages from tblWdbExtras WHERE partTrackingOverdueMessages is not null")
-
-Do While Not rsPartSteps.EOF
-    Select Case rsPartSteps!dueDate
-        Case Date
-            msg = "This step is due today, please complete it!"
-        Case Is < Date
-            Dim count As Long, whichVal As Integer
-            rsOverdueMsgs.MoveLast
-            count = rsOverdueMsgs.RecordCount
-            whichVal = randomNumber(1, count)
-            rsOverdueMsgs.MoveFirst
-            rsOverdueMsgs.FindFirst "recordId = " & whichVal
-            msg = rsOverdueMsgs!partTrackingOverdueMessages & " This step is overdue."
-        Case Date + 7
-            msg = "This is your 1 week warning, this step is due soon"
-        Case Else
-            GoTo nextRec
-    End Select
-    partNum = rsPartSteps!partNumber
-    stepTitle = rsPartSteps!stepType
+Do While Not rsPeople.EOF 'go through every active person
+    Set rsPartNumbers = CurrentDb().OpenRecordset("SELECT * from tblPartTeam WHERE person = '" & rsPeople!User & "'") 'find all of their projects
     
-    Set rsPartTeam = db.OpenRecordset("select * from tblPartTeam where partNumber = '" & partNum & "'")
-    
-    Do While Not rsPartTeam.EOF
-'        Set rsPermissions = db.OpenRecordset("select * from tblPermissions where user = '" & rsPartTeam!person & "'")
-'        If rsPermissions!Dept = rsPartSteps!responsible Then
-'            body = emailContentGen("Just a reminder...", "WDB Reminder", msg, stepTitle, "Part Number: " & partNum, "This is an automated message. Jokes included are for the purpose of making this reminder fun and light hearted.", "Sent On: " & CStr(Date))
-'            Call sendNotification(rsPartSteps!responsible, 9, 2, "Please complete " & stepTitle & " for " & partNum, body, "Part Project", CInt(partNum))
-'        End If
-    Debug.Print (msg & " " & rsPartSteps!dueDate)
-    i = i + 1
-    Debug.Print (i)
-nextOne:
-        rsPartTeam.MoveNext
+    Do While Not rsPartNumbers.EOF 'go through every project they are on
+        Set rsOpenSteps = CurrentDb().OpenRecordset("SELECT * from tblPartSteps WHERE partNumber = '" & rsPartNumbers!partNumber & "' AND responsible = '" & rsPeople!Dept & "' AND status <> 'Closed'")
+        
+        Do While Not rsOpenSteps.EOF
+            Select Case rsOpenSteps!dueDate
+                Case Date 'due today
+                    ReDim Preserve todaySteps(ti)
+                    todaySteps(ti) = rsOpenSteps!partNumber & "," & rsOpenSteps!stepType & ",Today"
+                    ti = ti + 1
+                Case Is < Date 'over due
+                    ReDim Preserve lateSteps(li)
+                    lateSteps(li) = rsOpenSteps!partNumber & "," & rsOpenSteps!stepType & "," & Format(rsOpenSteps!dueDate, "mm/dd/yyyy")
+                    li = li + 1
+                Case Date <= 7 'due in next week
+                    ReDim Preserve nextSteps(ni)
+                    nextSteps(ti) = rsOpenSteps!partNumber & "," & rsOpenSteps!stepType & "," & Format(rsOpenSteps!dueDate, "mm/dd/yyyy")
+                    ni = ni + 1
+            End Select
+        
+            rsOpenSteps.MoveNext
+        Loop
+        rsPartNumbers.MoveNext
     Loop
     
-nextRec:
-    rsPartSteps.MoveNext
+    If ti + li + ni > 1 Then
+        Call sendNotification(rsPeople!User, 9, 2, "Daily Summary", dailySummary("Hi " & rsPeople!firstName, "Here is your daily summary!", lateSteps(), todaySteps(), nextSteps()))
+    End If
+    
+    rsPeople.MoveNext
 Loop
-Exit Sub
 
 SKIPALL:
 db.Execute "INSERT INTO tblAnalytics (module,form,userName,dateUsed) VALUES ('firstTimeRun','Form_frmSplash','" & Environ("username") & "','" & Now() & "')"
