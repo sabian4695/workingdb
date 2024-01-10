@@ -190,7 +190,7 @@ Dim tblHeading As String, tblStepOverview As String, strHTMLBody As String
 tblHeading = "<table style=""width: 100%; margin: 0 auto; padding: 2em 2em 1em 2em; text-align: center; background-color: #fafafa;"">" & _
                             "<tbody>" & _
                                 "<tr><td><h2 style=""color: #414141; font-size: 28px; margin-top: 0;"">" & Title & "</h2></td></tr>" & _
-                                "<tr><td><p style=""color: rgb(73, 73, 73);"">Here is your daily summary!</p></td></tr>" & _
+                                "<tr><td><p style=""color: rgb(73, 73, 73);"">Here is what you have happening...</p></td></tr>" & _
                             "</tbody>" & _
                         "</table>"
                         
@@ -211,8 +211,8 @@ If lates(1) <> "" Then
     Next i
     If lateCount > 1 Then varStr = "s"
     tblStepOverview = tblStepOverview & "<table style=""width: 100%; margin: 0 auto; background: #2b2b2b; color: rgb(255,255,255);""><tr><th style=""padding: 1em; font-size: 20px; color: rgb(255,150,150); display: table-header-group;"" colspan=""3"">You have " & _
-                                                                lateCount & " step" & varStr & " overdue</th></tr><tbody>" & _
-                                                            "<tr style=""padding: .1em 2em;""><th style=""text-align: left"">Part Number</th><th style=""text-align: left"">Step</th><th style=""text-align: left"">Due</th></tr>" & lateTable & "</tbody></table>"
+                                                                lateCount & " item" & varStr & " overdue</th></tr><tbody>" & _
+                                                            "<tr style=""padding: .1em 2em;""><th style=""text-align: left"">Part Number</th><th style=""text-align: left"">Item</th><th style=""text-align: left"">Due</th></tr>" & lateTable & "</tbody></table>"
 End If
 
 varStr = ""
@@ -225,8 +225,8 @@ If todays(1) <> "" Then
     Next i
     If todayCount > 1 Then varStr = "s"
     tblStepOverview = tblStepOverview & "<table style=""width: 100%; margin: 0 auto; background: #2b2b2b; color: rgb(255,255,255);""><tr><th style=""padding: 1em; font-size: 20px; color: rgb(235,200,200); display: table-header-group;"" colspan=""3"">You have " & _
-                                                                todayCount & " step" & varStr & " due today</th></tr><tbody>" & _
-                                                            "<tr style=""padding: .1em 2em;""><th style=""text-align: left"">Part Number</th><th style=""text-align: left"">Step</th><th style=""text-align: left"">Due</th></tr>" & todayTable & "</tbody></table>"
+                                                                todayCount & " item" & varStr & " due today</th></tr><tbody>" & _
+                                                            "<tr style=""padding: .1em 2em;""><th style=""text-align: left"">Part Number</th><th style=""text-align: left"">Item</th><th style=""text-align: left"">Due</th></tr>" & todayTable & "</tbody></table>"
 End If
 
 varStr = ""
@@ -239,8 +239,8 @@ If nexts(1) <> "" Then
     Next i
     If nextCount > 1 Then varStr = "s"
     tblStepOverview = tblStepOverview & "<table style=""width: 100%; margin: 0 auto; background: #2b2b2b; color: rgb(255,255,255);""><tr><th style=""padding: 1em; font-size: 20px; color: rgb(235,235,235); display: table-header-group;"" colspan=""3"">You have " & _
-                                                                nextCount & " step" & varStr & " overdue</th></tr><tbody>" & _
-                                                            "<tr style=""padding: .1em 2em;""><th style=""text-align: left"">Part Number</th><th style=""text-align: left"">Step</th><th style=""text-align: left"">Due</th></tr>" & nextTable & "</tbody></table>"
+                                                                nextCount & " item" & varStr & " due in the next week</th></tr><tbody>" & _
+                                                            "<tr style=""padding: .1em 2em;""><th style=""text-align: left"">Part Number</th><th style=""text-align: left"">Item</th><th style=""text-align: left"">Due</th></tr>" & nextTable & "</tbody></table>"
 End If
                         
 
@@ -373,13 +373,29 @@ Set rs1 = db.OpenRecordset("SELECT * from tblAnalytics WHERE dateUsed > #" & Dat
 
 If rs1.RecordCount <> 0 Then Exit Sub
 
-GoTo SKIPALL 'SKIP THIS WHILE IN BETA
+'Call grabSummaryInfo
 
-Dim rsPeople As Recordset, rsPartNumbers As Recordset, rsOpenSteps As Recordset
+db.Execute "INSERT INTO tblAnalytics (module,form,userName,dateUsed) VALUES ('firstTimeRun','Form_frmSplash','" & Environ("username") & "','" & Now() & "')"
+
+End Sub
+
+Function grabSummaryInfo(Optional specificUser As String = "") As Boolean
+grabSummaryInfo = False
+
+Dim db As Database
+Set db = CurrentDb()
+Dim rsPeople As Recordset, rsPartNumbers As Recordset, rsOpenSteps As Recordset, rsOpenWOs As Recordset, rsNoti As Recordset, rsAnalytics As Recordset
 Dim lateSteps() As String, todaySteps() As String, nextSteps() As String
 Dim li As Long, ti As Long, ni As Long
+Dim strQry, ranThisWeek As Boolean
 
-Set rsPeople = CurrentDb().OpenRecordset("SELECT * from tblPermissions WHERE Inactive = False")
+Set rsAnalytics = db.OpenRecordset("SELECT max(dateUsed) as anaDate from tblAnalytics WHERE module = 'firstTimeRun'")
+ranThisWeek = Format(rsAnalytics!anaDate, "ww", vbMonday, vbFirstFourDays) = Format(Date, "ww", vbMonday, vbFirstFourDays)
+
+strQry = ""
+If specificUser <> "" Then strQry = " AND user = '" & specificUser & "'"
+
+Set rsPeople = db.OpenRecordset("SELECT * from tblPermissions WHERE Inactive = False" & strQry)
     li = 1
     ti = 1
     ni = 1
@@ -391,10 +407,36 @@ Set rsPeople = CurrentDb().OpenRecordset("SELECT * from tblPermissions WHERE Ina
     nextSteps(ni) = ""
 
 Do While Not rsPeople.EOF 'go through every active person
-    Set rsPartNumbers = CurrentDb().OpenRecordset("SELECT * from tblPartTeam WHERE person = '" & rsPeople!User & "'") 'find all of their projects
+    If rsPeople!notifications = 1 And specificUser = "" Then GoTo nextPerson 'this person wants no notifications
+    If rsPeople!notifications = 2 And ranThisWeek And specificUser = "" Then GoTo nextPerson 'this person only wants weekly notifications
     
-    Do While Not rsPartNumbers.EOF 'go through every project they are on
-        Set rsOpenSteps = CurrentDb().OpenRecordset("SELECT * from tblPartSteps WHERE partNumber = '" & rsPartNumbers!partNumber & "' AND responsible = '" & rsPeople!Dept & "' AND status <> 'Closed'")
+    If rsPeople!Dept = "Design" Then
+        Set rsOpenWOs = db.OpenRecordset("SELECT * from qryWOsforNotifications WHERE assignee = '" & rsPeople!User & "'")
+    
+        Do While Not rsOpenWOs.EOF
+            Select Case rsOpenWOs!Due
+                    Case Date 'due today
+                        ReDim Preserve todaySteps(ti)
+                        todaySteps(ti) = rsOpenWOs!Part_Number & "," & rsOpenWOs!Request_Type & ",Today"
+                        ti = ti + 1
+                    Case Is < Date 'over due
+                        ReDim Preserve lateSteps(li)
+                        lateSteps(li) = rsOpenWOs!Part_Number & ",WO: " & rsOpenWOs!Request_Type & "," & Format(rsOpenWOs!Due, "mm/dd/yyyy")
+                        li = li + 1
+                    Case Is <= (Date + 7) 'due in next week
+                        ReDim Preserve nextSteps(ni)
+                        nextSteps(ni) = rsOpenWOs!Part_Number & ",WO: " & rsOpenWOs!Request_Type & "," & Format(rsOpenWOs!Due, "mm/dd/yyyy")
+                        ni = ni + 1
+                End Select
+            rsOpenWOs.MoveNext
+        Loop
+        rsOpenWOs.Close
+        Set rsOpenWOs = Nothing
+    End If
+
+    Set rsPartNumbers = db.OpenRecordset("SELECT * from tblPartTeam WHERE person = '" & rsPeople!User & "'") 'find all of their projects, go through every part project they are on
+    Do While Not rsPartNumbers.EOF
+        Set rsOpenSteps = db.OpenRecordset("SELECT * from tblPartSteps WHERE partNumber = '" & rsPartNumbers!partNumber & "' AND responsible = '" & rsPeople!Dept & "' AND status <> 'Closed'")
         
         Do While Not rsOpenSteps.EOF
             Select Case rsOpenSteps!dueDate
@@ -406,28 +448,48 @@ Do While Not rsPeople.EOF 'go through every active person
                     ReDim Preserve lateSteps(li)
                     lateSteps(li) = rsOpenSteps!partNumber & "," & rsOpenSteps!stepType & "," & Format(rsOpenSteps!dueDate, "mm/dd/yyyy")
                     li = li + 1
-                Case Date <= 7 'due in next week
+                Case Is <= (Date + 7) 'due in next week
                     ReDim Preserve nextSteps(ni)
-                    nextSteps(ti) = rsOpenSteps!partNumber & "," & rsOpenSteps!stepType & "," & Format(rsOpenSteps!dueDate, "mm/dd/yyyy")
+                    nextSteps(ni) = rsOpenSteps!partNumber & "," & rsOpenSteps!stepType & "," & Format(rsOpenSteps!dueDate, "mm/dd/yyyy")
                     ni = ni + 1
             End Select
         
             rsOpenSteps.MoveNext
         Loop
+        rsOpenSteps.Close
+        Set rsOpenSteps = Nothing
         rsPartNumbers.MoveNext
     Loop
+    rsPartNumbers.Close
+    Set rsPartNumbers = Nothing
     
     If ti + li + ni > 1 Then
-        Call sendNotification(rsPeople!User, 9, 2, "Daily Summary", dailySummary("Hi " & rsPeople!firstName, "Here is your daily summary!", lateSteps(), todaySteps(), nextSteps()))
+        Set rsNoti = db.OpenRecordset("tblNotificationsSP")
+        With rsNoti
+            .addNew
+            !recipientUser = rsPeople!User
+            !recipientEmail = rsPeople!userEmail
+            !senderUser = Environ("username")
+            !senderEmail = getEmail(Environ("username"))
+            !sentDate = Now()
+            !readDate = Now()
+            !notificationType = 9
+            !notificationPriority = 2
+            !notificationDescription = "Summary Email"
+            !emailContent = StrQuoteReplace(dailySummary("Hi " & rsPeople!firstName, "Here is your daily summary!", lateSteps(), todaySteps(), nextSteps()))
+            .Update
+        End With
+        rsNoti.Close
+        Set rsNoti = Nothing
     End If
     
+nextPerson:
     rsPeople.MoveNext
 Loop
 
-SKIPALL:
-db.Execute "INSERT INTO tblAnalytics (module,form,userName,dateUsed) VALUES ('firstTimeRun','Form_frmSplash','" & Environ("username") & "','" & Now() & "')"
+grabSummaryInfo = True
 
-End Sub
+End Function
 
 Function getEmail(userName As String) As String
 
