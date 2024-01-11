@@ -239,10 +239,9 @@ If nexts(1) <> "" Then
     Next i
     If nextCount > 1 Then varStr = "s"
     tblStepOverview = tblStepOverview & "<table style=""width: 100%; margin: 0 auto; background: #2b2b2b; color: rgb(255,255,255);""><tr><th style=""padding: 1em; font-size: 20px; color: rgb(235,235,235); display: table-header-group;"" colspan=""3"">You have " & _
-                                                                nextCount & " item" & varStr & " due in the next week</th></tr><tbody>" & _
+                                                                nextCount & " item" & varStr & " due soon</th></tr><tbody>" & _
                                                             "<tr style=""padding: .1em 2em;""><th style=""text-align: left"">Part Number</th><th style=""text-align: left"">Item</th><th style=""text-align: left"">Due</th></tr>" & nextTable & "</tbody></table>"
 End If
-                        
 
 strHTMLBody = "" & _
 "<!DOCTYPE html><html lang=""en"" xmlns=""http://www.w3.org/1999/xhtml"" xmlns:v=""urn:schemas-microsoft-com:vml"" xmlns:o=""urn:schemas-microsoft-com:office:office"">" & _
@@ -417,7 +416,7 @@ Do While Not rsPeople.EOF 'go through every active person
             Select Case rsOpenWOs!Due
                     Case Date 'due today
                         ReDim Preserve todaySteps(ti)
-                        todaySteps(ti) = rsOpenWOs!Part_Number & "," & rsOpenWOs!Request_Type & ",Today"
+                        todaySteps(ti) = rsOpenWOs!Part_Number & ",WO: " & rsOpenWOs!Request_Type & ",Today"
                         ti = ti + 1
                     Case Is < Date 'over due
                         ReDim Preserve lateSteps(li)

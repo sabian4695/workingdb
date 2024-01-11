@@ -166,7 +166,7 @@ Select Case columnName
         lookup = "DRStoolingDept"
     Case "Customer"
         DRShistoryGrabReference = DLookup("[CUSTOMER_NAME]", "APPS_XXCUS_CUSTOMERS", "[CUSTOMER_ID] = " & inputVal)
-    Case "Adjusted_Reason"
+    Case "Adjusted_Reason", "cboAdjustedReason"
         lookup = "DRSadjustReasons"
     Case "Delay_Reason"
         lookup = "DRSadjustReasons"
