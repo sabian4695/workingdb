@@ -545,7 +545,7 @@ Private Function fncReadTitle() As Boolean
     fncReadTitle = False
     
     gstrDesignerName = "Designer"
-    gstrNFDesigner = Nz(forms!frmPLM.Form!In_Charge.Value, "")
+    gstrNFDesigner = Nz(Form_frmPLM.In_Charge.Value, "")
     
 Dim db As Database
 Dim rs1 As Recordset
@@ -611,8 +611,8 @@ Private Sub clearSheet()
     On Error Resume Next
     
     CurrentDb().Execute "DELETE FROM tblPLM"
-    forms!frmPLM.Form.Requery
-    forms!frmPLM!sfrmPLM.Requery
+    Form_frmPLM.Requery
+    Form_sfrmPLM.Requery
 End Sub
 
 Private Function fncWriteExcel(ByRef iobjRecords As CATIAPropertyTable, _
@@ -629,27 +629,27 @@ Private Function fncWriteExcel(ByRef iobjRecords As CATIAPropertyTable, _
     lngColCnt = UBound(gcurMainProperty) + 12
     
     On Error GoTo 0
-    forms!frmPLM.Form.Recordset.MoveFirst
+    Form_frmPLM.Recordset.MoveFirst
 
     Dim i As Long
     For i = 1 To lngRecCnt
             If i > 1 Then
-                forms!frmPLM.Form.Recordset.addNew
+                Form_frmPLM.Recordset.addNew
             End If
         Dim typRecord As Record
         If iobjRecords.fncItem(i, typRecord) = False Then
             Exit Function
         End If
-        forms!frmPLM.Form!FileName.Value = typRecord.FileName
-        forms!frmPLM.Form!FileID.Value = typRecord.ID
-        forms!frmPLM.Form!Lv.Value = typRecord.Level
-        forms!frmPLM.Form!Amount.Value = typRecord.Amount
-        forms!frmPLM.Form!Link_ID.Value = typRecord.LinkID
-        forms!frmPLM.Form!File_Path.Value = typRecord.FilePath
-        forms!frmPLM.Form!Link_To.Value = typRecord.LinkTo
-        forms!frmPLM.Form!Instance_Name.Value = typRecord.InstanceName
-        forms!frmPLM.Form!File_Part_Number.Value = typRecord.partNumber
-        forms!frmPLM!.Controls("ModelID/DrawingID").Value = typRecord.ModelDrawingID
+        Form_frmPLM.FileName.Value = typRecord.FileName
+        Form_frmPLM.FileID.Value = typRecord.ID
+        Form_frmPLM.Lv.Value = typRecord.Level
+        Form_frmPLM.Amount.Value = typRecord.Amount
+        Form_frmPLM.Link_ID.Value = typRecord.LinkID
+        Form_frmPLM.File_Path.Value = typRecord.FilePath
+        Form_frmPLM.Link_To.Value = typRecord.LinkTo
+        Form_frmPLM.Instance_Name.Value = typRecord.InstanceName
+        Form_frmPLM.File_Part_Number.Value = typRecord.partNumber
+        Form_frmPLM.Controls("ModelID/DrawingID").Value = typRecord.ModelDrawingID
         
         On Error Resume Next
         Dim lngPropCnt As Long
@@ -676,16 +676,16 @@ startIt = False
             Else
                 strValue = typRecord.Properties(j)
             End If
-            forms!frmPLM.Form.Dirty = False
+            Form_frmPLM.Dirty = False
             
             CurrentDb().Execute "UPDATE tblPLM SET [" & fld.name & "] = '" & strValue & "' WHERE [FilePath] = '" & typRecord.FilePath & "'"
         End If
         If fld.name = "File_Data_Name" Then
             startIt = True
-            forms!frmPLM.Form.Dirty = False
+            Form_frmPLM.Dirty = False
         End If
     Next
-    forms!frmPLM.Form.Dirty = False
+    Form_frmPLM.Dirty = False
 Set fld = Nothing
         If i <> lngRecCnt Then
             Dim typNextRecord As Record
@@ -706,7 +706,7 @@ Private Function fncWriteExcelForUpdate(ByRef iobjRecords As CATIAPropertyTable)
     Set db = CurrentDb()
     Set rs1 = db.OpenRecordset("tblPLM", dbOpenSnapshot)
     
-    forms!frmPLM.Form.Recordset.MoveFirst
+    Form_frmPLM.Recordset.MoveFirst
 
     Dim lngRecCnt As Long
     lngRecCnt = iobjRecords.fncCount
@@ -716,7 +716,7 @@ Private Function fncWriteExcelForUpdate(ByRef iobjRecords As CATIAPropertyTable)
     For i = 1 To lngRecCnt
         Dim typRecord As Record
         If i > 1 Then
-            forms!frmPLM.Form.Recordset.MoveNext
+            Form_frmPLM.Recordset.MoveNext
         End If
         If iobjRecords.fncItem(i, typRecord) = False Then
             Exit Function
@@ -724,23 +724,23 @@ Private Function fncWriteExcelForUpdate(ByRef iobjRecords As CATIAPropertyTable)
         
         '/ FileName
         Dim objCell
-        If forms!frmPLM.Form!FileName.Value <> typRecord.FileName Then
-            forms!frmPLM.Form!FileName.Value = typRecord.FileName
+        If Form_frmPLM.FileName.Value <> typRecord.FileName Then
+            Form_frmPLM.FileName.Value = typRecord.FileName
         End If
         
         '/ FilePath
-        If forms!frmPLM.Form!File_Path.Value <> typRecord.FilePath Then
-            forms!frmPLM.Form!File_Path.Value = typRecord.FilePath
+        If Form_frmPLM.File_Path.Value <> typRecord.FilePath Then
+            Form_frmPLM.File_Path.Value = typRecord.FilePath
         End If
         
         '/ DrawLinkTo
-        If forms!frmPLM.Form!Link_To.Value <> typRecord.LinkTo Then
-            forms!frmPLM.Form!Link_To.Value = typRecord.LinkTo
+        If Form_frmPLM.Link_To.Value <> typRecord.LinkTo Then
+            Form_frmPLM.Link_To.Value = typRecord.LinkTo
         End If
         
         '/ ModelID / DrawingID
-        If forms!frmPLM!.Controls("ModelID/DrawingID").Value <> typRecord.ModelDrawingID Then
-            forms!frmPLM!.Controls("ModelID/DrawingID").Value = typRecord.ModelDrawingID
+        If Form_frmPLM.Controls("ModelID/DrawingID").Value <> typRecord.ModelDrawingID Then
+            Form_frmPLM.Controls("ModelID/DrawingID").Value = typRecord.ModelDrawingID
         End If
         
         On Error Resume Next
@@ -777,8 +777,8 @@ Private Function fncWriteExcelForUpdate(ByRef iobjRecords As CATIAPropertyTable)
             If Nz(rs1(gcurMainProperty(j)), "") <> strValue Then
                 
                 CurrentDb().Execute "UPDATE tblPLM SET [" & gcurMainProperty(j) & "] = '" & strValue & "' WHERE [ID] = " & rs1![ID]
-                forms!frmPLM.Form.Dirty = False
-                forms!frmPLM.sfrmPLM.Form.Dirty = False
+                Form_frmPLM.Form.Dirty = False
+                Form_sfrmPLM.Dirty = False
             End If
         Next j
         rs1.MoveNext
@@ -786,8 +786,8 @@ Private Function fncWriteExcelForUpdate(ByRef iobjRecords As CATIAPropertyTable)
     
     rs1.Close
     Set rs1 = Nothing
-    forms!frmPLM.Form.Dirty = False
-    forms!frmPLM.sfrmPLM.Form.Dirty = False
+    Form_frmPLM.Dirty = False
+    Form_sfrmPLM.Dirty = False
     fncWriteExcelForUpdate = True
 End Function
 
@@ -845,7 +845,7 @@ End Function
 Private Function fncGetCheckBox(ByVal istrSheetName As String, ByVal istrCheckBoxName As String, _
                                 ByRef oblnCheckBox) As Boolean
 fncGetCheckBox = False
-oblnCheckBox = forms!frmPLM!.Controls(istrCheckBoxName).Value
+oblnCheckBox = Form_frmPLM.Controls(istrCheckBoxName).Value
 fncGetCheckBox = True
 End Function
 
@@ -854,7 +854,7 @@ Private Function fncSetCheckBox(ByVal istrSheetName As String, ByVal istrCheckBo
 
 fncSetCheckBox = False
 If istrCheckBoxName <> "chkSel" Then
-forms!frmPLM!.Controls(istrCheckBoxName).Value = iblnChecked
+Form_frmPLM.Controls(istrCheckBoxName).Value = iblnChecked
 End If
 fncSetCheckBox = True
 End Function
@@ -1002,7 +1002,7 @@ Else
 
     CurrentDb().Execute "UPDATE [tblPLM] SET [Sel] = FALSE;"
 End If
-forms!frmPLM!sfrmPLM.Form.Dirty = False
+Form_sfrmPLM.Dirty = False
     
 fncSetAllSel = True
 End Function
