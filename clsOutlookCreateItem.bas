@@ -7,7 +7,7 @@ Option Explicit
 Private olApp As Object 'Outlook.Application
 
 '-- used for error logging, if applicable
-Private FSO As Object
+Private fso As Object
 Private tsLog As Object
 
 '-- containers for info on error logging
@@ -272,7 +272,7 @@ Public Sub LogErrors(Optional Enable As Boolean = True, Optional LogPath As Stri
         If Not tsLog Is Nothing Then
             tsLog.Close
             Set tsLog = Nothing
-            Set FSO = Nothing
+            Set fso = Nothing
         End If
         xLogFilePath = ""
         xErrorLogging = False
@@ -294,15 +294,15 @@ Public Sub LogErrors(Optional Enable As Boolean = True, Optional LogPath As Stri
         
 '-- close existing log, if applicable
         If Not tsLog Is Nothing Then tsLog.Close
-        If FSO Is Nothing Then Set FSO = CreateObject("Scripting.FileSystemObject")
-        If Append And FSO.FileExists(xLogFilePath) Then
+        If fso Is Nothing Then Set fso = CreateObject("Scripting.FileSystemObject")
+        If Append And fso.FileExists(xLogFilePath) Then
             
 '-- if we want to append, and that file already exists, use OpenTextFile
-            Set tsLog = FSO.OpenTextFile(xLogFilePath, ForAppending)
+            Set tsLog = fso.OpenTextFile(xLogFilePath, ForAppending)
         Else
         
 '-- otherwise, create new file, overwriting if need be
-            Set tsLog = FSO.CreateTextFile(xLogFilePath, True)
+            Set tsLog = fso.CreateTextFile(xLogFilePath, True)
             tsLog.WriteLine Headers
         End If
     End If
