@@ -79,23 +79,6 @@ Set rs1 = Nothing
 
 End Function
 
-Public Function deletePartProject(partNum As String) As Boolean
-On Error GoTo err_handler
-
-Dim db As Database
-Set db = CurrentDb
-
-db.Execute "delete * from tblPartProject where partNumber = '" & partNum & "'"
-db.Execute "delete * from tblPartGates where partNumber = '" & partNum & "'"
-db.Execute "delete * from tblPartSteps where partNumber = '" & partNum & "'"
-
-Debug.Print ("Done")
-
-Exit Function
-err_handler:
-    Call handleError("wdbProjectE", "deletePartProject", Err.description, Err.number)
-End Function
-
 Public Function getDOH(partNum As String) As Long
 On Error GoTo err_handler
 
@@ -195,7 +178,7 @@ Do While Not rsGateTemplate.EOF
     TempVars.Add "gateId", db.OpenRecordset("SELECT @@identity")(0).Value
     
     '--ADD STEPS FOR THIS GATE
-    Set rsStepTemplate = db.OpenRecordset("SELECT * from tblPartStepTemplate WHERE [gateTemplateId] = " & rsGateTemplate![recordId] & " ORDER BY indexOrder Asc", dbOpenSnapshot)
+    Set rsStepTemplate = db.OpenRecordset("SELECT * from tblPartStepTemplate WHERE [gateTemplateId] = " & rsGateTemplate![recordID] & " ORDER BY indexOrder Asc", dbOpenSnapshot)
     Do While Not rsStepTemplate.EOF
         If (IsNull(rsStepTemplate![Title]) Or rsStepTemplate![Title] = "") Then GoTo nextStep
         runningDate = addWorkdays(runningDate, Nz(rsStepTemplate![duration], 1))
@@ -210,7 +193,7 @@ Do While Not rsGateTemplate.EOF
         '--ADD APPROVALS FOR THIS STEP
         If Not rsStepTemplate![approvalRequired] Then GoTo nextStep
         TempVars.Add "stepId", db.OpenRecordset("SELECT @@identity")(0).Value
-        Set rsApprovalsTemplate = db.OpenRecordset("SELECT * FROM tblPartStepTemplateApprovals WHERE [stepTemplateId] = " & rsStepTemplate![recordId], dbOpenSnapshot)
+        Set rsApprovalsTemplate = db.OpenRecordset("SELECT * FROM tblPartStepTemplateApprovals WHERE [stepTemplateId] = " & rsStepTemplate![recordID], dbOpenSnapshot)
         
         Do While Not rsApprovalsTemplate.EOF
             strInsert1 = "INSERT INTO tblPartTrackingApprovals(partNumber,requestedBy,requestedDate,dept,reqLevel,tableName,tableRecordId) VALUES ('" & _
@@ -258,7 +241,7 @@ Dim percent As Double, width As Long
 width = 17994
 
 Dim rsSteps As Recordset
-Set rsSteps = CurrentDb().OpenRecordset("SELECT * from tblPartSteps WHERE partProjectId = " & Form_frmPartDashboard.recordId)
+Set rsSteps = CurrentDb().OpenRecordset("SELECT * from tblPartSteps WHERE partProjectId = " & Form_frmPartDashboard.recordID)
 
 Dim totalSteps, closedSteps
 rsSteps.MoveLast
@@ -416,8 +399,8 @@ Do While Not rsSteps.EOF
     If meetsCriteria <> rsStepActions!compareAction Then GoTo nextOne
     
     If rsStepActions!stepAction = "deleteStep" Then
-        Call registerPartUpdates("tblPartSteps", rsSteps!recordId, "Deleted - stepAction", rsSteps!stepType, "", partNum, rsSteps!stepType)
-        CurrentDb().Execute "DELETE FROM tblPartSteps WHERE recordId = " & rsSteps!recordId
+        Call registerPartUpdates("tblPartSteps", rsSteps!recordID, "Deleted - stepAction", rsSteps!stepType, "", partNum, rsSteps!stepType)
+        CurrentDb().Execute "DELETE FROM tblPartSteps WHERE recordId = " & rsSteps!recordID
         If CurrentProject.AllForms("frmPartDashboard").IsLoaded Then Form_sfrmPartDashboard.Requery
     End If
 
@@ -443,6 +426,11 @@ Set rsApprovals = CurrentDb().OpenRecordset("SELECT * from tblPartTrackingApprov
 
 If rsApprovals.RecordCount > 0 Then iHaveOpenApproval = True
 
+rsPermissions.Close
+Set rsPermissions = Nothing
+rsApprovals.Close
+Set rsApprovals = Nothing
+
 Exit Function
 err_handler:
     Call handleError("wdbProjectE", "iHaveOpenApproval", Err.description, Err.number)
@@ -458,6 +446,11 @@ Set rsPermissions = CurrentDb().OpenRecordset("SELECT * from tblPermissions wher
 Set rsApprovals = CurrentDb().OpenRecordset("SELECT * from tblPartTrackingApprovals WHERE approvedOn is null AND recordId = " & approvalId & " AND ((dept = '" & rsPermissions!Dept & "' AND reqLevel = '" & rsPermissions!Level & "') OR approver = '" & Environ("username") & "')")
 
 If rsApprovals.RecordCount > 0 Then iAmApprover = True
+
+rsPermissions.Close
+Set rsPermissions = Nothing
+rsApprovals.Close
+Set rsApprovals = Nothing
 
 Exit Function
 err_handler:
