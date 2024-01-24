@@ -26,15 +26,27 @@ Private Declare PtrSafe Function ShowWindow Lib "user32" _
 (ByVal hwnd As Long, ByVal nCmdShow As Long) As Long
 
 Function logClick(modName As String, formName As String, Optional dataTag0 As String = "", Optional dataTag1 As String = "")
+On Error Resume Next
 
 If (CurrentProject.Path = "H:\dev") Then Exit Function
 If DLookup("paramVal", "tblDBinfoBE", "parameter = '" & "recordAnalytics'") = False Then Exit Function
 
-Dim dataTags As String
-dataTags = "'" & StrQuoteReplace(dataTag0) & "','" & StrQuoteReplace(dataTag1) & "'"
+Dim rs1 As Recordset
+Set rs1 = CurrentDb().OpenRecordset("tblAnalytics")
 
-'On Error Resume Next
-CurrentDb().Execute "INSERT INTO tblAnalytics (module,form,userName,dateUsed,dataTag0,dataTag1) VALUES ('" & modName & "','" & formName & "','" & Environ("username") & "','" & Now() & "'," & dataTags & ")"
+With rs1
+    .addNew
+        !Module = modName
+        !Form = formName
+        !userName = Environ("username")
+        !dateUsed = Now()
+        !dataTag0 = StrQuoteReplace(dataTag0)
+        !dataTag1 = StrQuoteReplace(dataTag1)
+    .Update
+End With
+
+rs1.Close
+Set rs1 = Nothing
 
 End Function
 
