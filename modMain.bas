@@ -190,7 +190,7 @@ Public Sub cmdSetPropertyClick()
         Dim strPropertyName As String
         strMsgID = objExcelData.fncCheckBlank(strPropertyName)
         If strMsgID = "E038" Then
-            Call modMessage.Show3(strMsgID, strPropertyName)
+            MsgBox modMessage.GetMessage(strMsgID, strPropertyName), vbCritical + vbOKOnly, "Form"
             Call Terminate
             Exit Sub
         ElseIf strMsgID <> "" Then
@@ -860,8 +860,7 @@ fncSetCheckBox = True
 End Function
 
 Private Sub ClearDeletePropertyCheckBox()
-
-    CurrentDb().Execute "UPDATE [tblPLM] SET [Sel] = False"
+CurrentDb().Execute "UPDATE [tblPLM] SET [Sel] = False"
 End Sub
 
 Private Function fncGetProperty() As CATIAPropertyTable
@@ -959,21 +958,13 @@ End Function
 Private Function fncIsBlankRecord(ByRef itypRecord As Record) As Boolean
     fncIsBlankRecord = False
     
-    If itypRecord.Level <> "" Then
-        Exit Function
-    ElseIf itypRecord.FilePath <> "" Then
-        Exit Function
-    ElseIf itypRecord.FileName <> "" Then
-        Exit Function
-    ElseIf itypRecord.LinkTo <> "" Then
-        Exit Function
-    ElseIf itypRecord.partNumber <> "" Then
-        Exit Function
-    ElseIf itypRecord.InstanceName <> "" Then
-        Exit Function
-    ElseIf itypRecord.ModelDrawingID <> "" Then
-        Exit Function
-    End If
+    If itypRecord.Level <> "" Then Exit Function
+    If itypRecord.FilePath <> "" Then Exit Function
+    If itypRecord.FileName <> "" Then Exit Function
+    If itypRecord.LinkTo <> "" Then Exit Function
+    If itypRecord.partNumber <> "" Then Exit Function
+    If itypRecord.InstanceName <> "" Then Exit Function
+    If itypRecord.ModelDrawingID <> "" Then Exit Function
     
     On Error Resume Next
     Dim lngCnt As Long
@@ -982,9 +973,7 @@ Private Function fncIsBlankRecord(ByRef itypRecord As Record) As Boolean
     
     Dim i As Long
     For i = 1 To lngCnt
-        If itypRecord.Properties(i) <> "" Then
-            Exit Function
-        End If
+        If itypRecord.Properties(i) <> "" Then Exit Function
     Next i
 
     fncIsBlankRecord = True
@@ -996,14 +985,12 @@ fncSetAllSel = False
 On Error GoTo 0
 
 If istrValue = True Then
-
     CurrentDb().Execute "UPDATE [tblPLM] SET [Sel] = TRUE;"
 Else
-
     CurrentDb().Execute "UPDATE [tblPLM] SET [Sel] = FALSE;"
 End If
 Form_sfrmPLM.Dirty = False
-    
+
 fncSetAllSel = True
 End Function
 
@@ -1012,15 +999,12 @@ Private Function fncClrModelID(ByRef iExcelData As CATIAPropertyTable) As Boolea
     
     Dim i As Long
     For i = 1 To iExcelData.fncCount
-    
         Dim typRecord As Record
         Call iExcelData.fncItem(i, typRecord)
         
         If Trim(typRecord.Sel) = True Then
             Dim lngCol As Long
             lngCol = fncGetColumn(TITLE_MODELIDDRAWID)
-            
-            'objCell.value = ""
         End If
     Next i
     
@@ -1028,7 +1012,6 @@ Private Function fncClrModelID(ByRef iExcelData As CATIAPropertyTable) As Boolea
 End Function
 
 Private Function fncCheckBeforeNumbering(ByRef iobjRecords As CATIAPropertyTable) As String
-
     fncCheckBeforeNumbering = ""
 
     Dim objSheet
@@ -1040,25 +1023,19 @@ Private Function fncCheckBeforeNumbering(ByRef iobjRecords As CATIAPropertyTable
         Dim lngRecCnt As Long
         lngRecCnt = iobjRecords.fncCount
         Dim i As Long
-        For i = 1 To lngRecCnt
         
-            If fncCheckNumberingRow(iobjRecords, i) = False Then
-                GoTo CONTINUE_FNCCHECK
-            End If
+        For i = 1 To lngRecCnt
+            If fncCheckNumberingRow(iobjRecords, i) = False Then GoTo CONTINUE_FNCCHECK
     
             Dim typRecord As Record
-            If iobjRecords.fncItem(i, typRecord) = False Then
-                GoTo CONTINUE_FNCCHECK
-            End If
+            If iobjRecords.fncItem(i, typRecord) = False Then GoTo CONTINUE_FNCCHECK
             
             Dim lngTypeIndex As Long
             lngTypeIndex = modMain.fncGetIndex(TITLE_FILEDATATYPE)
             
             Dim strType As String
             strType = typRecord.Properties(lngTypeIndex)
-            If strType <> CATDRAWING Then
-                GoTo CONTINUE_FNCCHECK
-            End If
+            If strType <> CATDRAWING Then GoTo CONTINUE_FNCCHECK
     
             Dim lngLinkToIndex As Long
             lngLinkToIndex = iobjRecords.fncSearchFromFilePath(typRecord.LinkTo)
@@ -1078,9 +1055,7 @@ Private Function fncCheckBeforeNumbering(ByRef iobjRecords As CATIAPropertyTable
             
             Dim strDesignNo As String
             strDesignNo = typLink.Properties(lngDesignNoIndex)
-            If strDesignNo <> "" Then
-                GoTo CONTINUE_FNCCHECK
-            End If
+            If strDesignNo <> "" Then GoTo CONTINUE_FNCCHECK
             
             If Trim(typLink.Sel) <> True Then
                 fncCheckBeforeNumbering = "E031"
@@ -1093,7 +1068,6 @@ CONTINUE_FNCCHECK:
 End Function
 
 Private Function fncNumbering(ByRef iobjRecords As CATIAPropertyTable, ByRef oblnBlank3D As Boolean) As String
-
     fncNumbering = ""
     oblnBlank3D = False
     
@@ -1117,9 +1091,7 @@ Private Function fncNumbering(ByRef iobjRecords As CATIAPropertyTable, ByRef obl
     Dim i As Long
     For i = 1 To lngRecCnt
     
-        If fncCheckNumberingRow(iobjRecords, i) = False Then
-            GoTo CONTINUE
-        End If
+        If fncCheckNumberingRow(iobjRecords, i) = False Then GoTo CONTINUE
         
         If DEBUG_MODE = True Then
             fncNumbering = fncNumberingRow_DEBUG(iobjRecords, objSheet, i)
@@ -1127,9 +1099,7 @@ Private Function fncNumbering(ByRef iobjRecords As CATIAPropertyTable, ByRef obl
             fncNumbering = fncNumberingRow(iobjRecords, objSheet, i)
         End If
         
-        If fncNumbering <> "" Then
-            Exit Function
-        End If
+        If fncNumbering <> "" Then Exit Function
         
         Dim lngNumberedCnt As Long
         On Error Resume Next
@@ -1155,9 +1125,7 @@ CONTINUE:
         For i = 1 To lngRecCnt
             
             fncNumbering = fncNumberingForDrawing(iobjRecords, objSheet, curNumberedRow(i))
-            If fncNumbering <> "" Then
-                Exit Function
-            End If
+            If fncNumbering <> "" Then Exit Function
         
         Next i
     End If
@@ -1171,13 +1139,9 @@ Private Function fncCheckNumberingRow(ByRef iobjRecords As CATIAPropertyTable, B
     fncCheckNumberingRow = False
         
     Dim typRecord As Record
-    If iobjRecords.fncItem(i, typRecord) = False Then
-        Exit Function
-    End If
+    If iobjRecords.fncItem(i, typRecord) = False Then Exit Function
     
-    If Trim(typRecord.Sel) <> True Then
-        Exit Function
-    End If
+    If Trim(typRecord.Sel) <> True Then Exit Function
     
     '/ DesignNo
     Dim lngDesignNoIndex As Long
@@ -1185,9 +1149,7 @@ Private Function fncCheckNumberingRow(ByRef iobjRecords As CATIAPropertyTable, B
     
     Dim strDesignNo As String
     strDesignNo = typRecord.Properties(lngDesignNoIndex)
-    If Trim(strDesignNo) <> "" Then
-        Exit Function
-    End If
+    If Trim(strDesignNo) <> "" Then Exit Function
     
     fncCheckNumberingRow = True
 End Function
@@ -1198,10 +1160,8 @@ Private Function fncNumberingRow(ByRef iobjRecords As CATIAPropertyTable, ByRef 
     fncNumberingRow = ""
     
     Dim typRecord As Record
-    If iobjRecords.fncItem(i, typRecord) = False Then
-        Exit Function
-    End If
-    
+    If iobjRecords.fncItem(i, typRecord) = False Then Exit Function
+
     Dim strType As String
     Dim strLinkID As String
     strType = typRecord.Properties(modMain.fncGetIndex(TITLE_FILEDATATYPE))
@@ -1222,9 +1182,7 @@ Private Function fncNumberingRow(ByRef iobjRecords As CATIAPropertyTable, ByRef 
     If strType = CATDRAWING And blnDuplicateChkBox = True Then
     Else
         fncNumberingRow = fncNumberingDesignNo(con, objSheet, i)
-        If fncNumberingRow <> "" Then
-            GoTo Finally
-        End If
+        If fncNumberingRow <> "" Then GoTo Finally
     End If
     
     GoTo Finally
@@ -1233,9 +1191,7 @@ Error:
     fncNumberingRow = "E021"
 Finally:
     If Not con Is Nothing Then
-        If con.State = adStateOpen Then
-            con.Close
-        End If
+        If con.State = adStateOpen Then con.Close
         Set con = Nothing
     End If
 End Function
@@ -1246,9 +1202,7 @@ Private Function fncNumberingRow_DEBUG(ByRef iobjRecords As CATIAPropertyTable, 
     fncNumberingRow_DEBUG = ""
     
     Dim typRecord As Record
-    If iobjRecords.fncItem(i, typRecord) = False Then
-        Exit Function
-    End If
+    If iobjRecords.fncItem(i, typRecord) = False Then Exit Function
     
     Dim strType As String
     Dim strLinkID As String
@@ -1277,9 +1231,7 @@ Private Function fncNumberingForDrawing(ByRef iobjRecords As CATIAPropertyTable,
     
     Dim strType As String
     strType = typRecord.Properties(modMain.fncGetIndex(TITLE_FILEDATATYPE))
-    If strType <> CATDRAWING Then
-        Exit Function
-    End If
+    If strType <> CATDRAWING Then Exit Function
     
     Dim objFixedCell
     Set objFixedCell = objSheet.Range(CELL_MAIN_FIXED)
@@ -1316,16 +1268,10 @@ End Function
 Private Function fncGetConnectString() As String
     fncGetConnectString = ""
     
-    Dim DBServ As String
+    Dim DBServ As String, DBName As String, DBUser As String, DBPass As String
     DBServ = modSetting.gstrServerName
-    
-    Dim DBName As String
     DBName = modSetting.gstrDBName
-    
-    Dim DBUser As String
     DBUser = modSetting.gstrUserName
-    
-    Dim DBPass As String
     DBPass = modSetting.gstrPassword
     
     fncGetConnectString = "Provider=Sqloledb;" & _

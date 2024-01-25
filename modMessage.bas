@@ -22,12 +22,8 @@ Public Function Show(ByVal istrMessageID As String, Optional ByVal msgDetail As 
     
     Dim msg As String
     msg = GetMessage(istrMessageID)
-    If msgDetail <> "" Then
-        msg = msg & vbCrLf & msgDetail
-    End If
-    If msg = "" Then
-        Exit Function
-    End If
+    If msgDetail <> "" Then msg = msg & vbCrLf & msgDetail
+    If msg = "" Then Exit Function
     
     Dim rc As VbMsgBoxResult
     rc = MsgBox(msg, msgStyle, "Notice")
@@ -47,11 +43,9 @@ Public Function GetMessage(ByVal istrMessageID As String, Optional ByVal istrRep
             GetMessage = "All done."
             Exit Function
         Case "I002"
-            GetMessage = TITLE_FILEDATANAME & " was not generated." & vbCrLf & _
-                         "Because undefined " & TITLE_SECTION & " is written. "
+            GetMessage = TITLE_FILEDATANAME & " was not generated." & vbCrLf & "Because undefined " & TITLE_SECTION & " is written. "
         Case "I003"""
-            GetMessage = TITLE_FILEDATANAME & " was not generated." & vbCrLf & _
-                         "Because undefined " & TITLE_CURRENTSTATUS & " is written. "
+            GetMessage = TITLE_FILEDATANAME & " was not generated." & vbCrLf & "Because undefined " & TITLE_CURRENTSTATUS & " is written. "
         Case "W001"
             GetMessage = "Below files are not moved, because these files are saved in 3DEX."
         Case "W002"
@@ -125,8 +119,7 @@ Public Function GetMessage(ByVal istrMessageID As String, Optional ByVal istrRep
         Case "E036"
             GetMessage = "Below " & TITLE_MODELIDDRAWID & " was not found on old numbering DB."
         Case "E037"
-            GetMessage = "3DEX cache directory is not found." & vbCrLf & _
-                         "Please check below cell."
+            GetMessage = "3DEX cache directory is not found." & vbCrLf & "Please check below cell."
         Case "E038"
             GetMessage = "A blank " & istrReplace & " is found."
         Case "E039"
@@ -136,27 +129,21 @@ Public Function GetMessage(ByVal istrMessageID As String, Optional ByVal istrRep
         Case "E041"
             GetMessage = "Blank SECTION is listed on the DefineDevelopment sheet."
         Case "E042"
-            GetMessage = "Wrong Selection is listed on the DefineDevelopment sheet." & vbCrLf & _
-                         "Please list Selection with 1 or 0."
+            GetMessage = "Wrong Selection is listed on the DefineDevelopment sheet." & vbCrLf & "Please list Selection with 1 or 0."
         Case "E043"
-            GetMessage = "More than two Selection is listed 1 on the DefineDevelopment sheet." & vbCrLf & _
-                         "Please list Selection 1 only once."
+            GetMessage = "More than two Selection is listed 1 on the DefineDevelopment sheet." & vbCrLf & "Please list Selection 1 only once."
         Case "E046"
-            GetMessage = "Blank " & TITLE_FILEDATANAME & " is found." & vbCrLf & _
-                         "Please execute SET PROPERTY first."
+            GetMessage = "Blank " & TITLE_FILEDATANAME & " is found." & vbCrLf & "Please execute SET PROPERTY first."
         Case "E047"
             GetMessage = "A blank " & TITLE_CURRENTSTATUS & " is found."
         Case "E048"
             GetMessage = "There is no file to be saved."
         Case "E049"
-            GetMessage = "There is invalid date format in Designed Date." & vbCrLf & _
-                         "Make sure that the date is in ""dd/mm/yy hh:mm:ss""."
+            GetMessage = "There is invalid date format in Designed Date." & vbCrLf & "Make sure that the date is in ""dd/mm/yy hh:mm:ss""."
         Case "E050"
-            GetMessage = "There is invalid date format in Revised Date." & vbCrLf & _
-                         "Make sure that the date is in ""dd/mm/yy hh:mm:ss""."
+            GetMessage = "There is invalid date format in Revised Date." & vbCrLf & "Make sure that the date is in ""dd/mm/yy hh:mm:ss""."
         Case "E999"
             GetMessage = "Unknown error has occured."
-        
         Case "Q001"
             GetMessage = "Attributes are written in number assignment Excel. Do you want to overwrite?"
             Exit Function
@@ -173,50 +160,15 @@ End Function
 
 Public Function Show2(ByVal istrMessageID As String, ByRef icurAddition() As String) As Boolean
     Show2 = False
-    Dim msgDetail As String
-    Dim newLine As String
-    Dim lngCnt As Long
+    Dim msgDetail As String, newLine As String, lngCnt As Long, i As Integer
 
     On Error Resume Next
     lngCnt = UBound(icurAddition)
     On Error GoTo 0
-    Dim i As Integer
     For i = 1 To lngCnt
         msgDetail = msgDetail & newLine & icurAddition(i)
         newLine = vbCrLf
     Next i
     
     Show2 = Show(istrMessageID, msgDetail)
-End Function
-
-Public Function Show3(ByVal istrMessageID As String, ByVal iRelace As String) As Boolean
-
-    Show3 = False
-    
-    Dim msgTypeID As String
-    msgTypeID = Left$(istrMessageID, 1)
-    
-    Dim msgStyle As VbMsgBoxStyle
-    msgStyle = vbOKOnly
-    Select Case msgTypeID
-        Case "I"
-            msgStyle = vbInformation + vbOKOnly
-        Case "Q"
-            msgStyle = vbQuestion + vbOKCancel
-        Case "W"
-            msgStyle = vbExclamation + vbOKOnly
-        Case "E"
-            msgStyle = vbCritical + vbOKOnly
-    End Select
-    
-    Dim msg As String
-    msg = GetMessage(istrMessageID, iRelace)
-
-    Dim rc As VbMsgBoxResult
-    rc = MsgBox(msg, msgStyle, "Form")
-    If rc = vbYes Or rc = vbOK Then
-        Show3 = True
-    Else
-        Show3 = False
-    End If
 End Function

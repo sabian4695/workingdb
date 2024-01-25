@@ -61,54 +61,29 @@ End Function
 
 Public Function fncCheck() As Boolean
     fncCheck = False
-
-    If Trim(gstrSendToPath) = "" Then
-        Exit Function
-    End If
-    If Trim(gstrServerName) = "" Then
-        Exit Function
-    End If
-    If Trim(gstrUserName) = "" Then
-        Exit Function
-    End If
-    If Trim(gstrPassword) = "" Then
-        Exit Function
-    End If
-    If Trim(gstrDBName) = "" Then
-        Exit Function
-    End If
-    If Trim(gstr3dexCacheDir) = "" Then
-        Exit Function
-    End If
-    If Trim(gstrInputCheck) = "" Then
-        Exit Function
-    End If
-    If Trim(gstrSaveAsNewName) = "" Then
-        Exit Function
-    End If
-    If Trim(gstrAutoInput) = "" Then
-        Exit Function
-    End If
-    If Trim(gstrUnsetMaterialGrade) = "" Then
-        Exit Function
-    End If
+    If Trim(gstrSendToPath) = "" Then Exit Function
+    If Trim(gstrServerName) = "" Then Exit Function
+    If Trim(gstrUserName) = "" Then Exit Function
+    If Trim(gstrPassword) = "" Then Exit Function
+    If Trim(gstrDBName) = "" Then Exit Function
+    If Trim(gstr3dexCacheDir) = "" Then Exit Function
+    If Trim(gstrInputCheck) = "" Then Exit Function
+    If Trim(gstrSaveAsNewName) = "" Then Exit Function
+    If Trim(gstrAutoInput) = "" Then Exit Function
+    If Trim(gstrUnsetMaterialGrade) = "" Then Exit Function
     fncCheck = True
 End Function
 
 Public Function fncCheckSendToPath() As Boolean
     fncCheckSendToPath = False
     
-    If fncCheckDir(gstrSendToPath) = True Then
-        fncCheckSendToPath = True
-    End If
+    If fncCheckDir(gstrSendToPath) = True Then fncCheckSendToPath = True
 End Function
 
 Public Function fncCheck3dexCacheDir() As Boolean
     fncCheck3dexCacheDir = False
     
-    If fncCheckDir(gstr3dexCacheDir) = True Then
-        fncCheck3dexCacheDir = True
-    End If
+    If fncCheckDir(gstr3dexCacheDir) = True Then fncCheck3dexCacheDir = True
 End Function
 
 Private Function fncCheckDir(ByVal istrPath As String) As Boolean
@@ -121,9 +96,7 @@ Private Function fncCheckDir(ByVal istrPath As String) As Boolean
     strResult = Dir(istrPath, vbDirectory)
     On Error GoTo 0
     
-    If strResult <> "" Then
-        fncCheckDir = True
-    End If
+    If strResult <> "" Then fncCheckDir = True
 End Function
 
 Public Sub Terminate()

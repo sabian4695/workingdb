@@ -527,7 +527,7 @@ Public Function CreateContactItem(Optional lastName As String = "", Optional fir
     
     CreateContactItem = True
     
-    GoTo Cleanup
+    GoTo cleanUp
     
 ErrHandler:
     
@@ -535,7 +535,7 @@ ErrHandler:
     If Me.ErrorLoggingEnabled Then WriteToLog "ContactItem", tag, CurrentProperty, Err.description
     CreateContactItem = False
     
-Cleanup:
+cleanUp:
     
     Set olContact = Nothing
     
@@ -761,7 +761,7 @@ Public Function CreateMailItem(SendTo As Variant, Optional CC As Variant = "", _
     
     CreateMailItem = True
     
-    GoTo Cleanup
+    GoTo cleanUp
     
 ErrHandler:
     
@@ -769,7 +769,7 @@ ErrHandler:
     If Me.ErrorLoggingEnabled Then WriteToLog "MailItem", tag, CurrentProperty, Err.description
     CreateMailItem = False
     
-Cleanup:
+cleanUp:
     
     Set olMsg = Nothing
     
@@ -1050,7 +1050,7 @@ Function CreateAppointmentItem(StartAt As Date, Optional duration As Long = 30, 
     
     CreateAppointmentItem = True
     
-    GoTo Cleanup
+    GoTo cleanUp
     
 ErrHandler:
     
@@ -1058,7 +1058,7 @@ ErrHandler:
     If Me.ErrorLoggingEnabled Then WriteToLog "AppointmentItem", tag, CurrentProperty, Err.description
     CreateAppointmentItem = False
     
-Cleanup:
+cleanUp:
     
     Set olAppt = Nothing
     
@@ -1161,7 +1161,7 @@ Function CreateNoteItem(body As String, Optional Categories As String = "", _
     
     CreateNoteItem = True
     
-    GoTo Cleanup
+    GoTo cleanUp
     
 ErrHandler:
     
@@ -1169,7 +1169,7 @@ ErrHandler:
     If Me.ErrorLoggingEnabled Then WriteToLog "NoteItem", tag, CurrentProperty, Err.description
     CreateNoteItem = False
     
-Cleanup:
+cleanUp:
     
     Set olNote = Nothing
     
@@ -1359,7 +1359,7 @@ Function CreateTaskItem(subject As String, Optional AssignTo As Variant = "", _
     
     CreateTaskItem = True
     
-    GoTo Cleanup
+    GoTo cleanUp
     
 ErrHandler:
     
@@ -1367,7 +1367,7 @@ ErrHandler:
     If Me.ErrorLoggingEnabled Then WriteToLog "TaskRequestItem", tag, CurrentProperty, Err.description
     CreateTaskItem = False
     
-Cleanup:
+cleanUp:
     
     Set olTask = Nothing
     

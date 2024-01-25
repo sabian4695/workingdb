@@ -74,7 +74,6 @@ Public Function fncCheck() As String
             gstrOfficeCode = gcurOfficeCode(i)
             gstrNumberingTable = gcurNumberingTable(i)
         End If
-        
     Next i
 
     If lngSelCnt <> 1 Then
