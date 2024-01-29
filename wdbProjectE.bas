@@ -178,7 +178,7 @@ Do While Not rsGateTemplate.EOF
     TempVars.Add "gateId", db.OpenRecordset("SELECT @@identity")(0).Value
     
     '--ADD STEPS FOR THIS GATE
-    Set rsStepTemplate = db.OpenRecordset("SELECT * from tblPartStepTemplate WHERE [gateTemplateId] = " & rsGateTemplate![recordId] & " ORDER BY indexOrder Asc", dbOpenSnapshot)
+    Set rsStepTemplate = db.OpenRecordset("SELECT * from tblPartStepTemplate WHERE [gateTemplateId] = " & rsGateTemplate![recordID] & " ORDER BY indexOrder Asc", dbOpenSnapshot)
     Do While Not rsStepTemplate.EOF
         If (IsNull(rsStepTemplate![Title]) Or rsStepTemplate![Title] = "") Then GoTo nextStep
         runningDate = addWorkdays(runningDate, Nz(rsStepTemplate![duration], 1))
@@ -193,7 +193,7 @@ Do While Not rsGateTemplate.EOF
         '--ADD APPROVALS FOR THIS STEP
         If Not rsStepTemplate![approvalRequired] Then GoTo nextStep
         TempVars.Add "stepId", db.OpenRecordset("SELECT @@identity")(0).Value
-        Set rsApprovalsTemplate = db.OpenRecordset("SELECT * FROM tblPartStepTemplateApprovals WHERE [stepTemplateId] = " & rsStepTemplate![recordId], dbOpenSnapshot)
+        Set rsApprovalsTemplate = db.OpenRecordset("SELECT * FROM tblPartStepTemplateApprovals WHERE [stepTemplateId] = " & rsStepTemplate![recordID], dbOpenSnapshot)
         
         Do While Not rsApprovalsTemplate.EOF
             strInsert1 = "INSERT INTO tblPartTrackingApprovals(partNumber,requestedBy,requestedDate,dept,reqLevel,tableName,tableRecordId) VALUES ('" & _
@@ -241,7 +241,7 @@ Dim percent As Double, width As Long
 width = 17994
 
 Dim rsSteps As Recordset
-Set rsSteps = CurrentDb().OpenRecordset("SELECT * from tblPartSteps WHERE partProjectId = " & Form_frmPartDashboard.recordId)
+Set rsSteps = CurrentDb().OpenRecordset("SELECT * from tblPartSteps WHERE partProjectId = " & Form_frmPartDashboard.recordID)
 
 Dim totalSteps, closedSteps
 rsSteps.MoveLast
@@ -399,8 +399,8 @@ Do While Not rsSteps.EOF
     If meetsCriteria <> rsStepActions!compareAction Then GoTo nextOne
     
     If rsStepActions!stepAction = "deleteStep" Then
-        Call registerPartUpdates("tblPartSteps", rsSteps!recordId, "Deleted - stepAction", rsSteps!stepType, "", partNum, rsSteps!stepType)
-        CurrentDb().Execute "DELETE FROM tblPartSteps WHERE recordId = " & rsSteps!recordId
+        Call registerPartUpdates("tblPartSteps", rsSteps!recordID, "Deleted - stepAction", rsSteps!stepType, "", partNum, rsSteps!stepType)
+        CurrentDb().Execute "DELETE FROM tblPartSteps WHERE recordId = " & rsSteps!recordID
         If CurrentProject.AllForms("frmPartDashboard").IsLoaded Then Form_sfrmPartDashboard.Requery
     End If
 
