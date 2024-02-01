@@ -302,7 +302,7 @@ Public Sub LogErrors(Optional Enable As Boolean = True, Optional LogPath As Stri
         Else
         
 '-- otherwise, create new file, overwriting if need be
-            Set tsLog = FSO.CreateTextFile(xLogFilePath, True)
+            Set tsLog = FSO.createTextFile(xLogFilePath, True)
             tsLog.WriteLine Headers
         End If
     End If
