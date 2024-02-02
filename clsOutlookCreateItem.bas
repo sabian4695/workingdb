@@ -318,7 +318,7 @@ Property Get LogFilePath() As String
 End Property
 
 Public Function CreateContactItem(Optional lastName As String = "", Optional firstName As String = "", _
-    Optional MiddleName As String = "", Optional title As String = "", _
+    Optional MiddleName As String = "", Optional Title As String = "", _
     Optional Suffix As String = "", Optional fullName As String = "", _
     Optional FileAs As String = "", Optional Email1Address As String = "", _
     Optional Email1DisplayName As String = "", Optional Email1AddressType As String = "", _
@@ -397,7 +397,7 @@ Public Function CreateContactItem(Optional lastName As String = "", Optional fir
         CurrentProperty = "MiddleName"
         If MiddleName <> "" Then .MiddleName = MiddleName
         CurrentProperty = "Title"
-        If title <> "" Then .title = title
+        If Title <> "" Then .Title = Title
         CurrentProperty = "Suffix"
         If Suffix <> "" Then .Suffix = Suffix
         CurrentProperty = "FullName"
@@ -896,7 +896,7 @@ Function CreateAppointmentItem(StartAt As Date, Optional duration As Long = 30, 
         If EndFromDuration >= EndAt Then
             .duration = duration
         Else
-            .End = EndAt
+            .end = EndAt
         End If
         
 '-- add RequiredAttendees, OptionalAttendees, Resources, and Organizer.
