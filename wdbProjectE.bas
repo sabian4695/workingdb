@@ -632,7 +632,7 @@ ReDim Preserve arr(rsApprovals.RecordCount)
 rsApprovals.MoveFirst
 
 Do While Not rsApprovals.EOF
-    arr(i) = rsApprovals!Approver & " - " & rsApprovals!approvedOn
+    arr(i) = rsApprovals!approver & " - " & rsApprovals!approvedOn
     i = i + 1
     rsApprovals.MoveNext
 Loop
