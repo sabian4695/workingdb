@@ -16,6 +16,69 @@ Set rs1 = Nothing
 err_handler:
 End Function
 
+Public Function completelyDeletePartProjectAndInfo()
+
+'-----THIS SUB IS NOT YET USABLE
+
+Dim db As Database, partInfoId, partNum
+
+partNum = "26587"
+
+Set db = CurrentDb()
+
+'-----Part Project Data
+db.Execute "delete * from tblPartProject where partNumber = '" & partNum & "'"
+db.Execute "delete * from tblPartGates where partNumber = '" & partNum & "'"
+db.Execute "delete * from tblPartSteps where partNumber = '" & partNum & "'"
+db.Execute "delete * from tblPartTrackingApprovals where partNumber = '" & partNum & "'"
+db.Execute "UPDATE tblPartAttachmentsSP SET fileStatus='deleting' where partNumber = '" & partNum & "'"
+
+'-----Part Number based data
+db.Execute "delete * from tblPartTesting where partNumber = '" & partNum & "'"
+db.Execute "delete * from tblPartTeam where partNumber = '" & partNum & "'"
+db.Execute "delete * from tblPartComponents where assemblyNumber = '" & partNum & "'"
+
+'-----Part Info based data
+Dim rsPartInfo As Recordset, rsPackaging As Recordset
+Set rsPartInfo = db.OpenRecordset("SELECT * from tblPartInfo WHERE partNumber = '" & partNum & "'")
+
+partInfoId = rsPartInfo!recordId
+db.Execute "delete * from tblPartQuoteInfo where recordId = " & rsPartInfo!quoteInfoId
+db.Execute "delete * from tblPartAssemblyInfo where recordId = " & rsPartInfo!assemblyInfoId
+db.Execute "delete * from tblPartOutsourceInfo where recordId = " & rsPartInfo!outsourceInfoId
+
+rsPartInfo.Close
+Set rsPartInfo = Nothing
+
+'-----Part Packaging and Components
+Set rsPackaging = db.OpenRecordset("SELECT * from tblPartPackaging WHERE partInfoId = " & partInfoId)
+Do While Not rsPackaging.EOF
+    db.Execute "Delete * from tblPartPackagingComponents WHERE packagingInfoId = " & rsPackaging!recordId
+    rsPackaging.MoveNext
+Loop
+rsPackaging.Delete
+rsPackaging.Close
+Set rsPackaging = Nothing
+
+'-----Part Meetings and Attendees
+Dim rsMeetings As Recordset
+Set rsMeetings = db.OpenRecordset("SELECT * from tblPartMeetings where partNum = '" & partNum & "'")
+Do While Not rsMeetings.EOF
+    db.Execute "Delete * from tblPartMeetingAttendees WHERE meetingId = " & rsMeetings!recordId
+    rsMeetings.MoveNext
+Loop
+rsMeetings.Close
+Set rsMeetings = Nothing
+
+'-----Part Info
+db.Execute "delete * from tblPartInfo where partNumber = '" & partNum & "'"
+
+MsgBox "All done.", vbInformation, "It is finished."
+
+'Call registerWdbUpdates("tblPartProjects", partNum, "Part Project", partNum, "Deleted", "frmPartTrackingSettings")
+
+End Function
+
 Public Function getApprovalsComplete(stepId As Long, partNumber As String) As Long
 On Error GoTo err_handler
 
@@ -180,11 +243,11 @@ Do While Not rsGateTemplate.EOF
     '--ADD STEPS FOR THIS GATE
     Set rsStepTemplate = db.OpenRecordset("SELECT * from tblPartStepTemplate WHERE [gateTemplateId] = " & rsGateTemplate![recordId] & " ORDER BY indexOrder Asc", dbOpenSnapshot)
     Do While Not rsStepTemplate.EOF
-        If (IsNull(rsStepTemplate![Title]) Or rsStepTemplate![Title] = "") Then GoTo nextStep
+        If (IsNull(rsStepTemplate![title]) Or rsStepTemplate![title] = "") Then GoTo nextStep
         runningDate = addWorkdays(runningDate, Nz(rsStepTemplate![duration], 1))
         strInsert = "INSERT INTO tblPartSteps" & _
             "(partNumber,partProjectId,partGateId,stepType,openedBy,status,openDate,lastUpdatedDate,lastUpdatedBy,stepActionId,documentType,responsible,indexOrder,duration,dueDate) VALUES"
-        strInsert = strInsert & "('" & pNum & "'," & projId & "," & TempVars!gateId & ",'" & StrQuoteReplace(rsStepTemplate![Title]) & "','" & _
+        strInsert = strInsert & "('" & pNum & "'," & projId & "," & TempVars!gateId & ",'" & StrQuoteReplace(rsStepTemplate![title]) & "','" & _
             Environ("username") & "','Not Started','" & Now() & "','" & Now() & "','" & Environ("username") & "',"
         strInsert = strInsert & Nz(rsStepTemplate![stepActionId], "NULL") & "," & Nz(rsStepTemplate![documentType], "NULL") & ",'" & _
             Nz(rsStepTemplate![responsible], "") & "'," & rsStepTemplate![indexOrder] & "," & Nz(rsStepTemplate![duration], 1) & ",'" & runningDate & "');"
@@ -198,7 +261,7 @@ Do While Not rsGateTemplate.EOF
         Do While Not rsApprovalsTemplate.EOF
             strInsert1 = "INSERT INTO tblPartTrackingApprovals(partNumber,requestedBy,requestedDate,dept,reqLevel,tableName,tableRecordId) VALUES ('" & _
                 pNum & "','" & Environ("username") & "','" & Now() & "','" & _
-                Nz(rsApprovalsTemplate![dept], "") & "','" & Nz(rsApprovalsTemplate![reqLevel], "") & "','tblPartSteps'," & TempVars!stepId & ");"
+                Nz(rsApprovalsTemplate![Dept], "") & "','" & Nz(rsApprovalsTemplate![reqLevel], "") & "','tblPartSteps'," & TempVars!stepId & ");"
             CurrentDb().Execute strInsert1
             rsApprovalsTemplate.MoveNext
         Loop
@@ -229,7 +292,7 @@ End If
 
 Dim rsPermissions As Recordset
 Set rsPermissions = CurrentDb().OpenRecordset("SELECT * from tblPermissions where user = '" & User & "'")
-grabTitle = rsPermissions!dept & " " & rsPermissions!Level
+grabTitle = rsPermissions!Dept & " " & rsPermissions!Level
 
 err_handler:
 End Function
@@ -422,7 +485,7 @@ iHaveOpenApproval = False
 
 Dim rsPermissions As Recordset, rsApprovals As Recordset
 Set rsPermissions = CurrentDb().OpenRecordset("SELECT * from tblPermissions where user = '" & Environ("username") & "'")
-Set rsApprovals = CurrentDb().OpenRecordset("SELECT * from tblPartTrackingApprovals WHERE approvedOn is null AND tableName = 'tblPartSteps' AND tableRecordId = " & stepId & " AND ((dept = '" & rsPermissions!dept & "' AND reqLevel = '" & rsPermissions!Level & "') OR approver = '" & Environ("username") & "')")
+Set rsApprovals = CurrentDb().OpenRecordset("SELECT * from tblPartTrackingApprovals WHERE approvedOn is null AND tableName = 'tblPartSteps' AND tableRecordId = " & stepId & " AND ((dept = '" & rsPermissions!Dept & "' AND reqLevel = '" & rsPermissions!Level & "') OR approver = '" & Environ("username") & "')")
 
 If rsApprovals.RecordCount > 0 Then iHaveOpenApproval = True
 
@@ -443,7 +506,7 @@ iAmApprover = False
 
 Dim rsPermissions As Recordset, rsApprovals As Recordset
 Set rsPermissions = CurrentDb().OpenRecordset("SELECT * from tblPermissions where user = '" & Environ("username") & "'")
-Set rsApprovals = CurrentDb().OpenRecordset("SELECT * from tblPartTrackingApprovals WHERE approvedOn is null AND recordId = " & approvalId & " AND ((dept = '" & rsPermissions!dept & "' AND reqLevel = '" & rsPermissions!Level & "') OR approver = '" & Environ("username") & "')")
+Set rsApprovals = CurrentDb().OpenRecordset("SELECT * from tblPartTrackingApprovals WHERE approvedOn is null AND recordId = " & approvalId & " AND ((dept = '" & rsPermissions!Dept & "' AND reqLevel = '" & rsPermissions!Level & "') OR approver = '" & Environ("username") & "')")
 
 If rsApprovals.RecordCount > 0 Then iAmApprover = True
 
@@ -569,7 +632,7 @@ ReDim Preserve arr(rsApprovals.RecordCount)
 rsApprovals.MoveFirst
 
 Do While Not rsApprovals.EOF
-    arr(i) = rsApprovals!approver & " - " & rsApprovals!approvedOn
+    arr(i) = rsApprovals!Approver & " - " & rsApprovals!approvedOn
     i = i + 1
     rsApprovals.MoveNext
 Loop
@@ -640,7 +703,7 @@ err_handler:
     Call handleError("wdbProjectE", "emailPartApprovalNotification", Err.description, Err.number)
 End Function
 
-Function generateEmailWarray(Title As String, subTitle As String, primaryMessage As String, detailTitle As String, arr() As Variant) As String
+Function generateEmailWarray(title As String, subTitle As String, primaryMessage As String, detailTitle As String, arr() As Variant) As String
 On Error GoTo err_handler
 
 Dim tblHeading As String, tblFooter As String, strHTMLBody As String, extraFooter As String, detailTable As String
@@ -659,7 +722,7 @@ Next item
 
 tblHeading = "<table style=""width: 100%; margin: 0 auto; padding: 2em 3em; text-align: center; background-color: #fafafa;"">" & _
                             "<tbody>" & _
-                                "<tr><td><h2 style=""color: #414141; font-size: 28px; margin-top: 0;"">" & Title & "</h2></td></tr>" & _
+                                "<tr><td><h2 style=""color: #414141; font-size: 28px; margin-top: 0;"">" & title & "</h2></td></tr>" & _
                                 "<tr><td><p style=""color: rgb(73, 73, 73);"">" & subTitle & "</p></td></tr>" & _
                                  "<tr><td><table style=""padding: 1em; text-align: center;"">" & _
                                      "<tr><td style=""padding: 1em 1.5em; background: #FF6B00; "">" & primaryMessage & "</td></tr>" & _

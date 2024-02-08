@@ -25,7 +25,7 @@ ByVal dx As Long, ByVal dy As Long, ByVal fRepaint As Long) As Long
 Private Declare PtrSafe Function ShowWindow Lib "user32" _
 (ByVal hwnd As Long, ByVal nCmdShow As Long) As Long
 
-Function logClick(modName As String, formName As String, Optional dataTag0 As String = "", Optional dataTag1 As String = "")
+Function logClick(modName As String, formName As String, Optional dataTag0 = "", Optional dataTag1 = "")
 On Error Resume Next
 
 If (CurrentProject.Path = "H:\dev") Then Exit Function
@@ -100,10 +100,27 @@ End Function
 Public Sub handleError(modName As String, activeCon As String, errDesc As String, errNum As Long)
 On Error Resume Next
 If (CurrentProject.Path = "H:\dev") Then
-    MsgBox errDesc, vbOKOnly, "Error Code: " & errNum
+    MsgBox errDesc, vbInformation, "Error Code: " & errNum
     Exit Sub
 End If
-MsgBox errDesc, vbOKOnly, "Error Code: " & errNum
+
+Select Case errNum
+    Case 3011
+        MsgBox "Looks like I'm having issues connecting to SharePoint. Please reopen when you can", vbInformation, "Error Code: " & errNum
+    Case 490
+        MsgBox "I cannot open this file or location - check if it has been moved or deleted. Or - you do not have proper access to this location", vbInformation, "Error Code: " & errNum
+        Exit Sub
+    Case 3022
+        MsgBox "A record with this key already exists. I cannot create another!", vbInformation, "Error Code: " & errNum
+    Case 3167
+        MsgBox "Looks like you already deleted that record", vbInformation, "Error Code: " & errNum
+        Exit Sub
+    Case 94
+        MsgBox "Hmm. Looks like something is missing. Check for an empty field", vbInformation, "Error Code: " & errNum
+    Case Else
+        MsgBox errDesc, vbInformation, "Error Code: " & errNum
+End Select
+
 Dim strSQL As String
 
 modName = StrQuoteReplace(modName)
@@ -112,7 +129,6 @@ errNum = StrQuoteReplace(errNum)
 
 strSQL = "INSERT INTO tblErrorLog(User,Form,Active_Control,Error_Date,Error_Description,Error_Number) VALUES ('" & _
  Environ("username") & "','" & modName & "','" & activeCon & "',#" & Now & "#,'" & errDesc & "'," & errNum & ")"
-
 
 CurrentDb().Execute strSQL
 End Sub

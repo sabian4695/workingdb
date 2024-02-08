@@ -84,7 +84,7 @@ Public Function zeros(partNum, Amount As Variant)
     End If
 End Function
 
-Function openDocumentHistoryFolder(partNum As String)
+Function openDocumentHistoryFolder(partNum)
 Dim thousZeros, hundZeros
 Dim mainPath, FolName, strFilePath, prtFilePath, dPath As String
 
@@ -124,7 +124,7 @@ Else
 End If
 End Function
 
-Function openModelV5Folder(partNumOriginal As String)
+Function openModelV5Folder(partNumOriginal)
 Dim partNum, thousZeros, hundZeros, FolName, mainfolderpath, strFilePath, prtpath, dPath
 
 partNum = partNumOriginal & "_"
