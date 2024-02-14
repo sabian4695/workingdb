@@ -117,6 +117,8 @@ Select Case errNum
         Exit Sub
     Case 94
         MsgBox "Hmm. Looks like something is missing. Check for an empty field", vbInformation, "Error Code: " & errNum
+    Case 3151
+        MsgBox "You're not connected to Oracle. Just FYI, Oracle connection does not work outside of VMWare.", vbInformation, "Error Code: " & errNum
     Case Else
         MsgBox errDesc, vbInformation, "Error Code: " & errNum
 End Select
