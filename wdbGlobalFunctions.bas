@@ -343,12 +343,12 @@ Function userData(data) As String
     userData = DLookup("[" & data & "]", "[tblPermissions]", "[User] = '" & Environ("username") & "'")
 End Function
 
-Function restrict(userName As String, Dept As String, Optional Level As String) As Boolean
+Function restrict(userName As String, dept As String, Optional Level As String) As Boolean
 Dim d As Boolean, l As Boolean
 d = False
 l = False
 
-    If (DLookup("[Dept]", "[tblPermissions]", "[User] = '" & userName & "'") = Dept) Then
+    If (DLookup("[Dept]", "[tblPermissions]", "[User] = '" & userName & "'") = dept) Then
         d = True
     End If
     
@@ -409,7 +409,7 @@ Do While Not rsPeople.EOF 'go through every active person
     If rsPeople!notifications = 1 And specificUser = "" Then GoTo nextPerson 'this person wants no notifications
     If rsPeople!notifications = 2 And ranThisWeek And specificUser = "" Then GoTo nextPerson 'this person only wants weekly notifications
     
-    If rsPeople!Dept = "Design" Then
+    If rsPeople!dept = "Design" Then
         Set rsOpenWOs = db.OpenRecordset("SELECT * from qryWOsforNotifications WHERE assignee = '" & rsPeople!User & "'")
     
         Do While Not rsOpenWOs.EOF
@@ -435,7 +435,7 @@ Do While Not rsPeople.EOF 'go through every active person
 
     Set rsPartNumbers = db.OpenRecordset("SELECT * from tblPartTeam WHERE person = '" & rsPeople!User & "'") 'find all of their projects, go through every part project they are on
     Do While Not rsPartNumbers.EOF
-        Set rsOpenSteps = db.OpenRecordset("SELECT * from tblPartSteps WHERE partNumber = '" & rsPartNumbers!partNumber & "' AND responsible = '" & rsPeople!Dept & "' AND status <> 'Closed'")
+        Set rsOpenSteps = db.OpenRecordset("SELECT * from tblPartSteps WHERE partNumber = '" & rsPartNumbers!partNumber & "' AND responsible = '" & rsPeople!dept & "' AND status <> 'Closed'")
         
         Do While Not rsOpenSteps.EOF
             Select Case rsOpenSteps!dueDate
