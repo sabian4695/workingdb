@@ -131,10 +131,10 @@ Dim reader As New XMLHTTP60
         Do Until reader.ReadyState = 4
             DoEvents
         Loop
-If reader.Status = 200 Then
+If reader.status = 200 Then
     getAPI = reader.responseText
 Else
-    MsgBox reader.Status
+    MsgBox reader.status
 End If
 End Function
 
