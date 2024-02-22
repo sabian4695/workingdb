@@ -343,12 +343,12 @@ Function userData(data) As String
     userData = DLookup("[" & data & "]", "[tblPermissions]", "[User] = '" & Environ("username") & "'")
 End Function
 
-Function restrict(userName As String, dept As String, Optional Level As String) As Boolean
+Function restrict(userName As String, Dept As String, Optional Level As String) As Boolean
 Dim d As Boolean, l As Boolean
 d = False
 l = False
 
-    If (DLookup("[Dept]", "[tblPermissions]", "[User] = '" & userName & "'") = dept) Then
+    If (DLookup("[Dept]", "[tblPermissions]", "[User] = '" & userName & "'") = Dept) Then
         d = True
     End If
     
@@ -366,13 +366,14 @@ End Function
 Public Sub checkForFirstTimeRun()
 
 Dim db As Database
-Dim rs1 As Recordset
 Set db = CurrentDb()
-Set rs1 = db.OpenRecordset("SELECT * from tblAnalytics WHERE dateUsed > #" & Date - 1 & "# AND module = 'firstTimeRun'")
+Dim rsAnalytics As Recordset, ranThisWeek As Boolean
 
-If rs1.RecordCount <> 0 Then Exit Sub
+Set rsAnalytics = db.OpenRecordset("SELECT max(dateUsed) as anaDate from tblAnalytics WHERE module = 'firstTimeRun'")
+If Format(rsAnalytics!anaDate, "mm/dd/yyyy") = Format(Date, "mm/dd/yyyy") Then Exit Sub 'if max date is today, then this has already ran.
 
-'Call grabSummaryInfo
+'Call grabSummaryInfo 'disabled while in Beta
+Call checkProgramEvents
 
 db.Execute "INSERT INTO tblAnalytics (module,form,userName,dateUsed) VALUES ('firstTimeRun','Form_frmSplash','" & Environ("username") & "','" & Now() & "')"
 
@@ -409,7 +410,7 @@ Do While Not rsPeople.EOF 'go through every active person
     If rsPeople!notifications = 1 And specificUser = "" Then GoTo nextPerson 'this person wants no notifications
     If rsPeople!notifications = 2 And ranThisWeek And specificUser = "" Then GoTo nextPerson 'this person only wants weekly notifications
     
-    If rsPeople!dept = "Design" Then
+    If rsPeople!Dept = "Design" Then
         Set rsOpenWOs = db.OpenRecordset("SELECT * from qryWOsforNotifications WHERE assignee = '" & rsPeople!User & "'")
     
         Do While Not rsOpenWOs.EOF
@@ -435,7 +436,7 @@ Do While Not rsPeople.EOF 'go through every active person
 
     Set rsPartNumbers = db.OpenRecordset("SELECT * from tblPartTeam WHERE person = '" & rsPeople!User & "'") 'find all of their projects, go through every part project they are on
     Do While Not rsPartNumbers.EOF
-        Set rsOpenSteps = db.OpenRecordset("SELECT * from tblPartSteps WHERE partNumber = '" & rsPartNumbers!partNumber & "' AND responsible = '" & rsPeople!dept & "' AND status <> 'Closed'")
+        Set rsOpenSteps = db.OpenRecordset("SELECT * from tblPartSteps WHERE partNumber = '" & rsPartNumbers!partNumber & "' AND responsible = '" & rsPeople!Dept & "' AND status <> 'Closed'")
         
         Do While Not rsOpenSteps.EOF
             Select Case rsOpenSteps!dueDate
@@ -487,6 +488,55 @@ nextPerson:
 Loop
 
 grabSummaryInfo = True
+
+End Function
+
+Function checkProgramEvents() As Boolean
+
+Dim db As Database
+Set db = CurrentDb()
+
+Dim rsProgram As Recordset, rsEvents As Recordset, rsWO As Recordset, rsComments As Recordset
+Dim controlNum, Comments As String
+
+Set rsEvents = db.OpenRecordset("SELECT * from tblProgramEvents WHERE designWOcreated = False AND eventDate BETWEEN #" & Date & "# AND #" & Date + 40 & "#")
+
+Do While Not rsEvents.EOF
+    Set rsProgram = db.OpenRecordset("SELECT * from tblPrograms WHERE ID = " & rsEvents!programId)
+    
+    Set rsWO = db.OpenRecordset("dbo_tblDRS")
+    rsWO.addNew
+        With rsWO
+            !Issue_Date = Date
+            !Approval_Status = 1
+            !Requester = "automated"
+            !DR_Level = 1
+            !Request_Type = 23
+            !Design_Level = 4 'ETA
+            !Due_Date = addWorkdays(rsEvents!eventDate, -10)
+            !Part_Number = "D8157"
+            !Part_Description = "Program Review"
+            !Model_Code = rsProgram!modelCode
+        End With
+    rsWO.Update
+    
+    controlNum = db.OpenRecordset("SELECT @@identity")(0).Value
+    Comments = "'Hold program review for " & rsProgram!modelCode & " " & rsEvents!eventTitle & "'"
+    
+    db.Execute "INSERT INTO dbo_tblComments(Control_Number, Comments) VALUES(" & controlNum & "," & Comments & ")"
+    
+    rsProgram.Close
+    Set rsProgram = Nothing
+    
+    rsEvents.Edit
+    rsEvents!designWOcreated = True
+    rsEvents.Update
+    
+    rsEvents.MoveNext
+Loop
+
+rsEvents.Close
+Set rsEvents = Nothing
 
 End Function
 
