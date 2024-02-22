@@ -131,10 +131,10 @@ Dim reader As New XMLHTTP60
         Do Until reader.ReadyState = 4
             DoEvents
         Loop
-If reader.status = 200 Then
+If reader.Status = 200 Then
     getAPI = reader.responseText
 Else
-    MsgBox reader.status
+    MsgBox reader.Status
 End If
 End Function
 
@@ -513,7 +513,7 @@ Do While Not rsEvents.EOF
             !DR_Level = 1
             !Request_Type = 23
             !Design_Level = 4 'ETA
-            !Due_Date = addWorkdays(rsEvents!eventDate, -10)
+            !Due_Date = addWorkdays(Date, 5)
             !Part_Number = "D8157"
             !Part_Description = "Program Review"
             !Model_Code = rsProgram!modelCode
