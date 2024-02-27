@@ -311,7 +311,7 @@ On Error GoTo err_handler
 Dim rsNotifications As Recordset
 Set rsNotifications = CurrentDb().OpenRecordset("SELECT * from tblNotificationsSP WHERE recipientUser = '" & SendTo & "' AND notificationDescription = '" & StrQuoteReplace(desc) & "' AND sentDate > #" & Date - 1 & "#")
 If rsNotifications.RecordCount > 0 Then
-    If rsNotifications!notificationType = 1 Or rsNotifications!notificationType = 9 Then
+    If rsNotifications!notificationType = 1 Then
         Dim msgTxt As String
         If rsNotifications!senderUser = Environ("username") Then
             msgTxt = "Yo, you already did that today, let's wait 'til tomorrow to do it again."
@@ -472,7 +472,6 @@ Do While Not rsPeople.EOF 'go through every active person
             !senderUser = Environ("username")
             !senderEmail = getEmail(Environ("username"))
             !sentDate = Now()
-            !readDate = Now()
             !notificationType = 9
             !notificationPriority = 2
             !notificationDescription = "Summary Email"
@@ -496,10 +495,13 @@ Function checkProgramEvents() As Boolean
 Dim db As Database
 Set db = CurrentDb()
 
-Dim rsProgram As Recordset, rsEvents As Recordset, rsWO As Recordset, rsComments As Recordset
-Dim controlNum, Comments As String
+Dim rsProgram As Recordset, rsEvents As Recordset, rsWO As Recordset, rsComments As Recordset, rsPeople As Recordset, rsNoti As Recordset
+Dim controlNum As Long, Comments As String, dueDate, body As String, strValues
 
-Set rsEvents = db.OpenRecordset("SELECT * from tblProgramEvents WHERE designWOcreated = False AND eventDate BETWEEN #" & Date & "# AND #" & Date + 40 & "#")
+dueDate = addWorkdays(Date, 5)
+
+Set rsEvents = db.OpenRecordset("SELECT * from tblProgramEvents WHERE designWOcreated = False AND eventDate BETWEEN #" & Date & "# AND #" & Date + 50 & "#")
+Set rsPeople = db.OpenRecordset("SELECT * from tblPermissions WHERE designWOid = 1 AND InActive = FALSE")
 
 Do While Not rsEvents.EOF
     Set rsProgram = db.OpenRecordset("SELECT * from tblPrograms WHERE ID = " & rsEvents!programId)
@@ -513,7 +515,7 @@ Do While Not rsEvents.EOF
             !DR_Level = 1
             !Request_Type = 23
             !Design_Level = 4 'ETA
-            !Due_Date = addWorkdays(Date, 5)
+            !Due_Date = dueDate
             !Part_Number = "D8157"
             !Part_Description = "Program Review"
             !Model_Code = rsProgram!modelCode
@@ -525,6 +527,8 @@ Do While Not rsEvents.EOF
     
     db.Execute "INSERT INTO dbo_tblComments(Control_Number, Comments) VALUES(" & controlNum & "," & Comments & ")"
     
+    body = emailContentGen("Program Review WO", "WO Notice", "WO Auto-Created for " & rsProgram!modelCode & " Program Review", "Event: " & rsEvents!eventTitle, "WO#" & controlNum, "Due: " & dueDate, "Sent On: " & CStr(Now()))
+    
     rsProgram.Close
     Set rsProgram = Nothing
     
@@ -532,6 +536,31 @@ Do While Not rsEvents.EOF
     rsEvents!designWOcreated = True
     rsEvents.Update
     
+    Set rsNoti = db.OpenRecordset("tblNotificationsSP")
+    rsPeople.MoveFirst
+    Do While Not rsPeople.EOF
+        With rsNoti
+            .addNew
+            !recipientUser = rsPeople!User
+            !recipientEmail = rsPeople!userEmail
+            !senderUser = Environ("username")
+            !senderEmail = getEmail(Environ("username"))
+            !sentDate = Now()
+            !notificationType = 10
+            !notificationPriority = 2
+            !notificationDescription = "WO Auto-Created for " & rsProgram!modelCode & " Program Review"
+            !appName = "Design WO"
+            !appId = controlNum
+            !emailContent = body
+            .Update
+        End With
+        
+        rsPeople.MoveNext
+    Loop
+    
+    rsNoti.Close
+    Set rsNoti = Nothing
+        
     rsEvents.MoveNext
 Loop
 
