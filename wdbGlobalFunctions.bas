@@ -529,9 +529,6 @@ Do While Not rsEvents.EOF
     
     body = emailContentGen("Program Review WO", "WO Notice", "WO Auto-Created for " & rsProgram!modelCode & " Program Review", "Event: " & rsEvents!eventTitle, "WO#" & controlNum, "Due: " & dueDate, "Sent On: " & CStr(Now()))
     
-    rsProgram.Close
-    Set rsProgram = Nothing
-    
     rsEvents.Edit
     rsEvents!designWOcreated = True
     rsEvents.Update
@@ -554,18 +551,23 @@ Do While Not rsEvents.EOF
             !emailContent = body
             .Update
         End With
-        
         rsPeople.MoveNext
     Loop
     
     rsNoti.Close
     Set rsNoti = Nothing
         
+    rsProgram.Close
+    Set rsProgram = Nothing
+    
     rsEvents.MoveNext
 Loop
 
 rsEvents.Close
 Set rsEvents = Nothing
+
+rsPeople.Close
+Set rsPeople = Nothing
 
 End Function
 
