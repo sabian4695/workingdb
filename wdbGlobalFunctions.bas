@@ -472,6 +472,7 @@ Do While Not rsPeople.EOF 'go through every active person
             !senderUser = Environ("username")
             !senderEmail = getEmail(Environ("username"))
             !sentDate = Now()
+            !readDate = Now()
             !notificationType = 9
             !notificationPriority = 2
             !notificationDescription = "Summary Email"
