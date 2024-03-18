@@ -374,10 +374,55 @@ If Format(rsAnalytics!anaDate, "mm/dd/yyyy") = Format(Date, "mm/dd/yyyy") Then E
 
 'Call grabSummaryInfo 'disabled while in Beta
 Call checkProgramEvents
+Call checkNewPartNumbers
 
 db.Execute "INSERT INTO tblAnalytics (module,form,userName,dateUsed) VALUES ('firstTimeRun','Form_frmSplash','" & Environ("username") & "','" & Now() & "')"
 
 End Sub
+
+Function checkNewPartNumbers()
+
+Dim pnLogMax, spListMax
+'grab highest part number of each and compare
+pnLogMax = DMax("Part_Number", "dbo_tblParts")
+spListMax = DMax("newPartNumber", "tblPartNumbers")
+
+'if OK, exit
+If pnLogMax = spListMax Then Exit Function
+
+'if NG, add to current and check after each one
+Dim db As Database
+Set db = CurrentDb()
+Dim rsSP As Recordset, rsLog As Recordset
+
+Set rsSP = db.OpenRecordset("tblPartNumbers")
+Set rsLog = db.OpenRecordset("dbo_tblParts")
+
+Do While pnLogMax > spListMax
+    rsSP.addNew
+    
+    spListMax = spListMax + 1
+    
+    rsSP!newPartNumber = spListMax
+    
+    Set rsLog = db.OpenRecordset("SELECT * from dbo_tblParts WHERE Part_Number = " & spListMax)
+    If rsLog.RecordCount = 0 Then GoTo nextOne
+    
+    rsSP!creator = Nz(rsLog!Issuer, "workingdb")
+    rsSP!PartDescription = Nz(rsLog!Part_Description, "empty")
+    rsSP!customerId = Nz(rsLog!Customer, 0)
+    rsSP!customerPartNumber = rsLog!Customer_Part_Number
+    rsSP!materialType = Nz(DLookup("Material_Type", "dbo_tblMaterialTypes", "Material_Type_ID = " & Nz(rsLog!Material_Type, 0)))
+    rsSP!Color = Nz(DLookup("Color_Name", "dbo_tblColors", "Color_ID = " & Nz(rsLog!Color, 0)), "")
+    rsSP!NJPpartNumber = rsLog!Nifco_Japan_Part_Number
+    rsSP!Notes = DLookup("Notes", "dbo_tblNotes", "Part_Number = " & spListMax)
+    rsSP!partNumberType = 1
+    
+    rsSP.Update
+nextOne:
+Loop
+
+End Function
 
 Function grabSummaryInfo(Optional specificUser As String = "") As Boolean
 grabSummaryInfo = False
