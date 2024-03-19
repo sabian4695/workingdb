@@ -409,7 +409,7 @@ Do While pnLogMax > spListMax
     If rsLog.RecordCount = 0 Then GoTo nextOne
     
     rsSP!creator = Nz(rsLog!Issuer, "workingdb")
-    rsSP!PartDescription = Nz(rsLog!Part_Description, "empty")
+    rsSP!partDescription = Nz(rsLog!Part_Description, "empty")
     rsSP!customerId = Nz(rsLog!Customer, 0)
     rsSP!customerPartNumber = rsLog!Customer_Part_Number
     rsSP!materialType = Nz(DLookup("Material_Type", "dbo_tblMaterialTypes", "Material_Type_ID = " & Nz(rsLog!Material_Type, 0)))
