@@ -410,7 +410,7 @@ Do While pnLogMax > spListMax
     
     rsSP!creator = Nz(rsLog!Issuer, "workingdb")
     rsSP!PartDescription = Nz(rsLog!Part_Description, "empty")
-    rsSP!customerId = Nz(rsLog!customer, 0)
+    rsSP!customerId = Nz(rsLog!Customer, 0)
     rsSP!customerPartNumber = rsLog!Customer_Part_Number
     rsSP!materialType = Nz(DLookup("Material_Type", "dbo_tblMaterialTypes", "Material_Type_ID = " & Nz(rsLog!Material_Type, 0)))
     rsSP!Color = Nz(DLookup("Color_Name", "dbo_tblColors", "Color_ID = " & Nz(rsLog!Color, 0)), "")
