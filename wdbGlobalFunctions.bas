@@ -374,13 +374,14 @@ If Format(rsAnalytics!anaDate, "mm/dd/yyyy") = Format(Date, "mm/dd/yyyy") Then E
 
 'Call grabSummaryInfo 'disabled while in Beta
 Call checkProgramEvents
-Call checkNewPartNumbers
 
 db.Execute "INSERT INTO tblAnalytics (module,form,userName,dateUsed) VALUES ('firstTimeRun','Form_frmSplash','" & Environ("username") & "','" & Now() & "')"
 
 End Sub
 
 Function checkNewPartNumbers()
+
+On Error Resume Next
 
 Dim pnLogMax, spListMax
 'grab highest part number of each and compare
@@ -420,6 +421,20 @@ Do While pnLogMax > spListMax
     
     rsSP.Update
 nextOne:
+Loop
+
+
+Do While spListMax > pnLogMax
+    pnLogMax = pnLogMax + 1
+
+    Set rsLog = db.OpenRecordset("dbo_tblParts")
+    
+    rsLog.addNew
+    rsLog!Part_Number = pnLogMax
+    rsLog.Update
+    rsLog.MoveNext
+
+nextOne1:
 Loop
 
 End Function
@@ -542,7 +557,7 @@ Dim db As Database
 Set db = CurrentDb()
 
 Dim rsProgram As Recordset, rsEvents As Recordset, rsWO As Recordset, rsComments As Recordset, rsPeople As Recordset, rsNoti As Recordset
-Dim controlNum As Long, Comments As String, dueDate, body As String, strValues
+Dim controlNum As Long, comments As String, dueDate, body As String, strValues
 
 dueDate = addWorkdays(Date, 5)
 
@@ -569,9 +584,9 @@ Do While Not rsEvents.EOF
     rsWO.Update
     
     controlNum = db.OpenRecordset("SELECT @@identity")(0).Value
-    Comments = "'Hold program review for " & rsProgram!modelCode & " " & rsEvents!eventTitle & "'"
+    comments = "'Hold program review for " & rsProgram!modelCode & " " & rsEvents!eventTitle & "'"
     
-    db.Execute "INSERT INTO dbo_tblComments(Control_Number, Comments) VALUES(" & controlNum & "," & Comments & ")"
+    db.Execute "INSERT INTO dbo_tblComments(Control_Number, Comments) VALUES(" & controlNum & "," & comments & ")"
     
     body = emailContentGen("Program Review WO", "WO Notice", "WO Auto-Created for " & rsProgram!modelCode & " Program Review", "Event: " & rsEvents!eventTitle, "WO#" & controlNum, "Due: " & dueDate, "Sent On: " & CStr(Now()))
     
