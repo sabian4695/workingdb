@@ -261,7 +261,7 @@ Do While Not rsGateTemplate.EOF
         Do While Not rsApprovalsTemplate.EOF
             strInsert1 = "INSERT INTO tblPartTrackingApprovals(partNumber,requestedBy,requestedDate,dept,reqLevel,tableName,tableRecordId) VALUES ('" & _
                 pNum & "','" & Environ("username") & "','" & Now() & "','" & _
-                Nz(rsApprovalsTemplate![Dept], "") & "','" & Nz(rsApprovalsTemplate![reqLevel], "") & "','tblPartSteps'," & TempVars!stepId & ");"
+                Nz(rsApprovalsTemplate![dept], "") & "','" & Nz(rsApprovalsTemplate![reqLevel], "") & "','tblPartSteps'," & TempVars!stepId & ");"
             CurrentDb().Execute strInsert1
             rsApprovalsTemplate.MoveNext
         Loop
@@ -292,7 +292,7 @@ End If
 
 Dim rsPermissions As Recordset
 Set rsPermissions = CurrentDb().OpenRecordset("SELECT * from tblPermissions where user = '" & User & "'")
-grabTitle = rsPermissions!Dept & " " & rsPermissions!Level
+grabTitle = rsPermissions!dept & " " & rsPermissions!Level
 
 err_handler:
 End Function
@@ -485,7 +485,7 @@ iHaveOpenApproval = False
 
 Dim rsPermissions As Recordset, rsApprovals As Recordset
 Set rsPermissions = CurrentDb().OpenRecordset("SELECT * from tblPermissions where user = '" & Environ("username") & "'")
-Set rsApprovals = CurrentDb().OpenRecordset("SELECT * from tblPartTrackingApprovals WHERE approvedOn is null AND tableName = 'tblPartSteps' AND tableRecordId = " & stepId & " AND ((dept = '" & rsPermissions!Dept & "' AND reqLevel = '" & rsPermissions!Level & "') OR approver = '" & Environ("username") & "')")
+Set rsApprovals = CurrentDb().OpenRecordset("SELECT * from tblPartTrackingApprovals WHERE approvedOn is null AND tableName = 'tblPartSteps' AND tableRecordId = " & stepId & " AND ((dept = '" & rsPermissions!dept & "' AND reqLevel = '" & rsPermissions!Level & "') OR approver = '" & Environ("username") & "')")
 
 If rsApprovals.RecordCount > 0 Then iHaveOpenApproval = True
 
@@ -506,7 +506,7 @@ iAmApprover = False
 
 Dim rsPermissions As Recordset, rsApprovals As Recordset
 Set rsPermissions = CurrentDb().OpenRecordset("SELECT * from tblPermissions where user = '" & Environ("username") & "'")
-Set rsApprovals = CurrentDb().OpenRecordset("SELECT * from tblPartTrackingApprovals WHERE approvedOn is null AND recordId = " & approvalId & " AND ((dept = '" & rsPermissions!Dept & "' AND reqLevel = '" & rsPermissions!Level & "') OR approver = '" & Environ("username") & "')")
+Set rsApprovals = CurrentDb().OpenRecordset("SELECT * from tblPartTrackingApprovals WHERE approvedOn is null AND recordId = " & approvalId & " AND ((dept = '" & rsPermissions!dept & "' AND reqLevel = '" & rsPermissions!Level & "') OR approver = '" & Environ("username") & "')")
 
 If rsApprovals.RecordCount > 0 Then iAmApprover = True
 
@@ -632,7 +632,7 @@ ReDim Preserve arr(rsApprovals.RecordCount)
 rsApprovals.MoveFirst
 
 Do While Not rsApprovals.EOF
-    arr(i) = rsApprovals!Approver & " - " & rsApprovals!approvedOn
+    arr(i) = rsApprovals!approver & " - " & rsApprovals!approvedOn
     i = i + 1
     rsApprovals.MoveNext
 Loop

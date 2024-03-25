@@ -343,12 +343,12 @@ Function userData(data) As String
     userData = DLookup("[" & data & "]", "[tblPermissions]", "[User] = '" & Environ("username") & "'")
 End Function
 
-Function restrict(userName As String, Dept As String, Optional Level As String) As Boolean
+Function restrict(userName As String, dept As String, Optional Level As String) As Boolean
 Dim d As Boolean, l As Boolean
 d = False
 l = False
 
-    If (DLookup("[Dept]", "[tblPermissions]", "[User] = '" & userName & "'") = Dept) Then
+    If (DLookup("[Dept]", "[tblPermissions]", "[User] = '" & userName & "'") = dept) Then
         d = True
     End If
     
@@ -411,7 +411,7 @@ Do While pnLogMax > spListMax
     
     rsSP!creator = Nz(rsLog!Issuer, "workingdb")
     rsSP!PartDescription = Nz(rsLog!Part_Description, "empty")
-    rsSP!customerId = Nz(rsLog!Customer, 0)
+    rsSP!customerId = Nz(rsLog!customer, 0)
     rsSP!customerPartNumber = rsLog!Customer_Part_Number
     rsSP!materialType = Nz(DLookup("Material_Type", "dbo_tblMaterialTypes", "Material_Type_ID = " & Nz(rsLog!Material_Type, 0)))
     rsSP!Color = Nz(DLookup("Color_Name", "dbo_tblColors", "Color_ID = " & Nz(rsLog!Color, 0)), "")
@@ -470,7 +470,7 @@ Do While Not rsPeople.EOF 'go through every active person
     If rsPeople!notifications = 1 And specificUser = "" Then GoTo nextPerson 'this person wants no notifications
     If rsPeople!notifications = 2 And ranThisWeek And specificUser = "" Then GoTo nextPerson 'this person only wants weekly notifications
     
-    If rsPeople!Dept = "Design" Then
+    If rsPeople!dept = "Design" Then
         Set rsOpenWOs = db.OpenRecordset("SELECT * from qryWOsforNotifications WHERE assignee = '" & rsPeople!User & "'")
     
         Do While Not rsOpenWOs.EOF
@@ -496,7 +496,7 @@ Do While Not rsPeople.EOF 'go through every active person
 
     Set rsPartNumbers = db.OpenRecordset("SELECT * from tblPartTeam WHERE person = '" & rsPeople!User & "'") 'find all of their projects, go through every part project they are on
     Do While Not rsPartNumbers.EOF
-        Set rsOpenSteps = db.OpenRecordset("SELECT * from tblPartSteps WHERE partNumber = '" & rsPartNumbers!partNumber & "' AND responsible = '" & rsPeople!Dept & "' AND status <> 'Closed'")
+        Set rsOpenSteps = db.OpenRecordset("SELECT * from tblPartSteps WHERE partNumber = '" & rsPartNumbers!partNumber & "' AND responsible = '" & rsPeople!dept & "' AND status <> 'Closed'")
         
         Do While Not rsOpenSteps.EOF
             Select Case rsOpenSteps!dueDate
@@ -557,7 +557,7 @@ Dim db As Database
 Set db = CurrentDb()
 
 Dim rsProgram As Recordset, rsEvents As Recordset, rsWO As Recordset, rsComments As Recordset, rsPeople As Recordset, rsNoti As Recordset
-Dim controlNum As Long, Comments As String, dueDate, body As String, strValues
+Dim controlNum As Long, comments As String, dueDate, body As String, strValues
 
 dueDate = addWorkdays(Date, 5)
 
@@ -584,9 +584,9 @@ Do While Not rsEvents.EOF
     rsWO.Update
     
     controlNum = db.OpenRecordset("SELECT @@identity")(0).Value
-    Comments = "'Hold program review for " & rsProgram!modelCode & " " & rsEvents!eventTitle & "'"
+    comments = "'Hold program review for " & rsProgram!modelCode & " " & rsEvents!eventTitle & "'"
     
-    db.Execute "INSERT INTO dbo_tblComments(Control_Number, Comments) VALUES(" & controlNum & "," & Comments & ")"
+    db.Execute "INSERT INTO dbo_tblComments(Control_Number, Comments) VALUES(" & controlNum & "," & comments & ")"
     
     body = emailContentGen("Program Review WO", "WO Notice", "WO Auto-Created for " & rsProgram!modelCode & " Program Review", "Event: " & rsEvents!eventTitle, "WO#" & controlNum, "Due: " & dueDate, "Sent On: " & CStr(Now()))
     
