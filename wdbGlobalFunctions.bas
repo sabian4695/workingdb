@@ -3,6 +3,35 @@ Option Explicit
 
 Public bClone As Boolean
 
+Public Function labelUpdate(oldLabel As String)
+On Error GoTo err_handler
+
+Select Case True
+    Case InStr(oldLabel, "-") <> 0
+        labelUpdate = Replace(oldLabel, "-", ">")
+    Case InStr(oldLabel, ">") <> 0
+        labelUpdate = Replace(oldLabel, ">", "<")
+    Case InStr(oldLabel, "<") <> 0
+        labelUpdate = Replace(oldLabel, "<", "-")
+End Select
+
+Exit Function
+err_handler:
+    Call handleError("wdbGlocalFunctions", "labelUpdate", Err.description, Err.number)
+End Function
+
+Public Function labelDirection(label As String)
+On Error GoTo err_handler
+If InStr(label, ">") <> 0 Then
+    labelDirection = "DESC"
+Else
+    labelDirection = ""
+End If
+Exit Function
+err_handler:
+    Call handleError("wdbGlocalFunctions", "labelDirection", Err.description, Err.number)
+End Function
+
 Public Function registerWdbUpdates(table As String, ID As Variant, column As String, oldVal As Variant, newVal As Variant, Optional tag0 As String = "", Optional tag1 As Variant = "")
 On Error GoTo err_handler
 
@@ -35,6 +64,40 @@ Set rs1 = Nothing
 Exit Function
 err_handler:
     Call handleError("wdbGlocalFunctions", "registerWdbUpdates", Err.description, Err.number)
+End Function
+
+Public Function registerSalesUpdates(table As String, ID As Variant, column As String, oldVal As Variant, newVal As Variant, Optional tag0 As String = "", Optional tag1 As Variant = "")
+On Error GoTo err_handler
+
+Dim sqlColumns As String, sqlValues As String
+
+If (VarType(oldVal) = vbDate) Then oldVal = Format(oldVal, "mm/dd/yyyy")
+If (VarType(newVal) = vbDate) Then newVal = Format(newVal, "mm/dd/yyyy")
+
+Dim rs1 As Recordset
+Set rs1 = CurrentDb().OpenRecordset("tblSalesUpdateTracking")
+
+With rs1
+    .addNew
+        !tableName = table
+        !tableRecordId = ID
+        !updatedBy = Environ("username")
+        !updatedDate = Now()
+        !columnName = column
+        !previousData = StrQuoteReplace(CStr(Nz(oldVal, "")))
+        !newData = StrQuoteReplace(CStr(Nz(newVal, "")))
+        !dataTag0 = StrQuoteReplace(tag0)
+        !dataTag1 = StrQuoteReplace(tag1)
+    .Update
+    .Bookmark = .lastModified
+End With
+
+rs1.Close
+Set rs1 = Nothing
+
+Exit Function
+err_handler:
+    Call handleError("wdbGlocalFunctions", "registerSalesUpdates", Err.description, Err.number)
 End Function
 
 Public Function addWorkdays(dateInput As Date, daysToAdd As Long) As Date
@@ -343,12 +406,12 @@ Function userData(data) As String
     userData = DLookup("[" & data & "]", "[tblPermissions]", "[User] = '" & Environ("username") & "'")
 End Function
 
-Function restrict(userName As String, Dept As String, Optional Level As String) As Boolean
+Function restrict(userName As String, dept As String, Optional Level As String) As Boolean
 Dim d As Boolean, l As Boolean
 d = False
 l = False
 
-    If (DLookup("[Dept]", "[tblPermissions]", "[User] = '" & userName & "'") = Dept) Then
+    If (DLookup("[Dept]", "[tblPermissions]", "[User] = '" & userName & "'") = dept) Then
         d = True
     End If
     
@@ -410,8 +473,8 @@ Do While pnLogMax > spListMax
     If rsLog.RecordCount = 0 Then GoTo nextOne
     
     rsSP!creator = Nz(rsLog!Issuer, "workingdb")
-    rsSP!partDescription = Nz(rsLog!Part_Description, "empty")
-    rsSP!customerId = Nz(rsLog!Customer, 0)
+    rsSP!PartDescription = Nz(rsLog!Part_Description, "empty")
+    rsSP!customerId = Nz(rsLog!customer, 0)
     rsSP!customerPartNumber = rsLog!Customer_Part_Number
     rsSP!materialType = Nz(DLookup("Material_Type", "dbo_tblMaterialTypes", "Material_Type_ID = " & Nz(rsLog!Material_Type, 0)))
     rsSP!Color = Nz(DLookup("Color_Name", "dbo_tblColors", "Color_ID = " & Nz(rsLog!Color, 0)), "")
@@ -435,6 +498,34 @@ Do While spListMax > pnLogMax
     rsLog.MoveNext
 
 nextOne1:
+Loop
+
+End Function
+
+Function setPartNumbersCreated()
+'ONE TIME RUN
+
+On Error Resume Next
+
+'if NG, add to current and check after each one
+Dim db As Database
+Set db = CurrentDb()
+Dim rsSP As Recordset, rsLog As Recordset
+
+Set rsSP = db.OpenRecordset("SELECT * FROM tblPartNumbers WHERE createdDate is Null")
+Set rsLog = db.OpenRecordset("dbo_tblParts")
+
+Do While Not rsSP.EOF
+    rsSP.Edit
+    
+    Set rsLog = db.OpenRecordset("SELECT * from dbo_tblParts WHERE Part_Number = " & rsSP!newPartNumber)
+    If rsLog.RecordCount = 0 Then GoTo nextOne
+    
+    rsSP!createdDate = rsLog!Create_Date
+    rsSP.Update
+    
+nextOne:
+    rsSP.MoveNext
 Loop
 
 End Function
@@ -470,7 +561,7 @@ Do While Not rsPeople.EOF 'go through every active person
     If rsPeople!notifications = 1 And specificUser = "" Then GoTo nextPerson 'this person wants no notifications
     If rsPeople!notifications = 2 And ranThisWeek And specificUser = "" Then GoTo nextPerson 'this person only wants weekly notifications
     
-    If rsPeople!Dept = "Design" Then
+    If rsPeople!dept = "Design" Then
         Set rsOpenWOs = db.OpenRecordset("SELECT * from qryWOsforNotifications WHERE assignee = '" & rsPeople!User & "'")
     
         Do While Not rsOpenWOs.EOF
@@ -496,7 +587,7 @@ Do While Not rsPeople.EOF 'go through every active person
 
     Set rsPartNumbers = db.OpenRecordset("SELECT * from tblPartTeam WHERE person = '" & rsPeople!User & "'") 'find all of their projects, go through every part project they are on
     Do While Not rsPartNumbers.EOF
-        Set rsOpenSteps = db.OpenRecordset("SELECT * from tblPartSteps WHERE partNumber = '" & rsPartNumbers!partNumber & "' AND responsible = '" & rsPeople!Dept & "' AND status <> 'Closed'")
+        Set rsOpenSteps = db.OpenRecordset("SELECT * from tblPartSteps WHERE partNumber = '" & rsPartNumbers!partNumber & "' AND responsible = '" & rsPeople!dept & "' AND status <> 'Closed'")
         
         Do While Not rsOpenSteps.EOF
             Select Case rsOpenSteps!dueDate
@@ -557,7 +648,7 @@ Dim db As Database
 Set db = CurrentDb()
 
 Dim rsProgram As Recordset, rsEvents As Recordset, rsWO As Recordset, rsComments As Recordset, rsPeople As Recordset, rsNoti As Recordset
-Dim controlNum As Long, comments As String, dueDate, body As String, strValues
+Dim controlNum As Long, Comments As String, dueDate, body As String, strValues
 
 dueDate = addWorkdays(Date, 5)
 
@@ -584,9 +675,9 @@ Do While Not rsEvents.EOF
     rsWO.Update
     
     controlNum = db.OpenRecordset("SELECT @@identity")(0).Value
-    comments = "'Hold program review for " & rsProgram!modelCode & " " & rsEvents!eventTitle & "'"
+    Comments = "'Hold program review for " & rsProgram!modelCode & " " & rsEvents!eventTitle & "'"
     
-    db.Execute "INSERT INTO dbo_tblComments(Control_Number, Comments) VALUES(" & controlNum & "," & comments & ")"
+    db.Execute "INSERT INTO dbo_tblComments(Control_Number, Comments) VALUES(" & controlNum & "," & Comments & ")"
     
     body = emailContentGen("Program Review WO", "WO Notice", "WO Auto-Created for " & rsProgram!modelCode & " Program Review", "Event: " & rsEvents!eventTitle, "WO#" & controlNum, "Due: " & dueDate, "Sent On: " & CStr(Now()))
     
