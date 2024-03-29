@@ -6,10 +6,10 @@ Declare PtrSafe Function ShellExecute Lib "shell32.dll" Alias "ShellExecuteA" (B
 
 Public Sub openPath(Path)
 On Error GoTo err_handler
-    If StrConv(Right(Path, 4), vbLowerCase) = ".pdf" Then
-        Shell "explorer.exe " & Path, vbNormalFocus
-        Exit Sub
-    End If
+'    If StrConv(Right(Path, 4), vbLowerCase) = ".pdf" Then ' COMMENTING OUT DUE TO ISSUE WITH 28717
+'        Shell "explorer.exe " & Path, vbNormalFocus
+'        Exit Sub
+'    End If
     
     CreateObject("Shell.Application").open CVar(Path)
 Exit Sub
