@@ -14,7 +14,7 @@ On Error GoTo err_handler
     CreateObject("Shell.Application").open CVar(Path)
 Exit Sub
 err_handler:
-    Call handleError("modGlobal", "openPath", Err.description, Err.number)
+    Call handleError("modGlobal", "openPath", Err.Description, Err.number)
 End Sub
 
 Function createShortcut(lnkLocation As String, targetLocation As String, shortcutName As String)
@@ -22,13 +22,13 @@ On Error GoTo err_handler
 
 With CreateObject("WScript.Shell").createShortcut(lnkLocation & ".lnk")
     .TargetPath = targetLocation
-    .description = shortcutName
+    .Description = shortcutName
      .save
 End With
 
 Exit Function
 err_handler:
-    Call handleError("modGlobal", "createShortcut", Err.description, Err.number)
+    Call handleError("modGlobal", "createShortcut", Err.Description, Err.number)
 End Function
 
 Public Sub checkMkDir(mainFolder, partNum, Optional variableVal)
@@ -63,7 +63,7 @@ Else
 End If
 Exit Sub
 err_handler:
-    Call handleError("basGlobal", "checkMkDir", Err.description, Err.number)
+    Call handleError("basGlobal", "checkMkDir", Err.Description, Err.number)
 End Sub
 
 Function mainFolder(sName As String) As String

@@ -17,7 +17,7 @@ End Select
 
 Exit Function
 err_handler:
-    Call handleError("wdbGlocalFunctions", "labelUpdate", Err.description, Err.number)
+    Call handleError("wdbGlocalFunctions", "labelUpdate", Err.Description, Err.number)
 End Function
 
 Public Function labelDirection(label As String)
@@ -29,7 +29,7 @@ Else
 End If
 Exit Function
 err_handler:
-    Call handleError("wdbGlocalFunctions", "labelDirection", Err.description, Err.number)
+    Call handleError("wdbGlocalFunctions", "labelDirection", Err.Description, Err.number)
 End Function
 
 Public Function registerWdbUpdates(table As String, ID As Variant, column As String, oldVal As Variant, newVal As Variant, Optional tag0 As String = "", Optional tag1 As Variant = "")
@@ -63,7 +63,7 @@ Set rs1 = Nothing
 
 Exit Function
 err_handler:
-    Call handleError("wdbGlocalFunctions", "registerWdbUpdates", Err.description, Err.number)
+    Call handleError("wdbGlocalFunctions", "registerWdbUpdates", Err.Description, Err.number)
 End Function
 
 Public Function registerSalesUpdates(table As String, ID As Variant, column As String, oldVal As Variant, newVal As Variant, Optional tag0 As String = "", Optional tag1 As Variant = "")
@@ -97,7 +97,7 @@ Set rs1 = Nothing
 
 Exit Function
 err_handler:
-    Call handleError("wdbGlocalFunctions", "registerSalesUpdates", Err.description, Err.number)
+    Call handleError("wdbGlocalFunctions", "registerSalesUpdates", Err.Description, Err.number)
 End Function
 
 Public Function addWorkdays(dateInput As Date, daysToAdd As Long) As Date
@@ -125,7 +125,7 @@ addWorkdays = testDate
 
 Exit Function
 err_handler:
-    Call handleError("wdbGlobalFunctions", "addWorkdays", Err.description, Err.number)
+    Call handleError("wdbGlobalFunctions", "addWorkdays", Err.Description, Err.number)
 End Function
 
 Public Function countWorkdays(oldDate As Date, newDate As Date) As Long
@@ -141,7 +141,7 @@ countWorkdays = total - sunday - saturday - holidays
 
 Exit Function
 err_handler:
-    Call handleError("wdbGlobalFunctions", "countWorkdays", Err.description, Err.number)
+    Call handleError("wdbGlobalFunctions", "countWorkdays", Err.Description, Err.number)
 End Function
 
 Function getFullName() As String
@@ -395,7 +395,7 @@ CurrentDb().Execute "INSERT INTO tblNotificationsSP(recipientUser,recipientEmail
 Exit Function
 err_handler:
 sendNotification = False
-MsgBox Err.description, vbCritical, "Notification Error"
+MsgBox Err.Description, vbCritical, "Notification Error"
 End Function
 
 Function privilege(pref) As Boolean
@@ -474,7 +474,7 @@ Do While pnLogMax > spListMax
     
     rsSP!creator = Nz(rsLog!Issuer, "workingdb")
     rsSP!PartDescription = Nz(rsLog!Part_Description, "empty")
-    rsSP!customerId = Nz(rsLog!customer, 0)
+    rsSP!customerId = Nz(rsLog!Customer, 0)
     rsSP!customerPartNumber = rsLog!Customer_Part_Number
     rsSP!materialType = Nz(DLookup("Material_Type", "dbo_tblMaterialTypes", "Material_Type_ID = " & Nz(rsLog!Material_Type, 0)))
     rsSP!Color = Nz(DLookup("Color_Name", "dbo_tblColors", "Color_ID = " & Nz(rsLog!Color, 0)), "")

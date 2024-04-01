@@ -641,7 +641,7 @@ Private Function fncWriteExcel(ByRef iobjRecords As CATIAPropertyTable, _
             Exit Function
         End If
         Form_frmPLM.FileName.Value = typRecord.FileName
-        Form_frmPLM.FileID.Value = typRecord.ID
+        Form_frmPLM.fileId.Value = typRecord.ID
         Form_frmPLM.Lv.Value = typRecord.Level
         Form_frmPLM.Amount.Value = typRecord.Amount
         Form_frmPLM.Link_ID.Value = typRecord.LinkID

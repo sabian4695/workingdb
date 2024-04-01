@@ -55,7 +55,7 @@ SetNavButtons_Exit:
 On Error Resume Next
 Exit Sub
 SetNavButtons_Error:
-MsgBox "Error " & Err.number & " (" & Err.description & _
+MsgBox "Error " & Err.number & " (" & Err.Description & _
 ") in procedure SetNavButtons of Module modFormOperations"
 GoTo SetNavButtons_Exit
 End Sub

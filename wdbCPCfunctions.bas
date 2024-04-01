@@ -22,5 +22,5 @@ openPath (FilePath)
 
 Exit Function
 err_handler:
-    Call handleError("wdbCPCfunctions", "openCPCprojectFolder", Err.description, Err.number)
+    Call handleError("wdbCPCfunctions", "openCPCprojectFolder", Err.Description, Err.number)
 End Function

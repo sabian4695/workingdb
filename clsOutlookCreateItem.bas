@@ -210,10 +210,10 @@ Public Function GetFolderFromPath(PathString As String) As Object 'Outlook.Folde
     If Left(PathString, 2) = "\\" Then PathString = Mid(PathString, 3)
     PathArray = Split(PathString, "\\")
     
-    Set xFolder = Me.OutlookApplication.Session.Folders.item(PathArray(0))
+    Set xFolder = Me.OutlookApplication.Session.Folders.ITEM(PathArray(0))
     
     For counter = 1 To UBound(PathArray)
-        Set xFolder = xFolder.Folders.item(PathArray(counter))
+        Set xFolder = xFolder.Folders.ITEM(PathArray(counter))
     Next
     
     Set GetFolderFromPath = xFolder
@@ -489,7 +489,7 @@ Public Function CreateContactItem(Optional lastName As String = "", Optional fir
 ' value is in the second
 '===============================================================================
             For counter = LBound(OtherProperties, 1) To UBound(OtherProperties, 1)
-                Set ItemProp = .ItemProperties.item(OtherProperties(counter, LBound(OtherProperties, 2)))
+                Set ItemProp = .ItemProperties.ITEM(OtherProperties(counter, LBound(OtherProperties, 2)))
                 ItemProp.Value = OtherProperties(counter, UBound(OtherProperties, 2))
             Next
         End If
@@ -532,7 +532,7 @@ Public Function CreateContactItem(Optional lastName As String = "", Optional fir
 ErrHandler:
     
 '-- log error if applicable
-    If Me.ErrorLoggingEnabled Then WriteToLog "ContactItem", tag, CurrentProperty, Err.description
+    If Me.ErrorLoggingEnabled Then WriteToLog "ContactItem", tag, CurrentProperty, Err.Description
     CreateContactItem = False
     
 cleanUp:
@@ -698,7 +698,7 @@ Public Function CreateMailItem(SendTo As Variant, Optional CC As Variant = "", _
         .DeleteAfterSubmit = DeleteAfterSubmit
         
 '-- added in Outlook 2007.  By checking the Outlook version we avoid a potential error
-        If Val(olApp.version) >= 12 Then
+        If Val(olApp.Version) >= 12 Then
             CurrentProperty = "FlagRequest"
             If FlagRequest <> "" Then .FlagRequest = FlagRequest
         End If
@@ -744,7 +744,7 @@ Public Function CreateMailItem(SendTo As Variant, Optional CC As Variant = "", _
 ' value is in the second
 '===============================================================================
             For counter = LBound(OtherProperties, 1) To UBound(OtherProperties, 1)
-                Set ItemProp = .ItemProperties.item(OtherProperties(counter, LBound(OtherProperties, 2)))
+                Set ItemProp = .ItemProperties.ITEM(OtherProperties(counter, LBound(OtherProperties, 2)))
                 ItemProp.Value = OtherProperties(counter, UBound(OtherProperties, 2))
             Next
         End If
@@ -766,7 +766,7 @@ Public Function CreateMailItem(SendTo As Variant, Optional CC As Variant = "", _
 ErrHandler:
     
 '-- log error if applicable
-    If Me.ErrorLoggingEnabled Then WriteToLog "MailItem", tag, CurrentProperty, Err.description
+    If Me.ErrorLoggingEnabled Then WriteToLog "MailItem", tag, CurrentProperty, Err.Description
     CreateMailItem = False
     
 cleanUp:
@@ -1003,7 +1003,7 @@ Function CreateAppointmentItem(StartAt As Date, Optional duration As Long = 30, 
 ' value is in the second
 '===============================================================================
             For counter = LBound(OtherProperties, 1) To UBound(OtherProperties, 1)
-                Set ItemProp = .ItemProperties.item(OtherProperties(counter, LBound(OtherProperties, 2)))
+                Set ItemProp = .ItemProperties.ITEM(OtherProperties(counter, LBound(OtherProperties, 2)))
                 ItemProp.Value = OtherProperties(counter, UBound(OtherProperties, 2))
             Next
         End If
@@ -1055,7 +1055,7 @@ Function CreateAppointmentItem(StartAt As Date, Optional duration As Long = 30, 
 ErrHandler:
     
 '-- log error if applicable
-    If Me.ErrorLoggingEnabled Then WriteToLog "AppointmentItem", tag, CurrentProperty, Err.description
+    If Me.ErrorLoggingEnabled Then WriteToLog "AppointmentItem", tag, CurrentProperty, Err.Description
     CreateAppointmentItem = False
     
 cleanUp:
@@ -1124,7 +1124,7 @@ Function CreateNoteItem(body As String, Optional Categories As String = "", _
 ' value is in the second
 '===============================================================================
             For counter = LBound(OtherProperties, 1) To UBound(OtherProperties, 1)
-                Set ItemProp = .ItemProperties.item(OtherProperties(counter, LBound(OtherProperties, 2)))
+                Set ItemProp = .ItemProperties.ITEM(OtherProperties(counter, LBound(OtherProperties, 2)))
                 ItemProp.Value = OtherProperties(counter, UBound(OtherProperties, 2))
             Next
         End If
@@ -1166,7 +1166,7 @@ Function CreateNoteItem(body As String, Optional Categories As String = "", _
 ErrHandler:
     
 '-- log error if applicable
-    If Me.ErrorLoggingEnabled Then WriteToLog "NoteItem", tag, CurrentProperty, Err.description
+    If Me.ErrorLoggingEnabled Then WriteToLog "NoteItem", tag, CurrentProperty, Err.Description
     CreateNoteItem = False
     
 cleanUp:
@@ -1311,7 +1311,7 @@ Function CreateTaskItem(subject As String, Optional AssignTo As Variant = "", _
 ' value is in the second
 '===============================================================================
             For counter = LBound(OtherProperties, 1) To UBound(OtherProperties, 1)
-                Set ItemProp = .ItemProperties.item(OtherProperties(counter, LBound(OtherProperties, 2)))
+                Set ItemProp = .ItemProperties.ITEM(OtherProperties(counter, LBound(OtherProperties, 2)))
                 ItemProp.Value = OtherProperties(counter, UBound(OtherProperties, 2))
             Next
         End If
@@ -1364,7 +1364,7 @@ Function CreateTaskItem(subject As String, Optional AssignTo As Variant = "", _
 ErrHandler:
     
 '-- log error if applicable
-    If Me.ErrorLoggingEnabled Then WriteToLog "TaskRequestItem", tag, CurrentProperty, Err.description
+    If Me.ErrorLoggingEnabled Then WriteToLog "TaskRequestItem", tag, CurrentProperty, Err.Description
     CreateTaskItem = False
     
 cleanUp:
@@ -1385,6 +1385,6 @@ Private Sub WriteToLog(ItemType As String, tag As String, CurrentProperty As Str
 '-- increment error count, and write record to log file
     TotalErrors = TotalErrors + 1
     
-    tsLog.WriteLine Join(Array(Format(Now, "yyyy-mm-dd hh:nn:ss"), ItemType, tag, CurrentProperty, Err.description), ",")
+    tsLog.WriteLine Join(Array(Format(Now, "yyyy-mm-dd hh:nn:ss"), ItemType, tag, CurrentProperty, Err.Description), ",")
     
 End Sub

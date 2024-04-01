@@ -176,7 +176,7 @@ Set rsOnHand = Nothing
 
 Exit Function
 err_handler:
-    Call handleError("wdbProjectE", "getDOH", Err.description, Err.number)
+    Call handleError("wdbProjectE", "getDOH", Err.Description, Err.number)
 End Function
 
 Public Function openOrdersByDay(partNum As String, dayNum As Long) As Double
@@ -212,7 +212,7 @@ Set rsSupplyDemand = Nothing
 
 Exit Function
 err_handler:
-    Call handleError("wdbProjectE", "openOrdersByDay", Err.description, Err.number)
+    Call handleError("wdbProjectE", "openOrdersByDay", Err.Description, Err.number)
 End Function
 
 Public Function createPartProject(projId)
@@ -279,7 +279,7 @@ Set rsStepTemplate = Nothing
 
 Exit Function
 err_handler:
-    Call handleError("wdbProjectE", "createPartProject", Err.description, Err.number)
+    Call handleError("wdbProjectE", "createPartProject", Err.Description, Err.number)
 End Function
 
 Public Function grabTitle(User) As String
@@ -326,7 +326,7 @@ Call setBarColorPercent(percent, "progressBarPROJECT", width)
 
 Exit Function
 err_handler:
-    Call handleError("wdbProjectE", "setProgressBarPROJECT", Err.description, Err.number)
+    Call handleError("wdbProjectE", "setProgressBarPROJECT", Err.Description, Err.number)
 End Function
 
 Public Function setProgressBarSTEPS(gateId As Long)
@@ -358,7 +358,7 @@ Call setBarColorPercent(percent, "progressBarSTEPS", width)
 
 Exit Function
 err_handler:
-    Call handleError("wdbProjectE", "setProgressBarSTEPS", Err.description, Err.number)
+    Call handleError("wdbProjectE", "setProgressBarSTEPS", Err.Description, Err.number)
 End Function
 
 Function setBarColorPercent(percent As Double, controlName As String, barWidth As Long)
@@ -387,7 +387,7 @@ Form_frmPartDashboard.Controls(controlName).BorderColor = pColor
 
 Exit Function
 err_handler:
-    Call handleError("wdbProjectE", "setBarColorPercent", Err.description, Err.number)
+    Call handleError("wdbProjectE", "setBarColorPercent", Err.Description, Err.number)
 End Function
 
 Function notifyPE(partNum As String, notiType As String, stepTitle As String) As Boolean
@@ -420,7 +420,7 @@ notifyPE = True
 
 Exit Function
 err_handler:
-    Call handleError("wdbProjectE", "notifyPE", Err.description, Err.number)
+    Call handleError("wdbProjectE", "notifyPE", Err.Description, Err.number)
 End Function
 
 Function scanSteps(partNum As String, routineName As String, Optional identifier As Variant = "notFound") As Boolean
@@ -448,12 +448,12 @@ Do While Not rsSteps.EOF
     
     If InStr(rsStepActions!compareData, ",") > 0 Then 'check for multiple values - always seen as an OR command, not AND
         'make an array of the values and check if any match
-        Dim checkIf() As String, item
+        Dim checkIf() As String, ITEM
         checkIf = Split(rsStepActions!compareData, ",")
-        For Each item In checkIf
-            matches = CStr(Nz(rsLookItUp(rsStepActions!compareColumn), "")) = item
+        For Each ITEM In checkIf
+            matches = CStr(Nz(rsLookItUp(rsStepActions!compareColumn), "")) = ITEM
             If matches Then meetsCriteria = True
-        Next item
+        Next ITEM
     Else
         matches = CStr(Nz(rsLookItUp(rsStepActions!compareColumn), "")) = rsStepActions!compareData
         If matches Then meetsCriteria = True
@@ -475,7 +475,7 @@ scanSteps = True
 
 Exit Function
 err_handler:
-    Call handleError("wdbProjectE", "scanSteps", Err.description, Err.number)
+    Call handleError("wdbProjectE", "scanSteps", Err.Description, Err.number)
 End Function
 
 Function iHaveOpenApproval(stepId As Long)
@@ -496,7 +496,7 @@ Set rsApprovals = Nothing
 
 Exit Function
 err_handler:
-    Call handleError("wdbProjectE", "iHaveOpenApproval", Err.description, Err.number)
+    Call handleError("wdbProjectE", "iHaveOpenApproval", Err.Description, Err.number)
 End Function
 
 Function iAmApprover(approvalId As Long) As Boolean
@@ -517,7 +517,7 @@ Set rsApprovals = Nothing
 
 Exit Function
 err_handler:
-    Call handleError("wdbProjectE", "iAmApprover", Err.description, Err.number)
+    Call handleError("wdbProjectE", "iAmApprover", Err.Description, Err.number)
 End Function
 
 Function issueCount(partNum As String) As Long
@@ -527,7 +527,7 @@ issueCount = DCount("recordId", "tblPartIssues", "partNumber = '" & partNum & "'
 
 Exit Function
 err_handler:
-    Call handleError("wdbProjectE", "issueCount", Err.description, Err.number)
+    Call handleError("wdbProjectE", "issueCount", Err.Description, Err.number)
 End Function
 
 Function emailPartInfo(partNum As String, noteTxt As String) As Boolean
@@ -572,7 +572,7 @@ emailPartInfo = True
 
 Exit Function
 err_handler:
-    Call handleError("wdbProjectE", "emailPartInfo", Err.description, Err.number)
+    Call handleError("wdbProjectE", "emailPartInfo", Err.Description, Err.number)
 End Function
 
 Public Function registerPartUpdates(table As String, ID As Variant, column As String, oldVal As Variant, newVal As Variant, partNumber As String, Optional tag1 As String = "", Optional tag2 As Variant = "")
@@ -607,7 +607,7 @@ Set rs1 = Nothing
 
 Exit Function
 err_handler:
-    Call handleError("wdbProjectE", "registerPartUpdates", Err.description, Err.number)
+    Call handleError("wdbProjectE", "registerPartUpdates", Err.Description, Err.number)
 End Function
 
 Function toolShipAuthorizationEmail(toolNumber As String, stepId As Long, shipMethod As String, partNumber As String) As Boolean
@@ -667,7 +667,7 @@ toolShipAuthorizationEmail = True
 
 Exit Function
 err_handler:
-    Call handleError("wdbProjectE", "toolShipAuthorizationEmail", Err.description, Err.number)
+    Call handleError("wdbProjectE", "toolShipAuthorizationEmail", Err.Description, Err.number)
 End Function
 
 Function emailPartApprovalNotification(stepId As Long, partNumber As String) As Boolean
@@ -700,7 +700,7 @@ emailPartApprovalNotification = True
 
 Exit Function
 err_handler:
-    Call handleError("wdbProjectE", "emailPartApprovalNotification", Err.description, Err.number)
+    Call handleError("wdbProjectE", "emailPartApprovalNotification", Err.Description, Err.number)
 End Function
 
 Function generateEmailWarray(Title As String, subTitle As String, primaryMessage As String, detailTitle As String, arr() As Variant) As String
@@ -708,17 +708,17 @@ On Error GoTo err_handler
 
 Dim tblHeading As String, tblFooter As String, strHTMLBody As String, extraFooter As String, detailTable As String
 
-Dim item, i
+Dim ITEM, i
 i = 0
 detailTable = ""
-For Each item In arr()
+For Each ITEM In arr()
     If i = UBound(arr) Then
-        detailTable = detailTable & "<tr style=""border-collapse: collapse;""><td style=""padding: .1em 2em 1em 2em;"">" & item & "</td></tr>"
+        detailTable = detailTable & "<tr style=""border-collapse: collapse;""><td style=""padding: .1em 2em 1em 2em;"">" & ITEM & "</td></tr>"
     Else
-        detailTable = detailTable & "<tr style=""border-collapse: collapse;""><td style=""padding: .1em 2em;"">" & item & "</td></tr>"
+        detailTable = detailTable & "<tr style=""border-collapse: collapse;""><td style=""padding: .1em 2em;"">" & ITEM & "</td></tr>"
     End If
     i = i + 1
-Next item
+Next ITEM
 
 tblHeading = "<table style=""width: 100%; margin: 0 auto; padding: 2em 3em; text-align: center; background-color: #fafafa;"">" & _
                             "<tbody>" & _
@@ -758,5 +758,5 @@ generateEmailWarray = strHTMLBody
 
 Exit Function
 err_handler:
-    Call handleError("wdbProjectE", "generateEmailWarray", Err.description, Err.number)
+    Call handleError("wdbProjectE", "generateEmailWarray", Err.Description, Err.number)
 End Function
