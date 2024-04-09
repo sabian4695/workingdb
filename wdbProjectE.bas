@@ -133,7 +133,7 @@ On Error Resume Next
 getCurrentStepDue = ""
 
 Dim rs1 As Recordset
-Set rs1 = CurrentDb().OpenRecordset("SELECT Min(dueDate) as minDue from tblPartSteps WHERE partProjectId = " & projId & " AND status <> 'closed'")
+Set rs1 = CurrentDb().OpenRecordset("SELECT Min(dueDate) as minDue from tblPartSteps WHERE partProjectId = " & projId & " AND status <> 'Closed'")
 
 getCurrentStepDue = Nz(rs1!minDue, "")
 
