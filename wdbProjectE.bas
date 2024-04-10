@@ -16,6 +16,21 @@ Set rs1 = Nothing
 err_handler:
 End Function
 
+Public Function grabHistoryRef(dataValue As Variant, columnName As String) As String
+On Error GoTo err_handler
+
+grabHistoryRef = dataValue
+
+dataValue = CDbl(dataValue)
+
+Dim rs1 As Recordset
+Set rs1 = CurrentDb.OpenRecordset("SELECT " & columnName & " FROM tblDropDownsSP WHERE ID = " & dataValue)
+
+grabHistoryRef = rs1(columnName)
+
+err_handler:
+End Function
+
 Public Function completelyDeletePartProjectAndInfo()
 
 '-----THIS SUB IS NOT YET USABLE

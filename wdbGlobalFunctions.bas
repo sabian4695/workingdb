@@ -17,7 +17,7 @@ End Select
 
 Exit Function
 err_handler:
-    Call handleError("wdbGlocalFunctions", "labelUpdate", Err.Description, Err.number)
+    Call handleError("wdbGlobalFunctions", "labelUpdate", Err.Description, Err.number)
 End Function
 
 Public Function labelDirection(label As String)
@@ -29,7 +29,7 @@ Else
 End If
 Exit Function
 err_handler:
-    Call handleError("wdbGlocalFunctions", "labelDirection", Err.Description, Err.number)
+    Call handleError("wdbGlobalFunctions", "labelDirection", Err.Description, Err.number)
 End Function
 
 Public Function registerWdbUpdates(table As String, ID As Variant, column As String, oldVal As Variant, newVal As Variant, Optional tag0 As String = "", Optional tag1 As Variant = "")
@@ -63,7 +63,7 @@ Set rs1 = Nothing
 
 Exit Function
 err_handler:
-    Call handleError("wdbGlocalFunctions", "registerWdbUpdates", Err.Description, Err.number)
+    Call handleError("wdbGlobalFunctions", "registerWdbUpdates", Err.Description, Err.number)
 End Function
 
 Public Function registerSalesUpdates(table As String, ID As Variant, column As String, oldVal As Variant, newVal As Variant, Optional tag0 As String = "", Optional tag1 As Variant = "")
@@ -97,7 +97,7 @@ Set rs1 = Nothing
 
 Exit Function
 err_handler:
-    Call handleError("wdbGlocalFunctions", "registerSalesUpdates", Err.Description, Err.number)
+    Call handleError("wdbGlobalFunctions", "registerSalesUpdates", Err.Description, Err.number)
 End Function
 
 Public Function addWorkdays(dateInput As Date, daysToAdd As Long) As Date
