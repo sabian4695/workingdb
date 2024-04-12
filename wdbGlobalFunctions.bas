@@ -406,7 +406,7 @@ Function userData(data) As String
     userData = DLookup("[" & data & "]", "[tblPermissions]", "[User] = '" & Environ("username") & "'")
 End Function
 
-Function restrict(userName As String, dept As String, Optional reqLevel As String, Optional orAbove As Boolean = False) As Boolean
+Function restrict(userName As String, dept As String, Optional reqLevel As String = "", Optional orAbove As Boolean = False) As Boolean
 Dim d As Boolean, l As Boolean, rsPerm As Recordset
 d = False
 l = False
@@ -420,7 +420,7 @@ l = True
 If rsPerm!dept = dept Then d = False 'if correct department, set d to false
 
 Select Case True 'figure out level
-    Case IsNull(reqLevel) 'if level isn't specified, this doesn't matter! - allow
+    Case reqLevel = "" 'if level isn't specified, this doesn't matter! - allow
         l = False
     Case rsPerm("level") = reqLevel 'if the level matches perfectly, allow
         l = False
