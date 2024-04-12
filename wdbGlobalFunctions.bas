@@ -406,23 +406,29 @@ Function userData(data) As String
     userData = DLookup("[" & data & "]", "[tblPermissions]", "[User] = '" & Environ("username") & "'")
 End Function
 
-Function restrict(userName As String, dept As String, Optional Level As String) As Boolean
-Dim d As Boolean, l As Boolean
+Function restrict(userName As String, dept As String, Optional reqLevel As String, Optional orAbove As Boolean = False) As Boolean
+Dim d As Boolean, l As Boolean, rsPerm As Recordset
 d = False
 l = False
 
-    If (DLookup("[Dept]", "[tblPermissions]", "[User] = '" & userName & "'") = dept) Then
-        d = True
-    End If
-    
-    If (IsNull(Level) Or Level = "") Then
-        restrict = Not (d)
-    Else
-        If (DLookup("[Level]", "[tblPermissions]", "[User] = '" & userName & "'") = Level) Then
-            l = True
-        End If
-        restrict = Not (d And l)
-    End If
+Set rsPerm = CurrentDb.OpenRecordset("SELECT * FROM tblPermissions WHERE user = '" & userName & "'")
+'restrict = true means you cannot access
+'set No Access first, then allow as it is OK
+d = True
+l = True
+
+If rsPerm!dept = dept Then d = False 'if correct department, set d to false
+
+Select Case True 'figure out level
+    Case IsNull(reqLevel) 'if level isn't specified, this doesn't matter! - allow
+        l = False
+    Case rsPerm("level") = reqLevel 'if the level matches perfectly, allow
+        l = False
+    Case orAbove And reqLevel = "Supervisor" 'if supervisor and above check level and both supervisors and managers
+        If rsPerm("level") = "Supervisor" Or rsPerm("level") = "Manager" Then l = False
+End Select
+
+restrict = d Or l
 
 End Function
 
