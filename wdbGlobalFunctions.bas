@@ -480,7 +480,7 @@ Do While Not rsPeople.EOF 'go through every active person
     If rsPeople!notifications = 2 And ranThisWeek And specificUser = "" Then GoTo nextPerson 'this person only wants weekly notifications
     
     If rsPeople!dept = "Design" Then
-        Set rsOpenWOs = db.OpenRecordset("SELECT * from qryWOsforNotifications WHERE assignee = '" & rsPeople!User & "'")
+        Set rsOpenWOs = db.OpenRecordset("SELECT * from qryWOsforNotifications WHERE assignee = '" & rsPeople!user & "'")
     
         Do While Not rsOpenWOs.EOF
             Select Case rsOpenWOs!Due
@@ -503,7 +503,7 @@ Do While Not rsPeople.EOF 'go through every active person
         Set rsOpenWOs = Nothing
     End If
 
-    Set rsPartNumbers = db.OpenRecordset("SELECT * from tblPartTeam WHERE person = '" & rsPeople!User & "'") 'find all of their projects, go through every part project they are on
+    Set rsPartNumbers = db.OpenRecordset("SELECT * from tblPartTeam WHERE person = '" & rsPeople!user & "'") 'find all of their projects, go through every part project they are on
     Do While Not rsPartNumbers.EOF
         Set rsOpenSteps = db.OpenRecordset("SELECT * from tblPartSteps WHERE partNumber = '" & rsPartNumbers!partNumber & "' AND responsible = '" & rsPeople!dept & "' AND status <> 'Closed'")
         
@@ -536,7 +536,7 @@ Do While Not rsPeople.EOF 'go through every active person
         Set rsNoti = db.OpenRecordset("tblNotificationsSP")
         With rsNoti
             .addNew
-            !recipientUser = rsPeople!User
+            !recipientUser = rsPeople!user
             !recipientEmail = rsPeople!userEmail
             !senderUser = Environ("username")
             !senderEmail = getEmail(Environ("username"))
@@ -608,7 +608,7 @@ Do While Not rsEvents.EOF
     Do While Not rsPeople.EOF
         With rsNoti
             .addNew
-            !recipientUser = rsPeople!User
+            !recipientUser = rsPeople!user
             !recipientEmail = rsPeople!userEmail
             !senderUser = Environ("username")
             !senderEmail = getEmail(Environ("username"))

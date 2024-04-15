@@ -896,7 +896,7 @@ Function CreateAppointmentItem(StartAt As Date, Optional duration As Long = 30, 
         If EndFromDuration >= EndAt Then
             .duration = duration
         Else
-            .end = EndAt
+            .End = EndAt
         End If
         
 '-- add RequiredAttendees, OptionalAttendees, Resources, and Organizer.

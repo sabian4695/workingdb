@@ -297,16 +297,16 @@ err_handler:
     Call handleError("wdbProjectE", "createPartProject", Err.Description, Err.number)
 End Function
 
-Public Function grabTitle(User) As String
+Public Function grabTitle(user) As String
 On Error GoTo err_handler
 
-If IsNull(User) Then
+If IsNull(user) Then
     grabTitle = ""
     Exit Function
 End If
 
 Dim rsPermissions As Recordset
-Set rsPermissions = CurrentDb().OpenRecordset("SELECT * from tblPermissions where user = '" & User & "'")
+Set rsPermissions = CurrentDb().OpenRecordset("SELECT * from tblPermissions where user = '" & user & "'")
 grabTitle = rsPermissions!dept & " " & rsPermissions!Level
 
 err_handler:
@@ -316,7 +316,7 @@ Public Function setProgressBarPROJECT()
 On Error GoTo err_handler
 
 Dim percent As Double, width As Long
-width = 17994
+width = 17820
 
 Dim rsSteps As Recordset
 Set rsSteps = CurrentDb().OpenRecordset("SELECT * from tblPartSteps WHERE partProjectId = " & Form_frmPartDashboard.recordId)
@@ -348,7 +348,7 @@ Public Function setProgressBarSTEPS(gateId As Long)
 On Error GoTo err_handler
 
 Dim percent As Double, width As Long
-width = 12246
+width = 12000
 
 Dim rsSteps As Recordset
 Set rsSteps = CurrentDb().OpenRecordset("SELECT * from tblPartSteps WHERE partGateId = " & gateId)
