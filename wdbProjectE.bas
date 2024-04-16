@@ -21,6 +21,14 @@ On Error GoTo err_handler
 
 grabHistoryRef = dataValue
 
+If dataValue = "0" Then
+    grabHistoryRef = "0 / False"
+    Exit Function
+ElseIf dataValue = "-1" Then
+    grabHistoryRef = "True"
+    Exit Function
+End If
+
 dataValue = CDbl(dataValue)
 
 Dim rs1 As Recordset
