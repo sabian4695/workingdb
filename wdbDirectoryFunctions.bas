@@ -17,6 +17,14 @@ err_handler:
     Call handleError("modGlobal", "openPath", Err.Description, Err.number)
 End Sub
 
+Function replaceDriveLetters(linkInput) As String
+
+replaceDriveLetters = Replace(linkInput, "N:\", "\\ncm-fs2\data\Department\")
+replaceDriveLetters = Replace(linkInput, "T:\", "\\design\data\")
+replaceDriveLetters = Replace(linkInput, "S:\", "\\nas01\allshare\")
+
+End Function
+
 Function createShortcut(lnkLocation As String, targetLocation As String, shortcutName As String)
 On Error GoTo err_handler
 

@@ -543,7 +543,7 @@ End Function
 
 Public Function CreateMailItem(SendTo As Variant, Optional CC As Variant = "", _
     Optional BCC As Variant = "", Optional subject As String = "", _
-    Optional body As String = "", Optional HTMLBody As String = "", _
+    Optional body As String = "", Optional htmlBody As String = "", _
     Optional Attachments As Variant, Optional Importance As OlImportance = olImportanceNormal, _
     Optional Categories As String = "", Optional DeferredDeliveryTime As Date = #1/1/1950#, _
     Optional DeleteAfterSubmit As Boolean = False, Optional FlagRequest As String = "", _
@@ -673,7 +673,7 @@ Public Function CreateMailItem(SendTo As Variant, Optional CC As Variant = "", _
         CurrentProperty = "Body"
         If body <> "" Then .body = body
         CurrentProperty = "HTMLBody"
-        If HTMLBody <> "" And body = "" Then .HTMLBody = HTMLBody
+        If htmlBody <> "" And body = "" Then .htmlBody = htmlBody
         
 '-- process attachments.  For multiple files, use an array.  For a single file, use a string
         CurrentProperty = "Attachments"

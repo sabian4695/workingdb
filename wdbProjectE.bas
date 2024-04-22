@@ -16,6 +16,56 @@ Set rs1 = Nothing
 err_handler:
 End Function
 
+Function trialScheduleEmail(Title As String, data() As String, columns, rows) As String
+
+Dim tblHeading As String, tblArraySection As String, strHTMLBody As String
+
+tblHeading = "<table style=""width: 100%; margin: 0 auto; padding: .1em; text-align: center; background-color: #fafafa;"">" & _
+                            "<tbody>" & _
+                                "<tr><td><h2 style=""color: #414141; font-size: 28px; margin-top: 0;"">" & Title & "</h2></td></tr>" & _
+                            "</tbody>" & _
+                        "</table>"
+                        
+Dim i As Long, titleRow, dataRows, j As Long
+i = 0
+tblArraySection = ""
+
+titleRow = "<tr style=""padding: .1em;"">"
+For i = 0 To columns
+    titleRow = titleRow & "<th>" & data(0, i) & "</th>"
+Next i
+titleRow = titleRow & "</tr>"
+
+dataRows = ""
+For j = 1 To rows
+    dataRows = dataRows & "<tr style=""border-collapse: collapse;"">"
+    For i = 0 To columns
+        dataRows = dataRows & "<td style=""padding: .1em;"">" & data(j, i) & "</td>"
+    Next i
+    dataRows = dataRows & "</tr>"
+Next j
+
+    
+tblArraySection = tblArraySection & "<table style=""width: 100%; margin: 0 auto; background: #2b2b2b; color: rgb(255,255,255);""><tbody>" & titleRow & dataRows & "</tbody></table>"
+
+strHTMLBody = "" & _
+"<!DOCTYPE html><html lang=""en"" xmlns=""http://www.w3.org/1999/xhtml"" xmlns:v=""urn:schemas-microsoft-com:vml"" xmlns:o=""urn:schemas-microsoft-com:office:office"">" & _
+    "<head><meta charset=""utf-8""><title>Working DB Notification</title></head>" & _
+    "<body style=""margin: 0 auto; Font-family: 'Montserrat', sans-serif; font-weight: 400; font-size: 15px; line-height: 1.8;"">" & _
+        "<table style=""max-width: 600px; margin: 0 auto; text-align: center; "">" & _
+            "<tbody>" & _
+                "<tr><td>" & tblHeading & "</td></tr>" & _
+                "<tr><td>" & tblArraySection & "</td></tr>" & _
+                "<tr><td><p style=""color: rgb(192, 192, 192); text-align: center;"">This email was created by  &copy; workingDB</p></td></tr>" & _
+            "</tbody>" & _
+        "</table>" & _
+    "</body>" & _
+"</html>"
+
+trialScheduleEmail = strHTMLBody
+
+End Function
+
 Public Function grabHistoryRef(dataValue As Variant, columnName As String) As String
 On Error GoTo err_handler
 
@@ -305,16 +355,16 @@ err_handler:
     Call handleError("wdbProjectE", "createPartProject", Err.Description, Err.number)
 End Function
 
-Public Function grabTitle(User) As String
+Public Function grabTitle(user) As String
 On Error GoTo err_handler
 
-If IsNull(User) Then
+If IsNull(user) Then
     grabTitle = ""
     Exit Function
 End If
 
 Dim rsPermissions As Recordset
-Set rsPermissions = CurrentDb().OpenRecordset("SELECT * from tblPermissions where user = '" & User & "'")
+Set rsPermissions = CurrentDb().OpenRecordset("SELECT * from tblPermissions where user = '" & user & "'")
 grabTitle = rsPermissions!dept & " " & rsPermissions!Level
 
 err_handler:
@@ -683,7 +733,7 @@ Set SendItems = New clsOutlookCreateItem
 
 SendItems.CreateMailItem SendTo:=strTo, _
                              subject:=subjectLine, _
-                             HTMLBody:=toolEmail
+                             htmlBody:=toolEmail
     Set SendItems = Nothing
 
 toolShipAuthorizationEmail = True
@@ -716,7 +766,7 @@ Set SendItems = New clsOutlookCreateItem
 
 SendItems.CreateMailItem SendTo:=strTo, _
                              subject:=subjectLine, _
-                             HTMLBody:=emailBody
+                             htmlBody:=emailBody
     Set SendItems = Nothing
 
 emailPartApprovalNotification = True

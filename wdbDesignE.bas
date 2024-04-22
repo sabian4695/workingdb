@@ -75,6 +75,7 @@ If IsNull(chkFold) Then
                 Exit Function
         End Select
         x = Replace(x, "'", "''")
+        x = replaceDriveLetters(x)
         Call registerDRSUpdates("tblDRStrackerExtras", controlNum, "Check_Folder", "", x)
         
         CurrentDb().Execute ("UPDATE tblDRStrackerExtras SET [tblDRStrackerExtras].[Check_Folder] = '" & x & "' WHERE [tblDRStrackerExtras].[Control_Number] = " & controlNum)
