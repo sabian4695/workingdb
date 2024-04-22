@@ -16,7 +16,7 @@ Set rs1 = Nothing
 err_handler:
 End Function
 
-Function trialScheduleEmail(Title As String, data() As String, columns, rows) As String
+Function trialScheduleEmail(Title As String, data() As Variant, columns, rows) As String
 
 Dim tblHeading As String, tblArraySection As String, strHTMLBody As String
 
@@ -32,15 +32,15 @@ tblArraySection = ""
 
 titleRow = "<tr style=""padding: .1em;"">"
 For i = 0 To columns
-    titleRow = titleRow & "<th>" & data(0, i) & "</th>"
+    titleRow = titleRow & "<th>" & data(i, 0) & "</th>"
 Next i
 titleRow = titleRow & "</tr>"
 
 dataRows = ""
 For j = 1 To rows
-    dataRows = dataRows & "<tr style=""border-collapse: collapse;"">"
+    dataRows = dataRows & "<tr style=""border-collapse: collapse; font-size: 12px; text-align: center; "">"
     For i = 0 To columns
-        dataRows = dataRows & "<td style=""padding: .1em;"">" & data(j, i) & "</td>"
+        dataRows = dataRows & "<td style=""padding: .1em; border: 1px solid; "">" & data(i, j) & "</td>"
     Next i
     dataRows = dataRows & "</tr>"
 Next j
@@ -51,8 +51,8 @@ tblArraySection = tblArraySection & "<table style=""width: 100%; margin: 0 auto;
 strHTMLBody = "" & _
 "<!DOCTYPE html><html lang=""en"" xmlns=""http://www.w3.org/1999/xhtml"" xmlns:v=""urn:schemas-microsoft-com:vml"" xmlns:o=""urn:schemas-microsoft-com:office:office"">" & _
     "<head><meta charset=""utf-8""><title>Working DB Notification</title></head>" & _
-    "<body style=""margin: 0 auto; Font-family: 'Montserrat', sans-serif; font-weight: 400; font-size: 15px; line-height: 1.8;"">" & _
-        "<table style=""max-width: 600px; margin: 0 auto; text-align: center; "">" & _
+    "<body style=""margin: 0 auto; Font-family: 'Montserrat', sans-serif; font-weight: 400; font-size: 10px; line-height: 1.8;"">" & _
+        "<table style=""max-width: 600px; margin: 0 auto; text-align: center;"">" & _
             "<tbody>" & _
                 "<tr><td>" & tblHeading & "</td></tr>" & _
                 "<tr><td>" & tblArraySection & "</td></tr>" & _
