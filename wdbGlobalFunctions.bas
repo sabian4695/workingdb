@@ -3,6 +3,27 @@ Option Explicit
 
 Public bClone As Boolean
 
+Public Function snackBox(sType As String, sTitle As String, sMessage As String, refForm As String, Optional centerBool As Boolean = False, Optional autoClose As Boolean = True)
+
+TempVars.Add "snackType", sType
+TempVars.Add "snackTitle", sTitle
+TempVars.Add "snackMessage", sMessage
+TempVars.Add "snackAutoClose", autoClose
+
+If centerBool Then
+    TempVars.Add "snackLeft", forms(refForm).WindowLeft + forms(refForm).WindowWidth / 2 - 3393
+    TempVars.Add "snackTop", forms(refForm).WindowTop + forms(refForm).WindowHeight / 2 - 500
+Else
+    TempVars.Add "snackLeft", forms(refForm).WindowLeft + 200
+    TempVars.Add "snackTop", forms(refForm).WindowTop + forms(refForm).WindowHeight - 1250
+End If
+
+
+
+DoCmd.OpenForm "frmSnack"
+
+End Function
+
 Public Function labelUpdate(oldLabel As String)
 On Error GoTo err_handler
 
