@@ -466,6 +466,7 @@ If Format(rsAnalytics!anaDate, "mm/dd/yyyy") = Format(Date, "mm/dd/yyyy") Then E
 
 'Call grabSummaryInfo 'disabled while in Beta
 Call checkProgramEvents
+Call scanSteps("all", "firstTimeRun")
 
 db.Execute "INSERT INTO tblAnalytics (module,form,userName,dateUsed) VALUES ('firstTimeRun','Form_frmSplash','" & Environ("username") & "','" & Now() & "')"
 

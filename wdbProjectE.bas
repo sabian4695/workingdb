@@ -463,7 +463,7 @@ err_handler:
     Call handleError("wdbProjectE", "setBarColorPercent", Err.Description, Err.number)
 End Function
 
-Function notifyPE(partNum As String, notiType As String, stepTitle As String) As Boolean
+Function notifyPE(partNum As String, notiType As String, stepTitle As String, Optional sendAlways As Boolean = False) As Boolean
 On Error GoTo err_handler
 
 notifyPE = False
@@ -478,7 +478,7 @@ Do While Not rsPartTeam.EOF
     SendTo = rsPartTeam!person
     Set rsPermissions = CurrentDb().OpenRecordset("SELECT user, userEmail from tblPermissions where user = '" & SendTo & "' AND Dept = 'Project' AND Level = 'Engineer'")
     If rsPermissions.RecordCount = 0 Then GoTo nextRec
-    If SendTo = Environ("username") Then GoTo nextRec
+    If SendTo = Environ("username") And Not sendAlways Then GoTo nextRec
     
     'actually send notification
     Dim body As String
@@ -502,8 +502,12 @@ On Error GoTo err_handler
 scanSteps = False
 'this scans to see if there is a step action that needs to be deleted per its own requirements
 
-Dim rsSteps As Recordset, rsStepActions As Recordset
-Set rsSteps = CurrentDb().OpenRecordset("SELECT recordId, stepActionId, stepType FROM tblPartSteps WHERE partNumber = '" & partNum & "' AND stepActionId <> 0")
+Dim rsSteps As Recordset, rsStepActions As Recordset, dFilt As String, eFilt As String
+'grab all steps that match this partNum and routine name, and are not closed
+dFilt = "SELECT * FROM tblPartSteps WHERE stepActionId IN (SELECT recordId FROM tblPartStepActions WHERE whenToRun = '" & routineName & "') AND status <> 'Closed'"
+eFilt = ""
+If partNum <> "all" Then eFilt = " AND partNumber = '" & partNum & "'"
+Set rsSteps = CurrentDb().OpenRecordset(dFilt & eFilt)
 
 If rsSteps.RecordCount = 0 Then Exit Function 'no steps have actions attached!
 
@@ -515,6 +519,12 @@ Do While Not rsSteps.EOF
     matchingCol = "partNumber"
     If identifier = "notFound" Then identifier = "'" & partNum & "'"
     If routineName = "frmPartMoldingInfo_save" Then matchingCol = "recordId"
+    If rsStepActions!compareTable = "INV_MTL_EAM_ASSET_ATTR_VALUES" Then
+        Dim moldId
+        moldId = DLookup("moldInfoId", "tblPartInfo", "partNumber = '" & rsSteps!partNumber & "'")
+        identifier = "'" & DLookup("toolNumber", "tblPartMoldingInfo", "recordId = " & moldId) & "'" 'toolnumer
+        matchingCol = "SERIAL_NUMBER" 'toolnumber column in this table
+    End If
     Set rsLookItUp = CurrentDb().OpenRecordset("SELECT " & rsStepActions!compareColumn & " FROM " & rsStepActions!compareTable & " WHERE " & matchingCol & " = " & identifier)
     
     meetsCriteria = False
@@ -528,21 +538,46 @@ Do While Not rsSteps.EOF
             If matches Then meetsCriteria = True
         Next ITEM
     Else
-        matches = CStr(Nz(rsLookItUp(rsStepActions!compareColumn), "")) = rsStepActions!compareData
+        matches = CStr(Nz(rsLookItUp(rsStepActions!compareColumn))) = Nz(rsStepActions!compareData)
         If matches Then meetsCriteria = True
     End If
     
     If meetsCriteria <> rsStepActions!compareAction Then GoTo nextOne
     
-    If rsStepActions!stepAction = "deleteStep" Then
-        Call registerPartUpdates("tblPartSteps", rsSteps!recordId, "Deleted - stepAction", rsSteps!stepType, "", partNum, rsSteps!stepType)
-        CurrentDb().Execute "DELETE FROM tblPartSteps WHERE recordId = " & rsSteps!recordId
-        If CurrentProject.AllForms("frmPartDashboard").IsLoaded Then Form_sfrmPartDashboard.Requery
-    End If
+    Select Case rsStepActions!stepAction 'everything matched - what should be done with this step??
+        Case "deleteStep" 'delete the step!
+            Call registerPartUpdates("tblPartSteps", rsSteps!recordId, "Deleted - stepAction", rsSteps!stepType, "", partNum, rsSteps!stepType, "stepAction")
+            CurrentDb().Execute "DELETE FROM tblPartSteps WHERE recordId = " & rsSteps!recordId
+            If CurrentProject.AllForms("frmPartDashboard").IsLoaded Then Form_sfrmPartDashboard.Requery
+        Case "closeStep" 'close the step!
+            Dim currentDate
+            currentDate = Now()
+            Call registerPartUpdates("tblPartSteps", rsSteps!recordId, "closeDate", rsSteps!closeDate, currentDate, rsSteps!partNumber, rsSteps!stepType, rsSteps!partProjectId, "stepAction")
+            Call registerPartUpdates("tblPartSteps", rsSteps!recordId, "status", rsSteps!status, "Closed", rsSteps!partNumber, rsSteps!stepType, rsSteps!partProjectId, "stepAction")
+            rsSteps.Edit
+            rsSteps!closeDate = currentDate
+            rsSteps!status = "Closed"
+            rsSteps.Update
+            
+            If (DCount("recordId", "tblPartSteps", "[closeDate] is null AND partGateId = " & rsSteps!partGateId) = 0) Then
+                Dim gateDate, gateTitle As String
+                gateDate = DLookup("actualDate", "tblPartGates", "recordId = " & rsSteps!partGateId)
+                gateTitle = DLookup("gateTitle", "tblPartGates", "recordId = " & rsSteps!partGateId)
+                Call registerPartUpdates("tblPartGates", rsSteps!partGateId, "actualDate", gateDate, currentDate, rsSteps!partNumber, gateTitle, rsSteps!partProjectId, "stepAction")
+                CurrentDb().Execute "UPDATE tblPartGates SET [actualDate] = '" & currentDate & "' WHERE recordId = " & rsSteps!partGateId
+                If CurrentProject.AllForms("frmPartDashboard").IsLoaded Then Form_sfrmPartDashboardDates.Requery
+            End If
+            
+            Call notifyPE(rsSteps!partNumber, "Closed", rsSteps!stepType)
+            If CurrentProject.AllForms("frmPartDashboard").IsLoaded Then Form_sfrmPartDashboard.Requery
+    End Select
 
 nextOne:
     rsSteps.MoveNext
 Loop
+
+rsSteps.Close
+Set rsSteps = Nothing
 
 scanSteps = True
 
@@ -648,7 +683,9 @@ err_handler:
     Call handleError("wdbProjectE", "emailPartInfo", Err.Description, Err.number)
 End Function
 
-Public Function registerPartUpdates(table As String, ID As Variant, column As String, oldVal As Variant, newVal As Variant, partNumber As String, Optional tag1 As String = "", Optional tag2 As Variant = "")
+Public Function registerPartUpdates(table As String, ID As Variant, column As String, _
+    oldVal As Variant, newVal As Variant, partNumber As String, _
+    Optional tag1 As String = "", Optional tag2 As Variant = "", Optional optionExtra As String = "")
 On Error GoTo err_handler
 
 Dim sqlColumns As String, sqlValues As String
@@ -659,11 +696,15 @@ If (VarType(newVal) = vbDate) Then newVal = Format(newVal, "mm/dd/yyyy")
 Dim rs1 As Recordset
 Set rs1 = CurrentDb().OpenRecordset("tblPartUpdateTracking")
 
+Dim updatedBy As String
+updatedBy = Environ("username")
+If optionExtra <> "" Then updatedBy = optionExtra
+
 With rs1
     .addNew
         !tableName = table
         !tableRecordId = ID
-        !updatedBy = Environ("username")
+        !updatedBy = updatedBy
         !updatedDate = Now()
         !columnName = column
         !previousData = StrQuoteReplace(CStr(Nz(oldVal, "")))
