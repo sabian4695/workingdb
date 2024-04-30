@@ -406,7 +406,7 @@ Public Function setProgressBarSTEPS(gateId As Long)
 On Error GoTo err_handler
 
 Dim percent As Double, width As Long
-width = 12000
+width = 11886
 
 Dim rsSteps As Recordset
 Set rsSteps = CurrentDb().OpenRecordset("SELECT * from tblPartSteps WHERE partGateId = " & gateId)
@@ -519,12 +519,26 @@ Do While Not rsSteps.EOF
     matchingCol = "partNumber"
     If identifier = "notFound" Then identifier = "'" & partNum & "'"
     If routineName = "frmPartMoldingInfo_save" Then matchingCol = "recordId"
-    If rsStepActions!compareTable = "INV_MTL_EAM_ASSET_ATTR_VALUES" Then
-        Dim moldId
-        moldId = DLookup("moldInfoId", "tblPartInfo", "partNumber = '" & rsSteps!partNumber & "'")
-        identifier = "'" & DLookup("toolNumber", "tblPartMoldingInfo", "recordId = " & moldId) & "'" 'toolnumer
-        matchingCol = "SERIAL_NUMBER" 'toolnumber column in this table
-    End If
+    
+    'Check for types of actions based on table name
+    Select Case rsStepActions!compareTable
+        Case "INV_MTL_EAM_ASSET_ATTR_VALUES"
+            Dim moldId
+            moldId = DLookup("moldInfoId", "tblPartInfo", "partNumber = '" & rsSteps!partNumber & "'")
+            identifier = "'" & DLookup("toolNumber", "tblPartMoldingInfo", "recordId = " & moldId) & "'" 'toolnumer
+            matchingCol = "SERIAL_NUMBER" 'toolnumber column in this table
+        Case "ENG_ENG_ENGINEERING_CHANGES"
+            Dim rsECOrev As Recordset 'find the transfer ECO
+            Set rsECOrev = CurrentDb.OpenRecordset("select CHANGE_NOTICE from ENG_ENG_ENGINEERING_CHANGES " & _
+                "where CHANGE_NOTICE IN (select CHANGE_NOTICE from ENG_ENG_REVISED_ITEMS where REVISED_ITEM_ID = " & idNAM(rsSteps!partNumber, "NAM") & " ) " & _
+                "AND IMPLEMENTATION_DATE is not null AND REASON_CODE = 'TRANSFER'")
+            If rsECOrev.RecordCount > 0 Then
+                GoTo performAction 'transfer ECO found!
+            Else
+                GoTo nextOne
+            End If
+    End Select
+    
     Set rsLookItUp = CurrentDb().OpenRecordset("SELECT " & rsStepActions!compareColumn & " FROM " & rsStepActions!compareTable & " WHERE " & matchingCol & " = " & identifier)
     
     meetsCriteria = False
@@ -544,6 +558,7 @@ Do While Not rsSteps.EOF
     
     If meetsCriteria <> rsStepActions!compareAction Then GoTo nextOne
     
+performAction:
     Select Case rsStepActions!stepAction 'everything matched - what should be done with this step??
         Case "deleteStep" 'delete the step!
             Call registerPartUpdates("tblPartSteps", rsSteps!recordId, "Deleted - stepAction", rsSteps!stepType, "", partNum, rsSteps!stepType, "stepAction")
