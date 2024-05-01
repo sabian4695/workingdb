@@ -267,7 +267,7 @@ generateHTML = strHTMLBody
 
 End Function
 
-Function dailySummary(Title As String, subTitle As String, lates() As String, todays() As String, nexts() As String) As String
+Function dailySummary(Title As String, subTitle As String, lates() As String, todays() As String, nexts() As String, lateCount As Long, todayCount As Long, nextCount As Long) As String
 
 Dim tblHeading As String, tblStepOverview As String, strHTMLBody As String
 
@@ -278,53 +278,57 @@ tblHeading = "<table style=""width: 100%; margin: 0 auto; padding: 2em 2em 1em 2
                             "</tbody>" & _
                         "</table>"
                         
-Dim i As Long, lateTable As String, lateCount As Long, todayCount As Long, nextCount As Long, todayTable As String, nextTable As String, varStr As String
+Dim i As Long, lateTable As String, todayTable As String, nextTable As String, varStr As String, varStr1 As String, seeMore As String
+seeMore = "<tr style=""border-collapse: collapse;""><td style=""padding: .1em 2em; font-style: italic;"" colspan=""3"">see the rest in the workingdb...</td></tr>"
 i = 0
-lateCount = UBound(lates)
-todayCount = UBound(todays)
-nextCount = UBound(nexts)
 tblStepOverview = ""
 
 varStr = ""
-If lates(1) <> "" Then
-    For i = 1 To UBound(lates)
+varStr1 = ""
+If lates(0) <> "" Then
+    For i = 0 To UBound(lates)
         lateTable = lateTable & "<tr style=""border-collapse: collapse;"">" & _
                                                 "<td style=""padding: .1em 2em;"">" & Split(lates(i), ",")(0) & "</td>" & _
                                                 "<td style=""padding: .1em 2em;"">" & Split(lates(i), ",")(1) & "</td>" & _
                                                 "<td style=""padding: .1em 2em;  color: rgb(255,195,195);"">" & Split(lates(i), ",")(2) & "</td></tr>"
     Next i
     If lateCount > 1 Then varStr = "s"
+    If lateCount > 15 Then varStr1 = seeMore
     tblStepOverview = tblStepOverview & "<table style=""width: 100%; margin: 0 auto; background: #2b2b2b; color: rgb(255,255,255);""><tr><th style=""padding: 1em; font-size: 20px; color: rgb(255,150,150); display: table-header-group;"" colspan=""3"">You have " & _
                                                                 lateCount & " item" & varStr & " overdue</th></tr><tbody>" & _
-                                                            "<tr style=""padding: .1em 2em;""><th style=""text-align: left"">Part Number</th><th style=""text-align: left"">Item</th><th style=""text-align: left"">Due</th></tr>" & lateTable & "</tbody></table>"
+                                                            "<tr style=""padding: .1em 2em;""><th style=""text-align: left"">Part Number</th><th style=""text-align: left"">Item</th><th style=""text-align: left"">Due</th></tr>" & lateTable & varStr1 & "</tbody></table>"
 End If
 
 varStr = ""
-If todays(1) <> "" Then
-    For i = 1 To UBound(todays)
+varStr1 = ""
+If todays(0) <> "" Then
+    For i = 0 To UBound(todays)
         todayTable = todayTable & "<tr style=""border-collapse: collapse;"">" & _
                                                 "<td style=""padding: .1em 2em;"">" & Split(todays(i), ",")(0) & "</td>" & _
                                                 "<td style=""padding: .1em 2em;"">" & Split(todays(i), ",")(1) & "</td>" & _
                                                 "<td style=""padding: .1em 2em;"">" & Split(todays(i), ",")(2) & "</td></tr>"
     Next i
     If todayCount > 1 Then varStr = "s"
+    If todayCount > 15 Then varStr1 = seeMore
     tblStepOverview = tblStepOverview & "<table style=""width: 100%; margin: 0 auto; background: #2b2b2b; color: rgb(255,255,255);""><tr><th style=""padding: 1em; font-size: 20px; color: rgb(235,200,200); display: table-header-group;"" colspan=""3"">You have " & _
                                                                 todayCount & " item" & varStr & " due today</th></tr><tbody>" & _
-                                                            "<tr style=""padding: .1em 2em;""><th style=""text-align: left"">Part Number</th><th style=""text-align: left"">Item</th><th style=""text-align: left"">Due</th></tr>" & todayTable & "</tbody></table>"
+                                                            "<tr style=""padding: .1em 2em;""><th style=""text-align: left"">Part Number</th><th style=""text-align: left"">Item</th><th style=""text-align: left"">Due</th></tr>" & todayTable & varStr1 & "</tbody></table>"
 End If
 
 varStr = ""
-If nexts(1) <> "" Then
-    For i = 1 To UBound(nexts)
+varStr1 = ""
+If nexts(0) <> "" Then
+    For i = 0 To UBound(nexts)
         nextTable = nextTable & "<tr style=""border-collapse: collapse;"">" & _
                                                 "<td style=""padding: .1em 2em;"">" & Split(nexts(i), ",")(0) & "</td>" & _
                                                 "<td style=""padding: .1em 2em;"">" & Split(nexts(i), ",")(1) & "</td>" & _
                                                 "<td style=""padding: .1em 2em;"">" & Split(nexts(i), ",")(2) & "</td></tr>"
     Next i
     If nextCount > 1 Then varStr = "s"
+    If nextCount > 15 Then varStr1 = seeMore
     tblStepOverview = tblStepOverview & "<table style=""width: 100%; margin: 0 auto; background: #2b2b2b; color: rgb(255,255,255);""><tr><th style=""padding: 1em; font-size: 20px; color: rgb(235,235,235); display: table-header-group;"" colspan=""3"">You have " & _
                                                                 nextCount & " item" & varStr & " due soon</th></tr><tbody>" & _
-                                                            "<tr style=""padding: .1em 2em;""><th style=""text-align: left"">Part Number</th><th style=""text-align: left"">Item</th><th style=""text-align: left"">Due</th></tr>" & nextTable & "</tbody></table>"
+                                                            "<tr style=""padding: .1em 2em;""><th style=""text-align: left"">Part Number</th><th style=""text-align: left"">Item</th><th style=""text-align: left"">Due</th></tr>" & nextTable & varStr1 & "</tbody></table>"
 End If
 
 strHTMLBody = "" & _
@@ -477,7 +481,7 @@ grabSummaryInfo = False
 
 Dim db As Database
 Set db = CurrentDb()
-Dim rsPeople As Recordset, rsPartNumbers As Recordset, rsOpenSteps As Recordset, rsOpenWOs As Recordset, rsNoti As Recordset, rsAnalytics As Recordset
+Dim rsPeople As Recordset, rsOpenSteps As Recordset, rsOpenWOs As Recordset, rsNoti As Recordset, rsAnalytics As Recordset
 Dim lateSteps() As String, todaySteps() As String, nextSteps() As String
 Dim li As Long, ti As Long, ni As Long
 Dim strQry, ranThisWeek As Boolean
@@ -489,74 +493,101 @@ strQry = ""
 If specificUser <> "" Then strQry = " AND user = '" & specificUser & "'"
 
 Set rsPeople = db.OpenRecordset("SELECT * from tblPermissions WHERE Inactive = False" & strQry)
-    li = 1
-    ti = 1
-    ni = 1
+    li = 0
+    ti = 0
+    ni = 0
     ReDim Preserve lateSteps(li)
     ReDim Preserve todaySteps(ti)
     ReDim Preserve nextSteps(ni)
-    lateSteps(li) = ""
-    todaySteps(ti) = ""
-    nextSteps(ni) = ""
 
 Do While Not rsPeople.EOF 'go through every active person
     If rsPeople!notifications = 1 And specificUser = "" Then GoTo nextPerson 'this person wants no notifications
     If rsPeople!notifications = 2 And ranThisWeek And specificUser = "" Then GoTo nextPerson 'this person only wants weekly notifications
+    If rsPeople!dept <> "Project" And specificUser = "" Then GoTo nextPerson 'this person is not in project - BETA RESTRICTION
+    
+    li = 0
+    ti = 0
+    ni = 0
+    Erase lateSteps, todaySteps, nextSteps
+    ReDim lateSteps(li)
+    ReDim todaySteps(ti)
+    ReDim nextSteps(ni)
     
     If rsPeople!dept = "Design" Then
-        Set rsOpenWOs = db.OpenRecordset("SELECT * from qryWOsforNotifications WHERE assignee = '" & rsPeople!user & "'")
-    
-        Do While Not rsOpenWOs.EOF
+        Set rsOpenWOs = db.OpenRecordset("SELECT Part_Number, Control_Number, User, Nz([Adjusted_Due_Date],[due_date]) AS Due, tblDropDowns.DRStype AS requestType " & _
+                                                                        "FROM (dbo_tblDRS INNER JOIN tblDropDowns ON dbo_tblDRS.Request_Type = tblDropDowns.ID) LEFT JOIN tblPermissions ON dbo_tblDRS.Assignee = tblPermissions.ID " & _
+                                                                        "WHERE (Nz([Adjusted_Due_Date],[due_date])<Date()+7) AND Approval_Status=2 AND Completed_Date Is Null AND User = '" & rsPeople!user & "'")
+        Do While (Not rsOpenWOs.EOF And Not ni > 15)
             Select Case rsOpenWOs!Due
                     Case Date 'due today
+                        If ti > 15 Then
+                            ti = ti + 1
+                            GoTo nextWO
+                        End If
                         ReDim Preserve todaySteps(ti)
-                        todaySteps(ti) = rsOpenWOs!Part_Number & ",WO: " & rsOpenWOs!Request_Type & ",Today"
+                        todaySteps(ti) = rsOpenWOs!Part_Number & ",WO: " & rsOpenWOs!requestType & ",Today"
                         ti = ti + 1
                     Case Is < Date 'over due
+                        If li > 15 Then
+                            li = li + 1
+                            GoTo nextWO
+                        End If
                         ReDim Preserve lateSteps(li)
-                        lateSteps(li) = rsOpenWOs!Part_Number & ",WO: " & rsOpenWOs!Request_Type & "," & Format(rsOpenWOs!Due, "mm/dd/yyyy")
+                        lateSteps(li) = rsOpenWOs!Part_Number & ",WO: " & rsOpenWOs!requestType & "," & Format(rsOpenWOs!Due, "mm/dd/yyyy")
                         li = li + 1
                     Case Is <= (Date + 7) 'due in next week
+                        If ni > 15 Then
+                            ni = ni + 1
+                            GoTo nextWO
+                        End If
                         ReDim Preserve nextSteps(ni)
-                        nextSteps(ni) = rsOpenWOs!Part_Number & ",WO: " & rsOpenWOs!Request_Type & "," & Format(rsOpenWOs!Due, "mm/dd/yyyy")
+                        nextSteps(ni) = rsOpenWOs!Part_Number & ",WO: " & rsOpenWOs!requestType & "," & Format(rsOpenWOs!Due, "mm/dd/yyyy")
                         ni = ni + 1
                 End Select
+nextWO:
             rsOpenWOs.MoveNext
         Loop
         rsOpenWOs.Close
         Set rsOpenWOs = Nothing
     End If
 
-    Set rsPartNumbers = db.OpenRecordset("SELECT * from tblPartTeam WHERE person = '" & rsPeople!user & "'") 'find all of their projects, go through every part project they are on
-    Do While Not rsPartNumbers.EOF
-        Set rsOpenSteps = db.OpenRecordset("SELECT * from tblPartSteps WHERE partNumber = '" & rsPartNumbers!partNumber & "' AND responsible = '" & rsPeople!dept & "' AND status <> 'Closed'")
-        
-        Do While Not rsOpenSteps.EOF
-            Select Case rsOpenSteps!dueDate
-                Case Date 'due today
-                    ReDim Preserve todaySteps(ti)
-                    todaySteps(ti) = rsOpenSteps!partNumber & "," & rsOpenSteps!stepType & ",Today"
-                    ti = ti + 1
-                Case Is < Date 'over due
-                    ReDim Preserve lateSteps(li)
-                    lateSteps(li) = rsOpenSteps!partNumber & "," & rsOpenSteps!stepType & "," & Format(rsOpenSteps!dueDate, "mm/dd/yyyy")
-                    li = li + 1
-                Case Is <= (Date + 7) 'due in next week
-                    ReDim Preserve nextSteps(ni)
-                    nextSteps(ni) = rsOpenSteps!partNumber & "," & rsOpenSteps!stepType & "," & Format(rsOpenSteps!dueDate, "mm/dd/yyyy")
-                    ni = ni + 1
-            End Select
-        
-            rsOpenSteps.MoveNext
-        Loop
-        rsOpenSteps.Close
-        Set rsOpenSteps = Nothing
-        rsPartNumbers.MoveNext
-    Loop
-    rsPartNumbers.Close
-    Set rsPartNumbers = Nothing
+    Set rsOpenSteps = db.OpenRecordset("SELECT * from tblPartSteps " & _
+                                "WHERE responsible = '" & rsPeople!dept & "' AND status <> 'Closed' AND partNumber IN (SELECT partNumber FROM tblPartTeam WHERE person = '" & rsPeople!user & "') AND dueDate <= Date()+7")
     
-    If ti + li + ni > 1 Then
+    Do While (Not rsOpenSteps.EOF And Not (ti > 15 And li > 15 And ni > 15))
+        Select Case rsOpenSteps!dueDate
+            Case Date 'due today
+                If ti > 15 Then
+                    ti = ti + 1
+                    GoTo nextStep
+                End If
+                ReDim Preserve todaySteps(ti)
+                todaySteps(ti) = rsOpenSteps!partNumber & "," & rsOpenSteps!stepType & ",Today"
+                ti = ti + 1
+            Case Is < Date 'over due
+                If li > 15 Then
+                    li = li + 1
+                    GoTo nextStep
+                End If
+                ReDim Preserve lateSteps(li)
+                lateSteps(li) = rsOpenSteps!partNumber & "," & rsOpenSteps!stepType & "," & Format(rsOpenSteps!dueDate, "mm/dd/yyyy")
+                li = li + 1
+            Case Is <= (Date + 7) 'due in next week
+                If ni > 15 Then
+                    ni = ni + 1
+                    GoTo nextStep
+                End If
+                ReDim Preserve nextSteps(ni)
+                nextSteps(ni) = rsOpenSteps!partNumber & "," & rsOpenSteps!stepType & "," & Format(rsOpenSteps!dueDate, "mm/dd/yyyy")
+                ni = ni + 1
+        End Select
+nextStep:
+        rsOpenSteps.MoveNext
+    Loop
+    rsOpenSteps.Close
+    Set rsOpenSteps = Nothing
+    
+    If ti + li + ni > 0 Then
         Set rsNoti = db.OpenRecordset("tblNotificationsSP")
         With rsNoti
             .addNew
@@ -569,7 +600,7 @@ Do While Not rsPeople.EOF 'go through every active person
             !notificationType = 9
             !notificationPriority = 2
             !notificationDescription = "Summary Email"
-            !emailContent = StrQuoteReplace(dailySummary("Hi " & rsPeople!firstName, "Here is your daily summary!", lateSteps(), todaySteps(), nextSteps()))
+            !emailContent = StrQuoteReplace(dailySummary("Hi " & rsPeople!firstName, "Here is what you have going on...", lateSteps(), todaySteps(), nextSteps(), li, ti, ni))
             .Update
         End With
         rsNoti.Close
