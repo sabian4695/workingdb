@@ -452,7 +452,7 @@ Select Case True 'figure out level
     Case orAbove And reqLevel = "Supervisor" 'if supervisor and above check level and both supervisors and managers
         If rsPerm("level") = "Supervisor" Or rsPerm("level") = "Manager" Then l = False
     Case orAbove And reqLevel = "Engineer" 'if engineer and above, check level
-        If rsPerm("level") = "Engineer" Or rsPerm("level") = "Supervisor" Or rsPerm("Manager") Then l = False
+        If rsPerm("level") = "Engineer" Or rsPerm("level") = "Supervisor" Or rsPerm("level") = "Manager" Then l = False
 End Select
 
 restrict = d Or l

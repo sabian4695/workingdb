@@ -525,10 +525,12 @@ Do While Not rsSteps.EOF
         Case "INV_MTL_EAM_ASSET_ATTR_VALUES"
             Dim moldId
             moldId = DLookup("moldInfoId", "tblPartInfo", "partNumber = '" & rsSteps!partNumber & "'")
+            If Nz(moldId) = "" Then GoTo nextOne
             identifier = "'" & DLookup("toolNumber", "tblPartMoldingInfo", "recordId = " & moldId) & "'" 'toolnumer
             matchingCol = "SERIAL_NUMBER" 'toolnumber column in this table
         Case "ENG_ENG_ENGINEERING_CHANGES"
             Dim rsECOrev As Recordset 'find the transfer ECO
+            If Nz(rsSteps!partNumber) = "" Then GoTo nextOne
             Set rsECOrev = CurrentDb.OpenRecordset("select CHANGE_NOTICE from ENG_ENG_ENGINEERING_CHANGES " & _
                 "where CHANGE_NOTICE IN (select CHANGE_NOTICE from ENG_ENG_REVISED_ITEMS where REVISED_ITEM_ID = " & idNAM(rsSteps!partNumber, "NAM") & " ) " & _
                 "AND IMPLEMENTATION_DATE is not null AND REASON_CODE = 'TRANSFER'")
