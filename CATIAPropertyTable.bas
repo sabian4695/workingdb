@@ -1148,7 +1148,7 @@ Public Sub SortDrawing()
                 Exit For
             End If
             
-            If Val(mRecords(i).LinkID) > Val(mRecords(i + 1).LinkID) Then
+            If val(mRecords(i).LinkID) > val(mRecords(i + 1).LinkID) Then
 
                 blnSorted = True
                 Dim buf As Record
