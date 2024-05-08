@@ -175,19 +175,24 @@ rs1.Close: Set rs1 = Nothing
 End Function
 
 Function notificationsCount()
+On Error Resume Next
 
-Dim unRead
-unRead = DCount("ID", "tblNotificationsSP", "recipientUser = '" & Environ("username") & "' AND readDate is null")
-If unRead > 9 Then
+Dim rsNoti As Recordset
+Set rsNoti = CurrentDb.OpenRecordset("SELECT count(ID) as unRead FROM tblNotificationsSP WHERE recipientUser = '" & Environ("username") & "' AND readDate is null")
+
+If rsNoti!unRead > 9 Then
     Form_DASHBOARD.Form.notifications.Caption = "9+"
 Else
-    Form_DASHBOARD.Form.notifications.Caption = CStr(unRead)
+    Form_DASHBOARD.Form.notifications.Caption = CStr(rsNoti!unRead)
 End If
-If unRead = 0 Then
+If rsNoti!unRead = 0 Then
     Form_DASHBOARD.Form.notifications.BackColor = RGB(60, 170, 60)
 Else
     Form_DASHBOARD.Form.notifications.BackColor = RGB(230, 0, 0)
 End If
+
+rsNoti.Close
+Set rsNoti = Nothing
 
 End Function
 
