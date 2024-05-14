@@ -13,17 +13,17 @@ x2 As Long
 y2 As Long
 End Type
 
-Private Declare PtrSafe Function apiShowWindow Lib "user32" Alias "ShowWindow" (ByVal hwnd As Long, ByVal nCmdShow As Long) As Long
-Private Declare PtrSafe Function GetDesktopWindow Lib "user32" () As Long
-Private Declare PtrSafe Function GetWindowRect Lib "user32" _
-(ByVal hwnd As Long, r As Rect) As Long
-Private Declare PtrSafe Function IsZoomed Lib "user32" _
-(ByVal hwnd As Long) As Long
-Private Declare PtrSafe Function MoveWindow Lib "user32" _
-(ByVal hwnd As Long, ByVal x As Long, ByVal Y As Long, _
+Private Declare PtrSafe Function apiShowWindow Lib "User32" Alias "ShowWindow" (ByVal hWnd As Long, ByVal nCmdShow As Long) As Long
+Private Declare PtrSafe Function GetDesktopWindow Lib "User32" () As Long
+Private Declare PtrSafe Function GetWindowRect Lib "User32" _
+(ByVal hWnd As Long, r As Rect) As Long
+Private Declare PtrSafe Function IsZoomed Lib "User32" _
+(ByVal hWnd As Long) As Long
+Private Declare PtrSafe Function MoveWindow Lib "User32" _
+(ByVal hWnd As Long, ByVal x As Long, ByVal Y As Long, _
 ByVal dx As Long, ByVal dy As Long, ByVal fRepaint As Long) As Long
-Private Declare PtrSafe Function ShowWindow Lib "user32" _
-(ByVal hwnd As Long, ByVal nCmdShow As Long) As Long
+Private Declare PtrSafe Function ShowWindow Lib "User32" _
+(ByVal hWnd As Long, ByVal nCmdShow As Long) As Long
 
 Function logClick(modName As String, formName As String, Optional dataTag0 = "", Optional dataTag1 = "")
 On Error Resume Next

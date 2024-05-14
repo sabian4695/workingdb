@@ -1,7 +1,7 @@
 Option Explicit
 
 Declare PtrSafe Function SHCreateDirectoryEx Lib "shell32" Alias "SHCreateDirectoryExA" ( _
-                                                                  ByVal hwnd As Long, _
+                                                                  ByVal hWnd As Long, _
                                                                   ByVal pszPath As String, _
                                                                   ByVal psa As Long) As Long
 Const DEBUG_MODE As Boolean = False
