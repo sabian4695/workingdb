@@ -119,7 +119,7 @@ ErrHandler:
     Set GetFolderFromPath = Nothing
 End Function
 
-Public Function CreateMailItem(SendTo As Variant, Optional CC As Variant = "", _
+Public Function CreateMailItem(sendTo As Variant, Optional CC As Variant = "", _
     Optional BCC As Variant = "", Optional subject As String = "", _
     Optional body As String = "", Optional htmlBody As String = "", _
     Optional Attachments As Variant, Optional Importance As OlImportance = olImportanceNormal, _
@@ -148,13 +148,13 @@ Public Function CreateMailItem(SendTo As Variant, Optional CC As Variant = "", _
 '-- for SendTo, CC, and BCC, if they are arrays, process each element of array through the Recipients
 '-- collection.  If not, then if Len > 0 then pass in the string values via To, CC, and BCC
         CurrentProperty = "To"
-        If IsArray(SendTo) Then
-            For counter = LBound(SendTo) To UBound(SendTo)
-                Set olRecip = .Recipients.Add(SendTo(counter))
+        If IsArray(sendTo) Then
+            For counter = LBound(sendTo) To UBound(sendTo)
+                Set olRecip = .Recipients.Add(sendTo(counter))
                 olRecip.type = olTo
             Next
         Else
-            If SendTo <> "" Then .To = SendTo
+            If sendTo <> "" Then .To = sendTo
         End If
         CurrentProperty = "CC"
         If IsArray(CC) Then
