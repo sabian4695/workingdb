@@ -402,21 +402,21 @@ Function emailContentGen(subject As String, Title As String, subTitle As String,
 emailContentGen = subject & "," & Title & "," & subTitle & "," & primaryMessage & "," & detail1 & "," & detail2 & "," & detail3
 End Function
 
-Function sendNotification(SendTo As String, notType As Integer, notPriority As Integer, desc As String, emailContent As String, Optional appName As String = "", Optional appId As Long) As Boolean
+Function sendNotification(sendTo As String, notType As Integer, notPriority As Integer, desc As String, emailContent As String, Optional appName As String = "", Optional appId As Long, Optional multiEmail As Boolean = False) As Boolean
 sendNotification = True
 
 On Error GoTo err_handler
 
 'has this person been notified about this thing today already?
 Dim rsNotifications As Recordset
-Set rsNotifications = CurrentDb().OpenRecordset("SELECT * from tblNotificationsSP WHERE recipientUser = '" & SendTo & "' AND notificationDescription = '" & StrQuoteReplace(desc) & "' AND sentDate > #" & Date - 1 & "#")
+Set rsNotifications = CurrentDb().OpenRecordset("SELECT * from tblNotificationsSP WHERE recipientUser = '" & sendTo & "' AND notificationDescription = '" & StrQuoteReplace(desc) & "' AND sentDate > #" & Date - 1 & "#")
 If rsNotifications.RecordCount > 0 Then
     If rsNotifications!notificationType = 1 Then
         Dim msgTxt As String
         If rsNotifications!senderUser = Environ("username") Then
             msgTxt = "Yo, you already did that today, let's wait 'til tomorrow to do it again."
         Else
-            msgTxt = SendTo & " has already been nudged about this today by " & rsNotifications!senderUser & ". Let's wait until tomorrow to nudge them again."
+            msgTxt = sendTo & " has already been nudged about this today by " & rsNotifications!senderUser & ". Let's wait until tomorrow to nudge them again."
         End If
         MsgBox msgTxt, vbInformation, "Hold on a minute..."
         sendNotification = False
@@ -424,8 +424,20 @@ If rsNotifications.RecordCount > 0 Then
     End If
 End If
 
+Dim strEmail, ITEM, sendToArr() As String
+If multiEmail Then
+    sendToArr = Split(sendTo, ",")
+    strEmail = ""
+    For Each ITEM In sendToArr
+        strEmail = strEmail & getEmail(CStr(ITEM)) & ";"
+    Next ITEM
+    strEmail = Left(strEmail, Len(strEmail) - 1)
+Else
+    strEmail = getEmail(sendTo)
+End If
+
 Dim strValues
-strValues = "'" & SendTo & "','" & getEmail(SendTo) & "','" & Environ("username") & "','" & getEmail(Environ("username")) & "','" & Now() & "'," & notType & "," & notPriority & ",'" & StrQuoteReplace(desc) & "','" & appName & "'," & appId & ",'" & StrQuoteReplace(emailContent) & "'"
+strValues = "'" & sendTo & "','" & strEmail & "','" & Environ("username") & "','" & getEmail(Environ("username")) & "','" & Now() & "'," & notType & "," & notPriority & ",'" & StrQuoteReplace(desc) & "','" & appName & "'," & appId & ",'" & StrQuoteReplace(emailContent) & "'"
 
 CurrentDb().Execute "INSERT INTO tblNotificationsSP(recipientUser,recipientEmail,senderUser,senderEmail,sentDate,notificationType,notificationPriority,notificationDescription,appName,appId,emailContent) VALUES(" & strValues & ");"
 
@@ -528,7 +540,7 @@ Do While Not rsPeople.EOF 'go through every active person
     If rsPeople!dept = "Design" Then
         Set rsOpenWOs = db.OpenRecordset("SELECT Part_Number, Control_Number, User, Nz([Adjusted_Due_Date],[due_date]) AS Due, tblDropDowns.DRStype AS requestType " & _
                                                                         "FROM (dbo_tblDRS INNER JOIN tblDropDowns ON dbo_tblDRS.Request_Type = tblDropDowns.ID) LEFT JOIN tblPermissions ON dbo_tblDRS.Assignee = tblPermissions.ID " & _
-                                                                        "WHERE (Nz([Adjusted_Due_Date],[due_date])<Date()+7) AND Approval_Status=2 AND Completed_Date Is Null AND User = '" & rsPeople!User & "'")
+                                                                        "WHERE (Nz([Adjusted_Due_Date],[due_date])<Date()+7) AND Approval_Status=2 AND Completed_Date Is Null AND User = '" & rsPeople!user & "'")
         Do While (Not rsOpenWOs.EOF And Not ni > 15)
             Select Case rsOpenWOs!Due
                     Case Date 'due today
@@ -564,7 +576,7 @@ nextWO:
     End If
 
     Set rsOpenSteps = db.OpenRecordset("SELECT * from tblPartSteps " & _
-                                "WHERE responsible = '" & rsPeople!dept & "' AND status <> 'Closed' AND partNumber IN (SELECT partNumber FROM tblPartTeam WHERE person = '" & rsPeople!User & "') AND dueDate <= Date()+7")
+                                "WHERE responsible = '" & rsPeople!dept & "' AND status <> 'Closed' AND partNumber IN (SELECT partNumber FROM tblPartTeam WHERE person = '" & rsPeople!user & "') AND dueDate <= Date()+7")
     
     Do While (Not rsOpenSteps.EOF And Not (ti > 15 And li > 15 And ni > 15))
         Select Case rsOpenSteps!dueDate
@@ -603,7 +615,7 @@ nextStep:
         Set rsNoti = db.OpenRecordset("tblNotificationsSP")
         With rsNoti
             .addNew
-            !recipientUser = rsPeople!User
+            !recipientUser = rsPeople!user
             !recipientEmail = rsPeople!userEmail
             !senderUser = Environ("username")
             !senderEmail = getEmail(Environ("username"))
@@ -675,7 +687,7 @@ Do While Not rsEvents.EOF
     Do While Not rsPeople.EOF
         With rsNoti
             .addNew
-            !recipientUser = rsPeople!User
+            !recipientUser = rsPeople!user
             !recipientEmail = rsPeople!userEmail
             !senderUser = Environ("username")
             !senderEmail = getEmail(Environ("username"))
@@ -810,7 +822,7 @@ Set SendItems = New clsOutlookCreateItem
 
 If IsNull(strCC) Then strCC = ""
 
-SendItems.CreateMailItem SendTo:=strTo, _
+SendItems.CreateMailItem sendTo:=strTo, _
                              CC:=strCC, _
                              subject:=strSubject, _
                              htmlBody:=body

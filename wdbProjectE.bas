@@ -355,16 +355,16 @@ err_handler:
     Call handleError("wdbProjectE", "createPartProject", Err.Description, Err.number)
 End Function
 
-Public Function grabTitle(User) As String
+Public Function grabTitle(user) As String
 On Error GoTo err_handler
 
-If IsNull(User) Then
+If IsNull(user) Then
     grabTitle = ""
     Exit Function
 End If
 
 Dim rsPermissions As Recordset
-Set rsPermissions = CurrentDb().OpenRecordset("SELECT * from tblPermissions where user = '" & User & "'")
+Set rsPermissions = CurrentDb().OpenRecordset("SELECT * from tblPermissions where user = '" & user & "'")
 grabTitle = rsPermissions!dept & " " & rsPermissions!Level
 
 err_handler:
@@ -473,17 +473,17 @@ Set rsPartTeam = CurrentDb().OpenRecordset("SELECT * from tblPartTeam where part
 If rsPartTeam.RecordCount = 0 Then Exit Function
 
 Do While Not rsPartTeam.EOF
-    Dim rsPermissions As Recordset, SendTo As String
+    Dim rsPermissions As Recordset, sendTo As String
     If IsNull(rsPartTeam!person) Then GoTo nextRec
-    SendTo = rsPartTeam!person
-    Set rsPermissions = CurrentDb().OpenRecordset("SELECT user, userEmail from tblPermissions where user = '" & SendTo & "' AND Dept = 'Project' AND Level = 'Engineer'")
+    sendTo = rsPartTeam!person
+    Set rsPermissions = CurrentDb().OpenRecordset("SELECT user, userEmail from tblPermissions where user = '" & sendTo & "' AND Dept = 'Project' AND Level = 'Engineer'")
     If rsPermissions.RecordCount = 0 Then GoTo nextRec
-    If SendTo = Environ("username") And Not sendAlways Then GoTo nextRec
+    If sendTo = Environ("username") And Not sendAlways Then GoTo nextRec
     
     'actually send notification
     Dim body As String
     body = emailContentGen(partNum & " Step " & notiType, "WDB Step " & notiType, "This step has been " & notiType, stepTitle, "Part Number: " & partNum, "Closed by: " & getFullName(), "Closed On: " & CStr(Date))
-    Call sendNotification(SendTo, 10, 2, stepTitle & " for " & partNum & " has been " & notiType, body, "Part Project", CLng(partNum))
+    Call sendNotification(sendTo, 10, 2, stepTitle & " for " & partNum & " has been " & notiType, body, "Part Project", CLng(partNum))
     
 nextRec:
     rsPartTeam.MoveNext
@@ -494,6 +494,27 @@ notifyPE = True
 Exit Function
 err_handler:
     Call handleError("wdbProjectE", "notifyPE", Err.Description, Err.number)
+End Function
+
+Function findDept(partNumber As String, dept As String) As String
+On Error GoTo err_handler
+
+Dim rsPermissions As Recordset, permEm
+Set rsPermissions = CurrentDb().OpenRecordset("SELECT user, userEmail from tblPermissions where Dept = '" & dept & "' AND Level = 'Engineer' AND user IN " & _
+                                    "(SELECT person FROM tblPartTeam WHERE partNumber = '" & partNumber & "')")
+If rsPermissions.RecordCount = 0 Then Exit Function
+
+Do While Not rsPermissions.EOF
+    If rsPermissions!user = Environ("username") Then GoTo nextRec
+    findDept = findDept & rsPermissions!user & ","
+nextRec:
+    rsPermissions.MoveNext
+Loop
+If findDept <> "" Then findDept = Left(findDept, Len(findDept) - 1)
+
+Exit Function
+err_handler:
+    Call handleError("wdbProjectE", "findDept", Err.Description, Err.number)
 End Function
 
 Function scanSteps(partNum As String, routineName As String, Optional identifier As Variant = "notFound") As Boolean
@@ -684,7 +705,7 @@ Dim SendItems As New clsOutlookCreateItem               ' outlook class
     DoCmd.OutputTo acOutputReport, "rptPartInformation", acFormatPDF, z, False
     DoCmd.Close acReport, "rptPartInformation"
     
-    SendItems.CreateMailItem SendTo:=strTo, _
+    SendItems.CreateMailItem sendTo:=strTo, _
                              subject:=strSubject, _
                              Attachments:=z
     Set SendItems = Nothing
@@ -789,7 +810,7 @@ Loop
 Dim SendItems As New clsOutlookCreateItem
 Set SendItems = New clsOutlookCreateItem
 
-SendItems.CreateMailItem SendTo:=strTo, _
+SendItems.CreateMailItem sendTo:=strTo, _
                              subject:=subjectLine, _
                              htmlBody:=toolEmail
     Set SendItems = Nothing
@@ -822,7 +843,7 @@ Loop
 Dim SendItems As New clsOutlookCreateItem
 Set SendItems = New clsOutlookCreateItem
 
-SendItems.CreateMailItem SendTo:=strTo, _
+SendItems.CreateMailItem sendTo:=strTo, _
                              subject:=subjectLine, _
                              htmlBody:=emailBody
     Set SendItems = Nothing
