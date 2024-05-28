@@ -540,7 +540,7 @@ Do While Not rsPeople.EOF 'go through every active person
     If rsPeople!dept = "Design" Then
         Set rsOpenWOs = db.OpenRecordset("SELECT Part_Number, Control_Number, User, Nz([Adjusted_Due_Date],[due_date]) AS Due, tblDropDowns.DRStype AS requestType " & _
                                                                         "FROM (dbo_tblDRS INNER JOIN tblDropDowns ON dbo_tblDRS.Request_Type = tblDropDowns.ID) LEFT JOIN tblPermissions ON dbo_tblDRS.Assignee = tblPermissions.ID " & _
-                                                                        "WHERE (Nz([Adjusted_Due_Date],[due_date])<Date()+7) AND Approval_Status=2 AND Completed_Date Is Null AND User = '" & rsPeople!User & "'")
+                                                                        "WHERE (Nz([Adjusted_Due_Date],[due_date])<Date()+7) AND Approval_Status=2 AND Completed_Date Is Null AND User = '" & rsPeople!user & "'")
         Do While (Not rsOpenWOs.EOF And Not ni > 15)
             Select Case rsOpenWOs!Due
                     Case Date 'due today
@@ -576,7 +576,7 @@ nextWO:
     End If
 
     Set rsOpenSteps = db.OpenRecordset("SELECT * from tblPartSteps " & _
-                                "WHERE responsible = '" & rsPeople!dept & "' AND status <> 'Closed' AND partNumber IN (SELECT partNumber FROM tblPartTeam WHERE person = '" & rsPeople!User & "') AND dueDate <= Date()+7")
+                                "WHERE responsible = '" & rsPeople!dept & "' AND status <> 'Closed' AND partNumber IN (SELECT partNumber FROM tblPartTeam WHERE person = '" & rsPeople!user & "') AND dueDate <= Date()+7")
     
     Do While (Not rsOpenSteps.EOF And Not (ti > 15 And li > 15 And ni > 15))
         Select Case rsOpenSteps!dueDate
@@ -615,7 +615,7 @@ nextStep:
         Set rsNoti = db.OpenRecordset("tblNotificationsSP")
         With rsNoti
             .addNew
-            !recipientUser = rsPeople!User
+            !recipientUser = rsPeople!user
             !recipientEmail = rsPeople!userEmail
             !senderUser = Environ("username")
             !senderEmail = getEmail(Environ("username"))
@@ -687,7 +687,7 @@ Do While Not rsEvents.EOF
     Do While Not rsPeople.EOF
         With rsNoti
             .addNew
-            !recipientUser = rsPeople!User
+            !recipientUser = rsPeople!user
             !recipientEmail = rsPeople!userEmail
             !senderUser = Environ("username")
             !senderEmail = getEmail(Environ("username"))

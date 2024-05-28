@@ -9,7 +9,7 @@ Dim db As Database
 Set db = CurrentDb()
 db.Execute "DELETE * FROM tblSessionVariables WHERE exportLabel is not null"
 
-Dim rsPI As Recordset, rsPMI As Recordset, rsU As Recordset, rsPack As Recordset, rsPackC As Recordset, rsComp As Recordset, rsAI As Recordset, rsCompPI As Recordset, rsOI As Recordset
+Dim rsPI As Recordset, rsPMI As Recordset, rsU As Recordset, rsPack As Recordset, rsPackC As Recordset, rsComp As Recordset, rsAI As Recordset, rsOI As Recordset
 Dim rsPE As Recordset
 Dim outsourceCost As String
 
@@ -85,14 +85,11 @@ Select Case rsPI!partType
         mpLev = rsAI!assemblyMeasPack
         
         Do While Not rsComp.EOF
-            Set rsCompPI = db.OpenRecordset("SELECT * from tblPartInfo WHERE partNumber = '" & rsComp!componentNumber & "'")
             aifInsert "Component Part Number", rsComp!componentNumber
-            aifInsert "Component Description", rsCompPI!Description
+            aifInsert "Component Description", DLookup("Description", "APPS_MTL_SYSTEM_ITEMS", "SEGMENT1 = '" & rsComp!componentNumber & "'")
             aifInsert "Component Qty", rsComp!quantity
-            aifInsert "Component Locator", DLookup("finishLocator", "tblDropDownsSP", "ID = " & rsCompPI!finishLocator)
-            aifInsert "Component Sub-Inventory", DLookup("finishSubInv", "tblDropDownsSP", "ID = " & rsCompPI!finishSubInv)
-            rsCompPI.Close
-            Set rsCompPI = Nothing
+            aifInsert "Component Locator", DLookup("finishLocator", "tblDropDownsSP", "ID = " & rsComp!finishLocator)
+            aifInsert "Component Sub-Inventory", DLookup("finishSubInv", "tblDropDownsSP", "ID = " & rsComp!finishSubInv)
             rsComp.MoveNext
         Loop
         rsComp.Close
@@ -508,16 +505,16 @@ err_handler:
     Call handleError("wdbProjectE", "createPartProject", Err.Description, Err.number)
 End Function
 
-Public Function grabTitle(User) As String
+Public Function grabTitle(user) As String
 On Error GoTo err_handler
 
-If IsNull(User) Then
+If IsNull(user) Then
     grabTitle = ""
     Exit Function
 End If
 
 Dim rsPermissions As Recordset
-Set rsPermissions = CurrentDb().OpenRecordset("SELECT * from tblPermissions where user = '" & User & "'")
+Set rsPermissions = CurrentDb().OpenRecordset("SELECT * from tblPermissions where user = '" & user & "'")
 grabTitle = rsPermissions!dept & " " & rsPermissions!Level
 
 err_handler:
@@ -658,8 +655,8 @@ Set rsPermissions = CurrentDb().OpenRecordset("SELECT user, userEmail from tblPe
 If rsPermissions.RecordCount = 0 Then Exit Function
 
 Do While Not rsPermissions.EOF
-    If rsPermissions!User = Environ("username") Then GoTo nextRec
-    findDept = findDept & rsPermissions!User & ","
+    If rsPermissions!user = Environ("username") Then GoTo nextRec
+    findDept = findDept & rsPermissions!user & ","
 nextRec:
     rsPermissions.MoveNext
 Loop
