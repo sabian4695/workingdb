@@ -1,153 +1,403 @@
 Option Compare Database
 Option Explicit
 
-Public Function exportAIF(partNum As String) As Boolean
+Dim XL As Excel.Application, WB As Excel.Workbook, WKS As Excel.Worksheet
+Dim inV As Long
+
+Public Function checkAIFfields(partNum As String) As Boolean
 On Error GoTo err_handler
-exportAIF = False
-'add data to table
+checkAIFfields = False
+
+'---Setup Variables---
 Dim db As Database
 Set db = CurrentDb()
-db.Execute "DELETE * FROM tblSessionVariables WHERE exportLabel is not null"
+Dim rsPI As Recordset, rsPack As Recordset, rsPackC As Recordset, rsComp As Recordset, rsAI As Recordset
+Dim rsPE As Recordset, rsPMI As Recordset
+Dim errorTxt As String
 
-Dim rsPI As Recordset, rsPMI As Recordset, rsU As Recordset, rsPack As Recordset, rsPackC As Recordset, rsComp As Recordset, rsAI As Recordset, rsOI As Recordset
-Dim rsPE As Recordset
-Dim outsourceCost As String
-
+'---Grab General Data---
 Set rsPI = db.OpenRecordset("SELECT * from tblPartInfo WHERE partNumber = '" & partNum & "'")
-Set rsU = db.OpenRecordset("SELECT * from tblUnits WHERE recordId = " & rsPI!unitId)
 Set rsPack = db.OpenRecordset("SELECT * from tblPartPackagingInfo WHERE partInfoId = " & rsPI!recordId)
-Set rsComp = db.OpenRecordset("SELECT * from tblPartComponents WHERE assemblyNumber = '" & partNum & "'")
-Set rsPE = CurrentDb().OpenRecordset("SELECT * from tblPermissions where Dept = 'Project' AND Level = 'Engineer' AND user IN " & _
-                                    "(SELECT person FROM tblPartTeam WHERE partNumber = '" & partNum & "')")
-If Nz(rsPI!outsourceInfoId) <> "" Then
-    Set rsOI = db.OpenRecordset("SELECT * from tblOutsourceInfo WHERE recordId = " & rsPI!outsourceInfoId)
-    outsourceCost = rsOI!outsourceCost
-    rsOI.Close
-    Set rsOI = Nothing
-Else
-    outsourceCost = "0"
+
+'check part info stuff
+Select Case ""
+    Case Nz(rsPI!dataStatus)
+        errorTxt = "Data Status"
+    Case Nz(rsPI!customerId)
+        errorTxt = "Customer"
+    Case Nz(rsPI!unitId)
+        errorTxt = "Unit"
+    Case Nz(rsPI!partType)
+        errorTxt = "Part Type"
+    Case Nz(rsPI!finishLocator)
+        errorTxt = "Finish Locator"
+    Case Nz(rsPI!finishSubInv)
+        errorTxt = "Finish Sub-Inventory"
+    Case Nz(rsPI!quoteInfoId)
+        errorTxt = "Quote Information"
+    Case Nz(DLookup("quotedCost", "tblPartQuoteInfo", "recordId = " & rsPI!quoteInfoId))
+        errorTxt = "Quoted Cost"
+    Case Nz(rsPI!sellingPrice)
+        errorTxt = "Selling Price"
+End Select
+If errorTxt <> "" Then GoTo sendMsg
+
+If rsPI!partType = 1 Or rsPI!partType = 4 Then 'molded / new color
+    If Nz(rsPI!moldInfoId) = "" Then errorTxt = "Molding Info"
+    If errorTxt <> "" Then GoTo sendMsg
+    
+    Set rsPMI = db.OpenRecordset("SELECT * from tblPartMoldingInfo WHERE recordId = " & rsPI!moldInfoId)
+    Select Case ""
+        Case Nz(rsPMI!itemWeight100Pc)
+            errorTxt = "100 Piece Weight"
+        Case Nz(rsPMI!inspection)
+            errorTxt = "Tool Inspection Level"
+        Case Nz(rsPMI!measurePack)
+            errorTxt = "Tool Measure Pack Level"
+        Case Nz(rsPMI!annealing)
+            errorTxt = "Tool Annealing Level"
+        Case Nz(rsPMI!automated)
+            errorTxt = "Tool Automation Type"
+        Case Nz(rsPMI!piecesPerHour)
+            errorTxt = "Pieces Per Hour"
+        Case Nz(rsPMI!toolNumber)
+            errorTxt = "Tool Number"
+        Case Nz(rsPMI!pressSize)
+            errorTxt = "Press Tonnage"
+        Case Nz(rsPMI!assignedPress)
+            errorTxt = "Assigned Press"
+        Case Nz(rsPMI!toolType)
+            errorTxt = "Tool Level"
+        Case Nz(rsPMI!gateCutting)
+            errorTxt = "Tool Gate Level"
+        Case Nz(rsPMI!materialNumber)
+            errorTxt = "Material Number"
+        Case Nz(rsPMI!pieceWeight)
+            errorTxt = "Piece Weight"
+    End Select
+    If errorTxt <> "" Then GoTo sendMsg
+    
+    If Nz(rsPMI!materialNumber1) <> "" Then 'if there is a second material, must enter wieght for that material
+        If Nz(rsPMI!matNum1PieceWeight) = "" Then errorTxt = "Second Material Piece Weight"
+    End If
+    If errorTxt <> "" Then GoTo sendMsg
+    
+    rsPMI.Close
+    Set rsPMI = Nothing
 End If
 
-aifInsert "Part Number", partNum
-aifInsert "Planner", rsPE!firstName & " " & rsPE!lastName
-aifInsert "Mark Code", Nz(rsPI!partMarkCode)
-aifInsert "Customer", DLookup("CUSTOMER_NAME", "APPS_XXCUS_CUSTOMERS", "CUSTOMER_ID = " & rsPI!customerId)
-aifInsert "Unit", rsU!unitName
-aifInsert "Mexico Rates", rsU!Org = "CUU"
-aifInsert "Org", rsU!Org 'is this supposed to be UNIT based, or the developing ORG?
-aifInsert "Part Type", DLookup("partType", "tblDropDownsSP", "ID = " & rsPI!partType)
-aifInsert "Routing Finish", DLookup("finishLocator", "tblDropDownsSP", "ID = " & rsPI!finishLocator)
-aifInsert "Sub-Location", DLookup("finishSubInv", "tblDropDownsSP", "ID = " & rsPI!finishSubInv)
+If rsPI!partType = 2 Or rsPI!partType = 5 Then
+    If Nz(rsPI!assemblyInfoId) = "" Then errorTxt = "Assembly Info"
+    If errorTxt <> "" Then GoTo sendMsg
+    
+    Set rsAI = db.OpenRecordset("SELECT * from tblPartAssemblyInfo WHERE recordId = " & rsPI!assemblyInfoId)
 
-aifInsert "Labor Type", "TEST" 'CALC
+    Select Case ""
+        Case Nz(rsAI!assemblyWeight100Pc)
+            errorTxt = "100 Piece Weight"
+        Case Nz(rsAI!assemblyType)
+            errorTxt = "Assembly Type"
+        Case Nz(rsAI!assemblyAnnealing)
+            errorTxt = "Assembly Annealing Level"
+        Case Nz(rsAI!assemblyInspection)
+            errorTxt = "Assembly Inspection Level)"
+        Case Nz(rsAI!assemblyMeasPack)
+            errorTxt = "Assembly Measure Pack Level"
+        Case Nz(rsAI!partsPerHour)
+            errorTxt = "Assembly Parts Per Hour"
+        Case Nz(rsAI!resource)
+            errorTxt = "Assembly Resource"
+        Case Nz(rsAI!machineLine)
+            errorTxt = "Assembly Machine Line"
+    End Select
+    If errorTxt <> "" Then GoTo sendMsg
 
-'Packaging Information - LOOP
+    rsAI.Close
+    Set rsAI = Nothing
+    
+    Set rsComp = db.OpenRecordset("SELECT * from tblPartComponents WHERE assemblyNumber = '" & partNum & "'")
+    If rsComp.RecordCount = 0 Then errorTxt = "Component Information"
+    If errorTxt <> "" Then GoTo sendMsg
+    
+    Do While Not rsComp.EOF
+        Select Case ""
+            Case Nz(rsComp!componentNumber)
+                errorTxt = "Blank Component Number"
+            Case Nz(rsComp!finishLocator)
+                errorTxt = "Component Finish Locator"
+            Case Nz(rsComp!finishSubInv)
+                errorTxt = "Component Sub-Inventory"
+        End Select
+        If errorTxt <> "" Then GoTo sendMsg
+        rsComp.MoveNext
+    Loop
+    rsComp.Close
+    Set rsComp = Nothing
+End If
+
+If rsPack.RecordCount = 0 Then errorTxt = "Packaging Information"
+If errorTxt <> "" Then GoTo sendMsg
+
 Do While Not rsPack.EOF
+    If Nz(rsPack!packType) = "" Then errorTxt = "Packaging Type"
     Set rsPackC = db.OpenRecordset("SELECT * from tblPartPackagingComponents WHERE packagingInfoId = " & rsPack!recordId)
-    aifInsert "Packaging Component Type", Nz(DLookup("packComponentType", "tblDropDownsSP", "ID = " & rsPackC!componentType))
-    aifInsert "Packaging Component Number", Nz(rsPackC!componentPN)
-    aifInsert "Packaging Component Qty", Nz(rsPackC!componentQuantity)
+    If rsPackC.RecordCount = 0 Then errorTxt = "Packaging Components"
+    If errorTxt <> "" Then GoTo sendMsg
+    
+    Do While Not rsPackC.EOF
+        Select Case ""
+            Case Nz(rsPackC!componentType)
+                errorTxt = "Packaging Component Type"
+            Case Nz(rsPackC!componentPN)
+                errorTxt = "Packaging Component Part Number"
+            Case Nz(rsPackC!componentQuantity)
+                errorTxt = "Packing Component Quantity"
+        End Select
+        If errorTxt <> "" Then GoTo sendMsg
+        rsPackC.MoveNext
+    Loop
     rsPack.MoveNext
 Loop
 
-Dim insLev As String, mpLev As String
+rsPackC.Close: Set rsPackC = Nothing
+rsPack.Close: Set rsPack = Nothing
+
+If rsPI!unitId = 3 Then
+    If Nz(rsPI!outsourceInfoId) <> "" Then errorTxt = "Outsource Info"
+    If errorTxt <> "" Then GoTo sendMsg
+    
+    If Nz(DLookup("outsourceCost", "tblPartOutsourceInfo", "recordId = " & rsPI!outsourceInfoId)) = "" Then errorTxt = "Outsource Cost"
+    If errorTxt <> "" Then GoTo sendMsg
+End If
+
+'aifInsert "Mark Code", Nz(rsPI!partMarkCode), firstColBold:=True
+
+
+checkAIFfields = True
+GoTo exitFunction
+
+sendMsg:
+MsgBox "Please Fix " & errorTxt, vbOKOnly, "Fix this to export"
+
+exitFunction:
+On Error Resume Next
+rsPI.Close: Set rsPI = Nothing
+rsPack.Close: Set rsPack = Nothing
+rsPackC.Close: Set rsPackC = Nothing
+rsComp.Close: Set rsComp = Nothing
+rsAI.Close: Set rsAI = Nothing
+rsPMI.Close: Set rsPMI = Nothing
+Exit Function
+
+err_handler:
+    Call handleError("wdbProjectE", "checkAIFfields", Err.Description, Err.number)
+    GoTo exitFunction
+End Function
+
+Public Function exportAIF(partNum As String) As Boolean
+'On Error GoTo err_handler
+exportAIF = False
+
+'---Setup Variables---
+Dim db As Database
+Set db = CurrentDb()
+Dim rsPI As Recordset, rsPack As Recordset, rsPackC As Recordset, rsComp As Recordset, rsAI As Recordset
+Dim rsPE As Recordset, rsOI As Recordset, rsU As Recordset, rsPMI As Recordset
+Dim outsourceCost As String
+Dim mexFr As String, cartQty
+
+'---Grab General Data---
+Set rsPI = db.OpenRecordset("SELECT * from tblPartInfo WHERE partNumber = '" & partNum & "'")
+Set rsPack = db.OpenRecordset("SELECT * from tblPartPackagingInfo WHERE partInfoId = " & rsPI!recordId)
+Set rsU = db.OpenRecordset("SELECT * from tblUnits WHERE recordId = " & rsPI!unitId)
+Set rsPE = CurrentDb().OpenRecordset("SELECT * from tblPermissions where Dept = 'Project' AND Level = 'Engineer' AND user IN " & _
+                                    "(SELECT person FROM tblPartTeam WHERE partNumber = '" & partNum & "')")
+
+mexFr = "0"
+If rsU!Org = "CUU" Then
+    cartQty = DLookup("componentQuantity", "tblPartPackagingComponents", "packagingInfoId = " & rsPack!recordId & " AND componentType = 1")
+    mexFr = 83.7 / (cartQty * rsPack!boxesPerSkid)
+End If
+
+outsourceCost = "0"
+If Nz(rsPI!outsourceInfoId) <> "" Then
+    Set rsOI = db.OpenRecordset("SELECT * from tblOutsourceInfo WHERE recordId = " & rsPI!outsourceInfoId)
+    outsourceCost = rsOI!outsourceCost
+    rsOI.Close: Set rsOI = Nothing
+End If
+                                    
+'---Setup Excel Form---
+Set XL = New Excel.Application
+Set WB = XL.Workbooks.Add
+XL.Visible = True
+WB.Activate
+Set WKS = WB.ActiveSheet
+WKS.name = "MAIN"
+WKS.Range("A:E").HorizontalAlignment = xlCenter
+WKS.Range("A:E").VerticalAlignment = xlCenter
+inV = 1
+
+'---Import General Data---
+WKS.Range("A1:E1").Font.Italic = True
+aifInsert "ACCOUNTING INFORMATION FORM", "", , "Exported: ", Date
+aifInsert "PRIMARY INFORMATION", "", , , , True
+aifInsert "Part Number", partNum, firstColBold:=True
+aifInsert "Data Status", DLookup("partDataStatus", "tblDropDownsSP", "ID = " & rsPI!dataStatus), firstColBold:=True
+aifInsert "Planner", rsPE!firstName & " " & rsPE!lastName, firstColBold:=True
+aifInsert "Mark Code", Nz(rsPI!partMarkCode), firstColBold:=True
+aifInsert "Customer", DLookup("CUSTOMER_NAME", "APPS_XXCUS_CUSTOMERS", "CUSTOMER_ID = " & rsPI!customerId), firstColBold:=True
+aifInsert "Unit", rsU!unitName, firstColBold:=True
+aifInsert "Mexico Rates", rsU!Org = "CUU", firstColBold:=True
+aifInsert "Org", rsU!Org, firstColBold:=True 'is this supposed to be UNIT based, or the developing ORG?
+aifInsert "Part Type", DLookup("partType", "tblDropDownsSP", "ID = " & rsPI!partType), firstColBold:=True
+aifInsert "Routing Finish", DLookup("finishLocator", "tblDropDownsSP", "ID = " & rsPI!finishLocator), firstColBold:=True
+aifInsert "Sub-Location", DLookup("finishSubInv", "tblDropDownsSP", "ID = " & rsPI!finishSubInv), firstColBold:=True
+aifInsert "Mexico Freight", mexFr, firstColBold:=True
+aifInsert "Quoted Cost", Nz(DLookup("quotedCost", "tblPartQuoteInfo", "recordId = " & rsPI!quoteInfoId), 0), firstColBold:=True
+aifInsert "Selling Price", rsPI!sellingPrice, firstColBold:=True
+aifInsert "Royalty", rsPI!sellingPrice * 0.03, firstColBold:=True
+aifInsert "Outsource Cost", outsourceCost, firstColBold:=True
+
+'---Molding / Assembly Specific Information---
+Dim insLev As String, mpLev As String, anneal As String, laborType As String, pph As String, weight100Pc As String
 Select Case rsPI!partType
     Case 1, 4 'molded / new color
+        aifInsert "MOLDING INFORMATION", "", , , , True
         Set rsPMI = db.OpenRecordset("SELECT * from tblPartMoldingInfo WHERE recordId = " & rsPI!moldInfoId)
+        weight100Pc = Nz(rsPMI!itemWeight100Pc, 0)
         insLev = Nz(rsPMI!inspection)
         mpLev = Nz(rsPMI!measurePack)
-        aifInsert "Tool Number", rsPMI!toolNumber
-        aifInsert "Pieces Per Hour", Nz(rsPMI!piecesPerHour)
-        aifInsert "Press Tonnage", Nz(rsPMI!pressSize)
-        aifInsert "Home Press", Nz(rsPMI!assignedPress)
-        aifInsert "Tooling Lvl", rsPMI!toolType
-        aifInsert "Gate Lvl", rsPMI!gateCutting
-        aifInsert "Annealing Lvl", rsPMI!annealing
-        aifInsert "Insert Mold", rsPMI!insertMold
-        aifInsert "Family Mold", rsPMI!familyTool
-        aifInsert "Glass", rsPMI!glass
-        If rsPMI!glass Then
-            aifInsert "Glass Price", DLookup("pressRate", "tblDropDownsSP", "pressSize = '" & rsPMI!pressSize & "'") / rsPMI!piecesPerHour / 408 / 12 / 0.85
+        anneal = Nz(rsPMI!annealing)
+        If rsPMI!insertMold Then
+            laborType = "Insert Mold"
         Else
-            aifInsert "Glass Price", "0"
+            laborType = DLookup("pressAutomation", "tblDropDownsSP", "ID = " & rsPMI!automated)
         End If
-        aifInsert "Regrind", rsPMI!regrind
-        aifInsert "Material Number 1", Nz(rsPMI!materialNumber)
-        aifInsert "Full Piece Weight (g)", Nz(rsPMI!pieceWeight) 'double check if this is weight for just this material, or overall
-        aifInsert "Material Number 2", Nz(rsPMI!materialNumber1)
-        aifInsert "Material 2 Piece Weight (g)", Nz(rsPMI!matNum1PieceWeight)
-        
+        pph = Nz(rsPMI!piecesPerHour)
+        aifInsert "Tool Number", rsPMI!toolNumber, firstColBold:=True
+        aifInsert "Press Tonnage", Nz(rsPMI!pressSize), firstColBold:=True
+        aifInsert "Home Press", Nz(rsPMI!assignedPress), firstColBold:=True
+        aifInsert "Tooling Lvl", rsPMI!toolType, firstColBold:=True
+        aifInsert "Gate Lvl", rsPMI!gateCutting, firstColBold:=True
+        aifInsert "Insert Mold", rsPMI!insertMold, firstColBold:=True
+        aifInsert "Family Mold", rsPMI!familyTool, firstColBold:=True
+        aifInsert "Glass", rsPMI!glass, firstColBold:=True
+        If rsPMI!glass Then
+            aifInsert "Glass Cost", DLookup("pressRate", "tblDropDownsSP", "pressSize = '" & rsPMI!pressSize & "'") / rsPMI!piecesPerHour / 408 / 12 / 0.85, firstColBold:=True
+        Else
+            aifInsert "Glass Cost", "0", firstColBold:=True
+        End If
+        aifInsert "Regrind", rsPMI!regrind, firstColBold:=True
+        aifInsert "Material Number 1", Nz(rsPMI!materialNumber), firstColBold:=True
+        aifInsert "Full Piece Weight (g)", Nz(rsPMI!pieceWeight), firstColBold:=True 'double check if this is weight for just this material, or overall
+        aifInsert "Material Number 2", Nz(rsPMI!materialNumber1), firstColBold:=True
+        aifInsert "Material 2 Piece Weight (g)", Nz(rsPMI!matNum1PieceWeight), firstColBold:=True
         rsPMI.Close
         Set rsPMI = Nothing
     Case 2, 5 'Assembled / subassembly
+        aifInsert "ASSEMBLY INFORMATION", "", , , , True
         Set rsAI = db.OpenRecordset("SELECT * from tblPartAssemblyInfo WHERE recordId = " & rsPI!assemblyInfoId)
-        insLev = rsAI!assemblyInspection
-        mpLev = rsAI!assemblyMeasPack
-        
-        Do While Not rsComp.EOF
-            aifInsert "Component Part Number", rsComp!componentNumber
-            aifInsert "Component Description", DLookup("Description", "APPS_MTL_SYSTEM_ITEMS", "SEGMENT1 = '" & rsComp!componentNumber & "'")
-            aifInsert "Component Qty", rsComp!quantity
-            aifInsert "Component Locator", DLookup("finishLocator", "tblDropDownsSP", "ID = " & rsComp!finishLocator)
-            aifInsert "Component Sub-Inventory", DLookup("finishSubInv", "tblDropDownsSP", "ID = " & rsComp!finishSubInv)
-            rsComp.MoveNext
-        Loop
-        rsComp.Close
+        weight100Pc = Nz(rsAI!assemblyWeight100Pc, 0)
+        laborType = DLookup("assemblyType", "tblDropDownsSP", "ID = " & rsAI!assemblyType)
+        anneal = Nz(rsAI!assemblyAnnealing, 0)
+        insLev = Nz(rsAI!assemblyInspection, 0)
+        mpLev = Nz(rsAI!assemblyMeasPack, 0)
+        pph = Nz(rsAI!partsPerHour)
+        aifInsert "Resource", Nz(rsAI!resource), firstColBold:=True
+        aifInsert "Machine Line", Nz(rsAI!machineLine), firstColBold:=True
         rsAI.Close
-        Set rsComp = Nothing
         Set rsAI = Nothing
     Case 3 'Purchased
 End Select
 
-aifInsert "Inspection Lvl", insLev
-aifInsert "MsPack Lvl", mpLev
+aifInsert "100 Piece Weight", weight100Pc, firstColBold:=True
+aifInsert "Pieces Per Hour", pph, firstColBold:=True
+aifInsert "Labor Type", laborType, firstColBold:=True
+aifInsert "Inspection Lvl", insLev, firstColBold:=True
+aifInsert "MsPack Lvl", mpLev, firstColBold:=True
+aifInsert "Annealing Lvl", anneal, firstColBold:=True
 
-Dim mexFr As String
-If rsU!Org = "CUU" Then
-    mexFr = "TEST" '83.7 / (cartonQty * boxesPerSkid)
-Else
-    mexFr = "0"
+'---Component Information---
+Set rsComp = db.OpenRecordset("SELECT * from tblPartComponents WHERE assemblyNumber = '" & partNum & "'")
+If rsComp.RecordCount > 0 Then
+    aifInsert "COMPONENT INFORMATION", "", , , , True
+    aifInsert "Part Number", "Description", "Qty", "Locator", "Sub-Inventory", , True
 End If
+Do While Not rsComp.EOF
+    aifInsert rsComp!componentNumber, _
+        DLookup("Description", "APPS_MTL_SYSTEM_ITEMS", "SEGMENT1 = '" & rsComp!componentNumber & "'"), _
+        rsComp!quantity, _
+        DLookup("finishLocator", "tblDropDownsSP", "ID = " & rsComp!finishLocator), _
+        DLookup("finishSubInv", "tblDropDownsSP", "ID = " & rsComp!finishSubInv)
+    rsComp.MoveNext
+Loop
+rsComp.Close
+Set rsComp = Nothing
 
-aifInsert "Mexico Freight", mexFr
-aifInsert "Selling Price", rsPI!sellingPrice
-aifInsert "Royalty", rsPI!sellingPrice * 0.03
-aifInsert "Outsource Cost", outsourceCost
+'---Packaging Information---
+aifInsert "PACKAGING INFORMATION", "", , , , True
+Dim packType As String
+Do While Not rsPack.EOF
+    packType = DLookup("packagingType", "tblDropDownsSP", "ID = " & rsPack!packType)
+    Set rsPackC = db.OpenRecordset("SELECT * from tblPartPackagingComponents WHERE packagingInfoId = " & rsPack!recordId)
+    If rsPackC.RecordCount > 0 Then aifInsert "Packaging Type", "Component Type", "Component Number", "Component Qty", , , True
+    Do While Not rsPackC.EOF
+        aifInsert packType, Nz(DLookup("packComponentType", "tblDropDownsSP", "ID = " & rsPackC!componentType)), Nz(rsPackC!componentPN), Nz(rsPackC!componentQuantity)
+        rsPackC.MoveNext
+    Loop
+    rsPack.MoveNext
+Loop
 
-'export table
+'---Formatting---
+WKS.Cells.columns.AutoFit
+WKS.Range("B3:B4").Font.Size = 26
+
+WKS.Range("A1:E" & inV - 1).BorderAround Weight:=xlMedium
+
+'---Finish Up---
 Dim FileName As String
-FileName = "H:\" & partNum & "_Accounting_Kickoff_" & Year(Date) & "_" & Month(Date) & "_" & Day(Date) & ".xlsx"
+FileName = "H:\" & partNum & "_Accounting_Info_" & Year(Date) & "_" & Month(Date) & "_" & Day(Date) & "_id" & randomNumber(0, 100) & ".xlsx"
+WB.SaveAs FileName, , , , True
+MsgBox "AIF Complete. File path: " & FileName, vbOKOnly, "Notice"
 
-Dim qExport As DAO.QueryDef
-Dim sqlString As String
+'---Cleanup---
+XL.Visible = True
+Set XL = Nothing
+Set WKS = Nothing
+Set XL = Nothing
 
-Set qExport = CurrentDb.CreateQueryDef("AIF", "SELECT exportLabel as Data_Label, exportData as Data_Value FROM tblSessionVariables WHERE exportLabel is not null")
+rsPI.Close: Set rsPI = Nothing
+rsU.Close: Set rsU = Nothing
+rsPack.Close: Set rsPack = Nothing
+rsPackC.Close: Set rsPackC = Nothing
 
-DoCmd.TransferSpreadsheet acExport, acSpreadsheetTypeExcel12Xml, "AIF", FileName, True
-MsgBox "Export Complete. File path: " & FileName, vbOKOnly, "Notice"
-CurrentDb.QueryDefs.Delete "AIF"
-
-db.Execute "DELETE * FROM tblSessionVariables WHERE exportLabel is not null"
-
-rsPI.Close
-rsU.Close
-rsPack.Close
-rsPackC.Close
-Set rsPI = Nothing
-Set rsU = Nothing
-Set rsPack = Nothing
-Set rsPackC = Nothing
-
-'delete data from table
 exportAIF = True
 
 Exit Function
 err_handler:
-    Call handleError("wdbProjectE", "exportKickoffAIF", Err.Description, Err.number)
+    Call handleError("wdbProjectE", "exportAIF", Err.Description, Err.number)
 End Function
 
-Function aifInsert(columnName As String, columnVal As String)
-CurrentDb().Execute "INSERT INTO tblSessionVariables(exportLabel,exportData) VALUES ('" & columnName & "','" & columnVal & "')"
+Function aifInsert(columnVal0 As String, columnVal1 As String, Optional columnVal2 As String = ".", Optional columnVal3 As String = ".", Optional columnVal4 As String = ".", _
+                                Optional heading As Boolean = False, Optional Title As Boolean = False, Optional firstColBold As Boolean = False)
+
+WKS.Cells(inV, 1) = columnVal0
+WKS.Cells(inV, 2) = columnVal1
+If columnVal2 <> "." Then WKS.Cells(inV, 3) = columnVal2
+If columnVal3 <> "." Then WKS.Cells(inV, 4) = columnVal3
+If columnVal4 <> "." Then WKS.Cells(inV, 5) = columnVal4
+If heading Then
+    WKS.Range("A" & inV & ":E" & inV).Interior.Color = RGB(214, 220, 228)
+    WKS.Range("A" & inV & ":E" & inV).Font.Size = 14
+    WKS.Range("A" & inV & ":E" & inV).Font.Bold = True
+    WKS.Range("A" & inV & ":E" & inV).Merge
+    WKS.Range("A" & inV & ":E" & inV).Borders(xlTop).Weight = xlMedium
+    WKS.Range("A" & inV & ":E" & inV).Borders(xlBottom).Weight = xlThin
+End If
+If Title Then WKS.Range("A" & inV & ":E" & inV).Font.Bold = True
+If firstColBold Then WKS.Range("A" & inV).Font.Bold = True
+inV = inV + 1
+
 End Function
 
 

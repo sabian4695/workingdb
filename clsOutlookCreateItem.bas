@@ -277,10 +277,10 @@ cleanUp:
     Set olMsg = Nothing
 End Function
 
-Public Function GetSubFolder(UsingFolder As Object, Index As Variant) As Object 'Outlook.Folder
+Public Function GetSubFolder(UsingFolder As Object, index As Variant) As Object 'Outlook.Folder
     On Error Resume Next
     
-    Set GetSubFolder = UsingFolder.Folders(Index)
+    Set GetSubFolder = UsingFolder.Folders(index)
     
     If Err <> 0 Then
         Err.clear

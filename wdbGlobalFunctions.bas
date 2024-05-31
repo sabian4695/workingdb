@@ -414,7 +414,7 @@ If rsNotifications.RecordCount > 0 Then
     If rsNotifications!notificationType = 1 Then
         Dim msgTxt As String
         If rsNotifications!senderUser = Environ("username") Then
-            msgTxt = "Yo, you already did that today, let's wait 'til tomorrow to do it again."
+            msgTxt = "You already nudged this person today"
         Else
             msgTxt = sendTo & " has already been nudged about this today by " & rsNotifications!senderUser & ". Let's wait until tomorrow to nudge them again."
         End If
