@@ -351,12 +351,11 @@ Loop
 '---Formatting---
 WKS.Cells.columns.AutoFit
 WKS.Range("B3:B4").Font.Size = 26
-
 WKS.Range("A1:E" & inV - 1).BorderAround Weight:=xlMedium
 
 '---Finish Up---
 Dim FileName As String
-FileName = "H:\" & partNum & "_Accounting_Info_" & Year(Date) & "_" & Month(Date) & "_" & Day(Date) & "_id" & randomNumber(0, 100) & ".xlsx"
+FileName = "H:\" & partNum & "_Accounting_Info_" & Replace(Replace(Replace(Now(), "/", "_"), ":", "_"), " ", "_") & ".xlsx"
 WB.SaveAs FileName, , , , True
 MsgBox "AIF Complete. File path: " & FileName, vbOKOnly, "Notice"
 
@@ -386,16 +385,29 @@ WKS.Cells(inV, 2) = columnVal1
 If columnVal2 <> "." Then WKS.Cells(inV, 3) = columnVal2
 If columnVal3 <> "." Then WKS.Cells(inV, 4) = columnVal3
 If columnVal4 <> "." Then WKS.Cells(inV, 5) = columnVal4
+
+WKS.Range("A" & inV & ":E" & inV).Borders(xlInsideHorizontal).Weight = xlThin
+WKS.Range("A" & inV & ":E" & inV).Borders(xlInsideVertical).Weight = xlThin
+WKS.Range("A" & inV & ":E" & inV).Borders(xlTop).Weight = xlThin
+WKS.Range("A" & inV & ":E" & inV).Borders(xlBottom).Weight = xlThin
+
 If heading Then
     WKS.Range("A" & inV & ":E" & inV).Interior.Color = RGB(214, 220, 228)
     WKS.Range("A" & inV & ":E" & inV).Font.Size = 14
     WKS.Range("A" & inV & ":E" & inV).Font.Bold = True
     WKS.Range("A" & inV & ":E" & inV).Merge
     WKS.Range("A" & inV & ":E" & inV).Borders(xlTop).Weight = xlMedium
-    WKS.Range("A" & inV & ":E" & inV).Borders(xlBottom).Weight = xlThin
 End If
-If Title Then WKS.Range("A" & inV & ":E" & inV).Font.Bold = True
-If firstColBold Then WKS.Range("A" & inV).Font.Bold = True
+
+If Title Then
+    WKS.Range("A" & inV & ":E" & inV).Font.Bold = True
+    WKS.Range("A" & inV & ":E" & inV).Interior.Color = RGB(242, 242, 242)
+End If
+If firstColBold Then
+    WKS.Range("A" & inV).Font.Bold = True
+    WKS.Range("A" & inV).Interior.Color = RGB(242, 242, 242)
+    WKS.Range("B" & inV & ":E" & inV).Merge
+End If
 inV = inV + 1
 
 End Function
