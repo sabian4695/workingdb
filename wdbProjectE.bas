@@ -17,62 +17,62 @@ Dim errorTxt As String
 
 '---Grab General Data---
 Set rsPI = db.OpenRecordset("SELECT * from tblPartInfo WHERE partNumber = '" & partNum & "'")
-Set rsPack = db.OpenRecordset("SELECT * from tblPartPackagingInfo WHERE partInfoId = " & rsPI!recordId)
+Set rsPack = db.OpenRecordset("SELECT * from tblPartPackagingInfo WHERE partInfoId = " & rsPI!recordId & " AND packType = 1")
 
 'check part info stuff
 Select Case ""
-    Case Nz(rsPI!dataStatus)
+    Case Nz(rsPI!dataStatus) 'always required
         errorTxt = "Data Status"
-    Case Nz(rsPI!customerId)
+    Case Nz(rsPI!customerId)  'always required
         errorTxt = "Customer"
-    Case Nz(rsPI!unitId)
+    Case Nz(rsPI!unitId)  'always required
         errorTxt = "Unit"
-    Case Nz(rsPI!partType)
+    Case Nz(rsPI!partType)  'always required
         errorTxt = "Part Type"
-    Case Nz(rsPI!finishLocator)
+    Case Nz(rsPI!finishLocator)  'always required
         errorTxt = "Finish Locator"
-    Case Nz(rsPI!finishSubInv)
+    Case Nz(rsPI!finishSubInv)  'always required
         errorTxt = "Finish Sub-Inventory"
-    Case Nz(rsPI!quoteInfoId)
+    Case Nz(rsPI!quoteInfoId)  'always required
         errorTxt = "Quote Information"
-    Case Nz(DLookup("quotedCost", "tblPartQuoteInfo", "recordId = " & rsPI!quoteInfoId))
+    Case Nz(DLookup("quotedCost", "tblPartQuoteInfo", "recordId = " & rsPI!quoteInfoId)) 'always required
         errorTxt = "Quoted Cost"
-    Case Nz(rsPI!sellingPrice)
+    Case Nz(rsPI!sellingPrice) 'required always if FG
         errorTxt = "Selling Price"
 End Select
 If errorTxt <> "" Then GoTo sendMsg
 
 If rsPI!partType = 1 Or rsPI!partType = 4 Then 'molded / new color
-    If Nz(rsPI!moldInfoId) = "" Then errorTxt = "Molding Info"
+    If Nz(rsPI!moldInfoId) = "" Then errorTxt = "Molding Info" 'always required
     If errorTxt <> "" Then GoTo sendMsg
     
     Set rsPMI = db.OpenRecordset("SELECT * from tblPartMoldingInfo WHERE recordId = " & rsPI!moldInfoId)
-    Select Case ""
-        Case Nz(rsPMI!itemWeight100Pc)
+    Select Case True
+        Case Nz(rsPMI!itemWeight100Pc) = "" And rsPI!dataStatus = 2 And rsPI!unitId = 1 'required for TRANSFER and U01 only
             errorTxt = "100 Piece Weight"
-        Case Nz(rsPMI!inspection)
+        Case Nz(rsPMI!inspection) = "" 'always required
             errorTxt = "Tool Inspection Level"
-        Case Nz(rsPMI!measurePack)
+        Case Nz(rsPMI!measurePack) = "" 'always required
             errorTxt = "Tool Measure Pack Level"
-        Case Nz(rsPMI!annealing)
+        Case Nz(rsPMI!annealing) = "" 'always required
             errorTxt = "Tool Annealing Level"
-        Case Nz(rsPMI!automated)
+        Case Nz(rsPMI!automated) = "" 'always required
             errorTxt = "Tool Automation Type"
-        Case Nz(rsPMI!piecesPerHour)
+        Case Nz(rsPMI!piecesPerHour) = "" And rsPI!dataStatus = 2 'required for transfer
             errorTxt = "Pieces Per Hour"
-        Case Nz(rsPMI!toolNumber)
+        Case Nz(rsPMI!toolNumber) = "" 'always required
             errorTxt = "Tool Number"
-        Case Nz(rsPMI!pressSize)
+        Case Nz(rsPMI!pressSize) = "" 'always required
             errorTxt = "Press Tonnage"
-        Case Nz(rsPMI!assignedPress)
+        Case Nz(rsPMI!assignedPress) = "" And rsPI!dataStatus = 2 'required for transfer
             errorTxt = "Assigned Press"
-        Case Nz(rsPMI!toolType)
+        Case Nz(rsPMI!toolType) = "" 'always required
             errorTxt = "Tool Level"
-        Case Nz(rsPMI!gateCutting)
+        Case Nz(rsPMI!gateCutting) = "" 'always required
             errorTxt = "Tool Gate Level"
-        Case Nz(rsPMI!materialNumber)
+        Case Nz(rsPMI!materialNumber) = "" 'always required
             errorTxt = "Material Number"
-        Case Nz(rsPMI!pieceWeight)
+        Case Nz(rsPMI!pieceWeight) = "" 'always required
             errorTxt = "Piece Weight"
     End Select
     If errorTxt <> "" Then GoTo sendMsg
@@ -92,22 +92,22 @@ If rsPI!partType = 2 Or rsPI!partType = 5 Then
     
     Set rsAI = db.OpenRecordset("SELECT * from tblPartAssemblyInfo WHERE recordId = " & rsPI!assemblyInfoId)
 
-    Select Case ""
-        Case Nz(rsAI!assemblyWeight100Pc)
+    Select Case True
+        Case Nz(rsAI!assemblyWeight100Pc) = "" And rsPI!dataStatus = 2 'required for transfer
             errorTxt = "100 Piece Weight"
-        Case Nz(rsAI!assemblyType)
+        Case Nz(rsAI!assemblyType) = "" 'always required
             errorTxt = "Assembly Type"
-        Case Nz(rsAI!assemblyAnnealing)
+        Case Nz(rsAI!assemblyAnnealing) = "" 'always required
             errorTxt = "Assembly Annealing Level"
-        Case Nz(rsAI!assemblyInspection)
+        Case Nz(rsAI!assemblyInspection) = "" 'always required
             errorTxt = "Assembly Inspection Level)"
-        Case Nz(rsAI!assemblyMeasPack)
+        Case Nz(rsAI!assemblyMeasPack) = "" 'always required
             errorTxt = "Assembly Measure Pack Level"
-        Case Nz(rsAI!partsPerHour)
+        Case Nz(rsAI!partsPerHour) = "" And rsPI!dataStatus = 2 'required for transfer
             errorTxt = "Assembly Parts Per Hour"
-        Case Nz(rsAI!resource)
+        Case Nz(rsAI!resource) = "" And rsPI!dataStatus = 2 'required for transfer
             errorTxt = "Assembly Resource"
-        Case Nz(rsAI!machineLine)
+        Case Nz(rsAI!machineLine) = "" And rsPI!dataStatus = 2 'required for transfer
             errorTxt = "Assembly Machine Line"
     End Select
     If errorTxt <> "" Then GoTo sendMsg
@@ -120,12 +120,14 @@ If rsPI!partType = 2 Or rsPI!partType = 5 Then
     If errorTxt <> "" Then GoTo sendMsg
     
     Do While Not rsComp.EOF
-        Select Case ""
-            Case Nz(rsComp!componentNumber)
+        Select Case True
+            Case Nz(rsComp!componentNumber) = "" 'always required
                 errorTxt = "Blank Component Number"
-            Case Nz(rsComp!finishLocator)
+            Case Nz(rsComp!quantity) = "" 'always required
+                errorTxt = "Blank Component Quantity"
+            Case Nz(rsComp!finishLocator) = "" And rsPI!dataStatus = 2 'required for transfer
                 errorTxt = "Component Finish Locator"
-            Case Nz(rsComp!finishSubInv)
+            Case Nz(rsComp!finishSubInv) = "" And rsPI!dataStatus = 2 'required for transfer
                 errorTxt = "Component Sub-Inventory"
         End Select
         If errorTxt <> "" Then GoTo sendMsg
@@ -135,43 +137,49 @@ If rsPI!partType = 2 Or rsPI!partType = 5 Then
     Set rsComp = Nothing
 End If
 
-If rsPack.RecordCount = 0 Then errorTxt = "Packaging Information"
+If rsPack.RecordCount = 0 Then 'required for transfer
+    If rsPI!dataStatus = 2 Then errorTxt = "Packaging Information"
+Else
+    Do While Not rsPack.EOF
+        If Nz(rsPack!packType) = "" Then 'required for transfer
+            errorTxt = "Packaging Type"
+        End If
+        Set rsPackC = db.OpenRecordset("SELECT * from tblPartPackagingComponents WHERE packagingInfoId = " & rsPack!recordId)
+        If rsPackC.RecordCount = 0 Then 'required for transfer
+            If rsPI!dataStatus = 2 Then errorTxt = "Packaging Components"
+        End If
+        If errorTxt <> "" Then GoTo sendMsg
+        
+        Do While Not rsPackC.EOF
+            Select Case True
+                Case Nz(rsPackC!componentType) = "" And rsPI!dataStatus = 2 'required for transfer
+                    errorTxt = "Packaging Component Type"
+                Case Nz(rsPackC!componentPN) = "" And rsPI!dataStatus = 2 'required for transfer
+                    errorTxt = "Packaging Component Part Number"
+                Case Nz(rsPackC!componentQuantity) = "" And rsPI!dataStatus = 2 'required for transfer
+                    errorTxt = "Packing Component Quantity"
+            End Select
+            If errorTxt <> "" Then GoTo sendMsg
+            rsPackC.MoveNext
+        Loop
+        rsPack.MoveNext
+        rsPackC.Close: Set rsPackC = Nothing
+    Loop
+    
+    rsPack.Close: Set rsPack = Nothing
+End If
 If errorTxt <> "" Then GoTo sendMsg
 
-Do While Not rsPack.EOF
-    If Nz(rsPack!packType) = "" Then errorTxt = "Packaging Type"
-    Set rsPackC = db.OpenRecordset("SELECT * from tblPartPackagingComponents WHERE packagingInfoId = " & rsPack!recordId)
-    If rsPackC.RecordCount = 0 Then errorTxt = "Packaging Components"
-    If errorTxt <> "" Then GoTo sendMsg
-    
-    Do While Not rsPackC.EOF
-        Select Case ""
-            Case Nz(rsPackC!componentType)
-                errorTxt = "Packaging Component Type"
-            Case Nz(rsPackC!componentPN)
-                errorTxt = "Packaging Component Part Number"
-            Case Nz(rsPackC!componentQuantity)
-                errorTxt = "Packing Component Quantity"
-        End Select
-        If errorTxt <> "" Then GoTo sendMsg
-        rsPackC.MoveNext
-    Loop
-    rsPack.MoveNext
-Loop
-
-rsPackC.Close: Set rsPackC = Nothing
-rsPack.Close: Set rsPack = Nothing
-
 If rsPI!unitId = 3 Then
-    If Nz(rsPI!outsourceInfoId) <> "" Then errorTxt = "Outsource Info"
-    If errorTxt <> "" Then GoTo sendMsg
-    
-    If Nz(DLookup("outsourceCost", "tblPartOutsourceInfo", "recordId = " & rsPI!outsourceInfoId)) = "" Then errorTxt = "Outsource Cost"
+    Select Case True
+        Case Nz(rsPI!outsourceInfoId) = "" And rsPI!dataStatus = 2 'required for transfer
+            errorTxt = "Outsource Info"
+        Case Nz(DLookup("outsourceCost", "tblPartOutsourceInfo", "recordId = " & rsPI!outsourceInfoId)) = "" And rsPI!dataStatus = 2 'required for transfer
+            errorTxt = "Outsource Cost"
+    End Select
+
     If errorTxt <> "" Then GoTo sendMsg
 End If
-
-'aifInsert "Mark Code", Nz(rsPI!partMarkCode), firstColBold:=True
-
 
 checkAIFfields = True
 GoTo exitFunction
@@ -335,8 +343,10 @@ rsComp.Close
 Set rsComp = Nothing
 
 '---Packaging Information---
-aifInsert "PACKAGING INFORMATION", "", , , , True
 Dim packType As String
+If rsPack.RecordCount > 0 Then
+    aifInsert "PACKAGING INFORMATION", "", , , , True
+End If
 Do While Not rsPack.EOF
     packType = DLookup("packagingType", "tblDropDownsSP", "ID = " & rsPack!packType)
     Set rsPackC = db.OpenRecordset("SELECT * from tblPartPackagingComponents WHERE packagingInfoId = " & rsPack!recordId)
