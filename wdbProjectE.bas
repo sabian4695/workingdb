@@ -777,16 +777,16 @@ err_handler:
     Call handleError("wdbProjectE", "createPartProject", Err.Description, Err.number)
 End Function
 
-Public Function grabTitle(user) As String
+Public Function grabTitle(User) As String
 On Error GoTo err_handler
 
-If IsNull(user) Then
+If IsNull(User) Then
     grabTitle = ""
     Exit Function
 End If
 
 Dim rsPermissions As Recordset
-Set rsPermissions = CurrentDb().OpenRecordset("SELECT * from tblPermissions where user = '" & user & "'")
+Set rsPermissions = CurrentDb().OpenRecordset("SELECT * from tblPermissions where user = '" & User & "'")
 grabTitle = rsPermissions!dept & " " & rsPermissions!Level
 
 err_handler:
@@ -927,8 +927,8 @@ Set rsPermissions = CurrentDb().OpenRecordset("SELECT user, userEmail from tblPe
 If rsPermissions.RecordCount = 0 Then Exit Function
 
 Do While Not rsPermissions.EOF
-    If rsPermissions!user = Environ("username") Then GoTo nextRec
-    findDept = findDept & rsPermissions!user & ","
+    If rsPermissions!User = Environ("username") Then GoTo nextRec
+    findDept = findDept & rsPermissions!User & ","
 nextRec:
     rsPermissions.MoveNext
 Loop
