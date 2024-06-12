@@ -5,6 +5,12 @@ Public bClone As Boolean
 
 Declare PtrSafe Function IsIconic Lib "User32" (ByVal hWnd As Long) As Integer
 
+Public Function nowString() As String
+
+nowString = Format(Now(), "yyyymmddTHHmmss")
+
+End Function
+
 Public Function snackBox(sType As String, sTitle As String, sMessage As String, refForm As String, Optional centerBool As Boolean = False, Optional autoClose As Boolean = True)
 
 TempVars.Add "snackType", sType

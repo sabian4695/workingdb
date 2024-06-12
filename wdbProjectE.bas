@@ -422,6 +422,31 @@ inV = inV + 1
 
 End Function
 
+Function loadPlannerECO(partNumber As String) As String
+loadPlannerECO = ""
+
+Dim rs1 As Recordset
+Set rs1 = CurrentDb().OpenRecordset("SELECT [CHANGE_NOTICE] from ENG_ENG_REVISED_ITEMS where [REVISED_ITEM_ID] = " & idNAM(partNumber, "NAM") & _
+    " AND [CANCELLATION_DATE] IS NULL AND [CHANGE_NOTICE] IN (SELECT [CHANGE_NOTICE] FROM ENG_ENG_ENGINEERING_CHANGES WHERE [CHANGE_ORDER_TYPE_ID] = 6502)", dbOpenSnapshot)
+
+If rs1.RecordCount > 0 Then loadPlannerECO = rs1!CHANGE_NOTICE
+
+rs1.Close
+Set rs1 = Nothing
+End Function
+
+Function loadTransferECO(partNumber As String) As String
+loadTransferECO = ""
+
+Dim rs1 As Recordset
+Set rs1 = CurrentDb().OpenRecordset("SELECT [CHANGE_NOTICE] from ENG_ENG_REVISED_ITEMS where [REVISED_ITEM_ID] = " & idNAM(partNumber, "NAM") & _
+    " AND [CANCELLATION_DATE] IS NULL AND [CHANGE_NOTICE] IN (SELECT [CHANGE_NOTICE] FROM ENG_ENG_ENGINEERING_CHANGES WHERE [CHANGE_ORDER_TYPE_ID] = 72)", dbOpenSnapshot)
+
+If rs1.RecordCount > 0 Then loadTransferECO = rs1!CHANGE_NOTICE
+
+rs1.Close
+Set rs1 = Nothing
+End Function
 
 Public Function getAttachmentsCount(stepId As Long) As Long
 On Error GoTo err_handler
