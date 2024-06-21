@@ -973,22 +973,23 @@ err_handler:
 End Function
 
 Function scanSteps(partNum As String, routineName As String, Optional identifier As Variant = "notFound") As Boolean
-On Error GoTo err_handler
+'On Error GoTo err_handler
 
 scanSteps = False
 'this scans to see if there is a step action that needs to be deleted per its own requirements
 
-Dim rsSteps As Recordset, rsStepActions As Recordset, dFilt As String, eFilt As String
+Dim rsSteps As Recordset, rsStepActions As Recordset, dFilt As String, eFilt As String, db As Database
+Set db = CurrentDb()
 'grab all steps that match this partNum and routine name, and are not closed
 dFilt = "SELECT * FROM tblPartSteps WHERE stepActionId IN (SELECT recordId FROM tblPartStepActions WHERE whenToRun = '" & routineName & "') AND status <> 'Closed'"
 eFilt = ""
 If partNum <> "all" Then eFilt = " AND partNumber = '" & partNum & "'"
-Set rsSteps = CurrentDb().OpenRecordset(dFilt & eFilt)
+Set rsSteps = db.OpenRecordset(dFilt & eFilt)
 
 If rsSteps.RecordCount = 0 Then Exit Function 'no steps have actions attached!
 
 Do While Not rsSteps.EOF
-    Set rsStepActions = CurrentDb().OpenRecordset("SELECT * FROM tblPartStepActions WHERE recordId = " & rsSteps!stepActionId)
+    Set rsStepActions = db.OpenRecordset("SELECT * FROM tblPartStepActions WHERE recordId = " & rsSteps!stepActionId)
     If Nz(rsStepActions!whenToRun, "") <> routineName Then GoTo nextOne 'check if this is the right time to run this actions step
     
     Dim matches, rsLookItUp As Recordset, matchingCol As String, meetsCriteria As Boolean
@@ -999,27 +1000,36 @@ Do While Not rsSteps.EOF
     'Check for types of actions based on table name
     Select Case rsStepActions!compareTable
         Case "INV_MTL_EAM_ASSET_ATTR_VALUES"
-            Dim moldId
-            moldId = DLookup("moldInfoId", "tblPartInfo", "partNumber = '" & rsSteps!partNumber & "'")
-            If Nz(moldId) = "" Then GoTo nextOne
-            identifier = "'" & DLookup("toolNumber", "tblPartMoldingInfo", "recordId = " & moldId) & "'" 'toolnumer
+            Dim rsPI As Recordset, rsPMI As Recordset
+            Set rsPI = db.OpenRecordset("SELECT moldInfoId FROM tblPartInfo WHERE partNumber = '" & rsSteps!partNumber & "'")
+            If rsPI.RecordCount = 0 Then GoTo nextOne
+            If Nz(rsPI!moldInfoId) = "" Then GoTo nextOne
+            Set rsPMI = db.OpenRecordset("SELECT toolNumber FROM tblPartMoldingInfo WHERE recordId = " & rsPI!moldInfoId)
+            identifier = "'" & rsPMI!toolNumber & "'"
             matchingCol = "SERIAL_NUMBER" 'toolnumber column in this table
+            rsPI.Close
+            Set rsPI = Nothing
+            rsPMI.Close
+            Set rsPMI = Nothing
         Case "ENG_ENG_ENGINEERING_CHANGES"
             Dim rsECOrev As Recordset 'find the transfer ECO
             If Nz(rsSteps!partNumber) = "" Then GoTo nextOne
-            Set rsECOrev = CurrentDb.OpenRecordset("select CHANGE_NOTICE from ENG_ENG_ENGINEERING_CHANGES " & _
-                "where CHANGE_NOTICE IN (select CHANGE_NOTICE from ENG_ENG_REVISED_ITEMS where REVISED_ITEM_ID = " & idNAM(rsSteps!partNumber, "NAM") & " ) " & _
+            Dim pnId As String
+            pnId = idNAM(rsSteps!partNumber, "NAM")
+            If pnId = "" Then GoTo nextOne
+            Set rsECOrev = db.OpenRecordset("select CHANGE_NOTICE from ENG_ENG_ENGINEERING_CHANGES " & _
+                "where CHANGE_NOTICE IN (select CHANGE_NOTICE from ENG_ENG_REVISED_ITEMS where REVISED_ITEM_ID = " & pnId & " ) " & _
                 "AND IMPLEMENTATION_DATE is not null AND REASON_CODE = 'TRANSFER'")
-            If rsECOrev.RecordCount > 0 Then
-                GoTo performAction 'transfer ECO found!
-            Else
-                GoTo nextOne
-            End If
+            If rsECOrev.RecordCount = 0 Then GoTo nextOne
+            rsECOrev.Close
+            Set rsECOrev = Nothing
+            GoTo performAction 'transfer ECO found!
     End Select
     
-    Set rsLookItUp = CurrentDb().OpenRecordset("SELECT " & rsStepActions!compareColumn & " FROM " & rsStepActions!compareTable & " WHERE " & matchingCol & " = " & identifier)
+    Set rsLookItUp = db.OpenRecordset("SELECT " & rsStepActions!compareColumn & " FROM " & rsStepActions!compareTable & " WHERE " & matchingCol & " = " & identifier)
     
     meetsCriteria = False
+    If rsLookItUp.RecordCount = 0 Then GoTo nextOne
     
     If InStr(rsStepActions!compareData, ",") > 0 Then 'check for multiple values - always seen as an OR command, not AND
         'make an array of the values and check if any match
@@ -1040,7 +1050,7 @@ performAction:
     Select Case rsStepActions!stepAction 'everything matched - what should be done with this step??
         Case "deleteStep" 'delete the step!
             Call registerPartUpdates("tblPartSteps", rsSteps!recordId, "Deleted - stepAction", rsSteps!stepType, "", partNum, rsSteps!stepType, "stepAction")
-            CurrentDb().Execute "DELETE FROM tblPartSteps WHERE recordId = " & rsSteps!recordId
+            rsSteps.Delete
             If CurrentProject.AllForms("frmPartDashboard").IsLoaded Then Form_sfrmPartDashboard.Requery
         Case "closeStep" 'close the step!
             Dim currentDate
@@ -1053,11 +1063,16 @@ performAction:
             rsSteps.Update
             
             If (DCount("recordId", "tblPartSteps", "[closeDate] is null AND partGateId = " & rsSteps!partGateId) = 0) Then
-                Dim gateDate, gateTitle As String
-                gateDate = DLookup("actualDate", "tblPartGates", "recordId = " & rsSteps!partGateId)
-                gateTitle = DLookup("gateTitle", "tblPartGates", "recordId = " & rsSteps!partGateId)
-                Call registerPartUpdates("tblPartGates", rsSteps!partGateId, "actualDate", gateDate, currentDate, rsSteps!partNumber, gateTitle, rsSteps!partProjectId, "stepAction")
-                CurrentDb().Execute "UPDATE tblPartGates SET [actualDate] = '" & currentDate & "' WHERE recordId = " & rsSteps!partGateId
+                Dim rsGate As Recordset
+                Set rsGate = db.OpenRecordset("SELECT * FROM tblPartGates WHERE recordId = " & rsSteps!partGateId)
+                Call registerPartUpdates("tblPartGates", rsSteps!partGateId, "actualDate", rsGate!gateDate, currentDate, rsSteps!partNumber, rsGate!gateTitle, rsSteps!partProjectId, "stepAction")
+                
+                rsGate.Edit
+                rsGate!actualDate = currentDate
+                rsGate.Update
+                rsGate.Close
+                Set rsGate = Nothing
+                
                 If CurrentProject.AllForms("frmPartDashboard").IsLoaded Then Form_sfrmPartDashboardDates.Requery
             End If
             
@@ -1069,6 +1084,17 @@ nextOne:
     rsSteps.MoveNext
 Loop
 
+On Error Resume Next
+rsPI.Close
+Set rsPI = Nothing
+rsPMI.Close
+Set rsPMI = Nothing
+rsECOrev.Close
+Set rsECOrev = Nothing
+rsLookItUp.Close
+Set rsLookItUp = Nothing
+rsStepActions.Close
+Set rsStepActions = Nothing
 rsSteps.Close
 Set rsSteps = Nothing
 
