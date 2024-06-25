@@ -32,7 +32,7 @@ End Function
 
 Public Function setSplashLoading(label As String)
 TempVars.Add "loadAmount", TempVars!loadAmount + 1
-Form_frmSplash.lnLoading.width = (TempVars!loadAmount / 12) * TempVars!loadWd
+Form_frmSplash.lnLoading.width = (TempVars!loadAmount / 11) * TempVars!loadWd
 Form_frmSplash.lblLoading.Caption = label
 Form_frmSplash.Repaint
 End Function
