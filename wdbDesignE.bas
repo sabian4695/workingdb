@@ -60,43 +60,6 @@ MsgBox "Error " & Err.number & " (" & Err.Description & _
 GoTo SetNavButtons_Exit
 End Sub
 
-Function getCheckFolder(controlNum As Long)
-Dim chkFold
-chkFold = DLookup("[Check_Folder]", "tblDRStrackerExtras", "[Control_Number] = " & controlNum)
-
-If IsNull(chkFold) Then
-    If MsgBox("No check folder found yet. Would you like to add one?", vbYesNo, "No Folder Found") = vbYes Then
-        Dim x
-        x = InputBox("Paste Link to Check Folder Here", "Add Check Folder Link")
-        Select Case x
-            Case vbCancel
-                Exit Function
-            Case ""
-                Exit Function
-        End Select
-        x = Replace(x, "'", "''")
-        x = replaceDriveLetters(x)
-        Call registerDRSUpdates("tblDRStrackerExtras", controlNum, "Check_Folder", "", x)
-        
-        CurrentDb().Execute ("UPDATE tblDRStrackerExtras SET [tblDRStrackerExtras].[Check_Folder] = '" & x & "' WHERE [tblDRStrackerExtras].[Control_Number] = " & controlNum)
-    Else
-        Exit Function
-    End If
-End If
-chkFold = DLookup("[Check_Folder]", "tblDRStrackerExtras", "[Control_Number] = " & controlNum)
-
-If InStr(Left(chkFold, 10), "file") Then
-    chkFold = Replace(chkFold, "%20", " ")
-    chkFold = Right(Left(chkFold, Len(chkFold) - 1), Len(chkFold) - 10)
-End If
-
-If Not Right(chkFold, 1) = "\" Then
-    chkFold = chkFold & "\"
-End If
-
-getCheckFolder = chkFold
-End Function
-
 Public Sub registerDRSUpdates(table As String, ID As Variant, column As String, oldVal As Variant, newVal As Variant, Optional tag0 As String, Optional tag1 As String)
 Dim sqlColumns As String, sqlValues As String
 
