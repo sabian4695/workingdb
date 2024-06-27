@@ -1219,6 +1219,9 @@ Dim updatedBy As String
 updatedBy = Environ("username")
 If optionExtra <> "" Then updatedBy = optionExtra
 
+If Len(oldVal) > 255 Then oldVal = Left(oldVal, 255)
+If Len(newVal) > 255 Then newVal = Left(newVal, 255)
+
 With rs1
     .addNew
         !tableName = table

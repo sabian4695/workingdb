@@ -77,6 +77,9 @@ If (VarType(newVal) = vbDate) Then newVal = Format(newVal, "mm/dd/yyyy")
 Dim rs1 As Recordset
 Set rs1 = CurrentDb().OpenRecordset("tblWdbUpdateTracking")
 
+If Len(oldVal) > 255 Then oldVal = Left(oldVal, 255)
+If Len(newVal) > 255 Then newVal = Left(newVal, 255)
+
 With rs1
     .addNew
         !tableName = table

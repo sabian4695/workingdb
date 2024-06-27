@@ -105,9 +105,12 @@ If (CurrentProject.Path = "H:\dev") Then
 End If
 
 Select Case errNum
+    Case 53
+        MsgBox "File Not Found", vbInformation, "Error Code: " & errNum
+        Exit Sub
     Case 3011
         MsgBox "Looks like I'm having issues connecting to SharePoint. Please reopen when you can", vbInformation, "Error Code: " & errNum
-    Case 490
+    Case 490, 52, 75
         MsgBox "I cannot open this file or location - check if it has been moved or deleted. Or - you do not have proper access to this location", vbInformation, "Error Code: " & errNum
         Exit Sub
     Case 3022
@@ -119,6 +122,7 @@ Select Case errNum
         MsgBox "Hmm. Looks like something is missing. Check for an empty field", vbInformation, "Error Code: " & errNum
     Case 3151
         MsgBox "You're not connected to Oracle. Just FYI, Oracle connection does not work outside of VMWare.", vbInformation, "Error Code: " & errNum
+        Exit Sub
     Case Else
         MsgBox errDesc, vbInformation, "Error Code: " & errNum
 End Select
