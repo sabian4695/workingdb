@@ -203,7 +203,7 @@ err_handler:
 End Function
 
 Public Function exportAIF(partNum As String) As Boolean
-'On Error GoTo err_handler
+On Error GoTo err_handler
 exportAIF = False
 
 '---Setup Variables---
@@ -237,7 +237,7 @@ End If
 '---Setup Excel Form---
 Set XL = New Excel.Application
 Set WB = XL.Workbooks.Add
-XL.Visible = True
+XL.Visible = False
 WB.Activate
 Set WKS = WB.ActiveSheet
 WKS.name = "MAIN"
@@ -375,6 +375,7 @@ Set XL = Nothing
 Set WKS = Nothing
 Set XL = Nothing
 
+On Error Resume Next
 rsPI.Close: Set rsPI = Nothing
 rsU.Close: Set rsU = Nothing
 rsPack.Close: Set rsPack = Nothing
