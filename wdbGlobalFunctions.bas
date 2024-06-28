@@ -5,6 +5,25 @@ Public bClone As Boolean
 
 Declare PtrSafe Function IsIconic Lib "User32" (ByVal hWnd As Long) As Integer
 
+Public Function exportSQL(sqlString As String, FileName As String)
+
+On Error Resume Next
+CurrentDb.QueryDefs.Delete "myExportQueryDef"
+On Error GoTo err_handler
+
+Dim qExport As DAO.QueryDef
+Set qExport = CurrentDb.CreateQueryDef("myExportQueryDef", sqlString)
+
+DoCmd.TransferSpreadsheet acExport, acSpreadsheetTypeExcel12Xml, "myExportQueryDef", FileName, True
+If MsgBox("Export Complete. File path: " & FileName & vbNewLine & "Do you want to open this file?", vbYesNo, "Notice") = vbYes Then openPath (FileName)
+
+CurrentDb.QueryDefs.Delete "myExportQueryDef"
+
+Exit Function
+err_handler:
+    Call handleError("wdbGlobalFunctions", "labelUpdate", Err.Description, Err.number)
+End Function
+
 Public Function nowString() As String
 
 nowString = Format(Now(), "yyyymmddTHHmmss")
