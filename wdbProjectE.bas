@@ -15,6 +15,11 @@ Dim rsPI As Recordset, rsPack As Recordset, rsPackC As Recordset, rsComp As Reco
 Dim rsPE As Recordset, rsPMI As Recordset
 Dim errorTxt As String
 
+If findDept(partNum, "Project", True) = "" Then
+    errorTxt = "Project Engineer"
+    GoTo sendMsg
+End If
+
 '---Grab General Data---
 Set rsPI = db.OpenRecordset("SELECT * from tblPartInfo WHERE partNumber = '" & partNum & "'")
 Set rsPack = db.OpenRecordset("SELECT * from tblPartPackagingInfo WHERE partInfoId = " & rsPI!recordId & " AND packType = 1")
@@ -212,7 +217,7 @@ Set db = CurrentDb()
 Dim rsPI As Recordset, rsPack As Recordset, rsPackC As Recordset, rsComp As Recordset, rsAI As Recordset
 Dim rsPE As Recordset, rsOI As Recordset, rsU As Recordset, rsPMI As Recordset
 Dim outsourceCost As String
-Dim mexFr As String, cartQty
+Dim mexFr As String, cartQty, mat0 As Double, mat1 As Double, resourceCSV() As String, ITEM, resID As Long, orgID As Long
 
 '---Grab General Data---
 Set rsPI = db.OpenRecordset("SELECT * from tblPartInfo WHERE partNumber = '" & partNum & "'")
@@ -289,15 +294,26 @@ Select Case rsPI!partType
         aifInsert "Gate Lvl", rsPMI!gateCutting, firstColBold:=True
         aifInsert "Insert Mold", rsPMI!insertMold, firstColBold:=True
         aifInsert "Family Mold", rsPMI!familyTool, firstColBold:=True
-        aifInsert "Glass", rsPMI!glass, firstColBold:=True
         If rsPMI!glass Then
             aifInsert "Glass Cost", DLookup("pressRate", "tblDropDownsSP", "pressSize = '" & rsPMI!pressSize & "'") / rsPMI!piecesPerHour / 408 / 12 / 0.85, firstColBold:=True
         Else
             aifInsert "Glass Cost", "0", firstColBold:=True
         End If
-        aifInsert "Regrind", rsPMI!regrind, firstColBold:=True
+        If rsPMI!regrind Then
+            mat0 = 0: mat1 = 0
+            orgID = DLookup("ID", "tblOrgs", "Org = '" & rsU!Org & "'")
+            If Nz(rsPMI!materialNumber) <> "" Then
+                mat0 = rsPMI!pieceWeight * 0.00220462 * 0.06 * DLookup("ITEM_COST", "APPS_CST_ITEM_COST_TYPE_V", "COST_TYPE = 'Frozen' AND ITEM_NUMBER = '" & Nz(rsPMI!materialNumber) & "' AND ORGANIZATION_ID = " & orgID)
+            End If
+            If Nz(rsPMI!materialNumber1) <> "" Then
+                mat1 = rsPMI!matNum1PieceWeight * 0.00220462 * 0.06 * DLookup("ITEM_COST", "APPS_CST_ITEM_COST_TYPE_V", "COST_TYPE = 'Frozen' AND ITEM_NUMBER = '" & Nz(rsPMI!materialNumber1) & "' AND ORGANIZATION_ID = " & orgID)
+            End If
+            aifInsert "Regrind Cost", mat0 + mat1, firstColBold:=True 'multiple piece weight
+        Else
+            aifInsert "Regrind Cost", "0", firstColBold:=True
+        End If
         aifInsert "Material Number 1", Nz(rsPMI!materialNumber), firstColBold:=True
-        aifInsert "Full Piece Weight (g)", Nz(rsPMI!pieceWeight), firstColBold:=True 'double check if this is weight for just this material, or overall
+        aifInsert "Piece Weight (g)", Nz(rsPMI!pieceWeight), firstColBold:=True 'double check if this is weight for just this material, or overall
         aifInsert "Material Number 2", Nz(rsPMI!materialNumber1), firstColBold:=True
         aifInsert "Material 2 Piece Weight (g)", Nz(rsPMI!matNum1PieceWeight), firstColBold:=True
         rsPMI.Close
@@ -311,7 +327,16 @@ Select Case rsPI!partType
         insLev = Nz(rsAI!assemblyInspection, 0)
         mpLev = Nz(rsAI!assemblyMeasPack, 0)
         pph = Nz(rsAI!partsPerHour)
-        aifInsert "Resource", Nz(rsAI!resource), firstColBold:=True
+        
+        resID = 1
+        If InStr(rsAI!resource, ",") Then
+            resourceCSV = Split(rsAI!resource, ",")
+            For Each ITEM In resourceCSV
+                aifInsert "Resource " & resID, CStr(ITEM), firstColBold:=True
+                resID = resID + 1
+            Next ITEM
+        End If
+        
         aifInsert "Machine Line", Nz(rsAI!machineLine), firstColBold:=True
         rsAI.Close
         Set rsAI = Nothing
@@ -952,7 +977,7 @@ err_handler:
     Call handleError("wdbProjectE", "notifyPE", Err.Description, Err.number)
 End Function
 
-Function findDept(partNumber As String, dept As String) As String
+Function findDept(partNumber As String, dept As String, Optional returnMe As Boolean = False) As String
 On Error GoTo err_handler
 
 Dim rsPermissions As Recordset, permEm
@@ -961,7 +986,7 @@ Set rsPermissions = CurrentDb().OpenRecordset("SELECT user, userEmail from tblPe
 If rsPermissions.RecordCount = 0 Then Exit Function
 
 Do While Not rsPermissions.EOF
-    If rsPermissions!User = Environ("username") Then GoTo nextRec
+    If rsPermissions!User = Environ("username") And Not returnMe Then GoTo nextRec
     findDept = findDept & rsPermissions!User & ","
 nextRec:
     rsPermissions.MoveNext
