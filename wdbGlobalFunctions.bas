@@ -3,7 +3,7 @@ Option Explicit
 
 Public bClone As Boolean
 
-Declare PtrSafe Function IsIconic Lib "User32" (ByVal hWnd As Long) As Integer
+Declare PtrSafe Function IsIconic Lib "user32" (ByVal hWnd As Long) As Integer
 
 Public Function exportSQL(sqlString As String, FileName As String)
 
