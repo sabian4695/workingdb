@@ -151,7 +151,7 @@ Public Function CreateMailItem(sendTo As Variant, Optional CC As Variant = "", _
         If IsArray(sendTo) Then
             For counter = LBound(sendTo) To UBound(sendTo)
                 Set olRecip = .Recipients.Add(sendTo(counter))
-                olRecip.type = olTo
+                olRecip.Type = olTo
             Next
         Else
             If sendTo <> "" Then .To = sendTo
@@ -160,7 +160,7 @@ Public Function CreateMailItem(sendTo As Variant, Optional CC As Variant = "", _
         If IsArray(CC) Then
             For counter = LBound(CC) To UBound(CC)
                 Set olRecip = .Recipients.Add(CC(counter))
-                olRecip.type = olCC
+                olRecip.Type = olCC
             Next
         Else
             If CC <> "" Then .CC = CC
@@ -169,7 +169,7 @@ Public Function CreateMailItem(sendTo As Variant, Optional CC As Variant = "", _
         If IsArray(BCC) Then
             For counter = LBound(BCC) To UBound(BCC)
                 Set olRecip = .Recipients.Add(BCC(counter))
-                olRecip.type = olBCC
+                olRecip.Type = olBCC
             Next
         Else
             If BCC <> "" Then .BCC = BCC
@@ -394,48 +394,48 @@ Function CreateAppointmentItem(StartAt As Date, Optional duration As Long = 30, 
         If IsArray(RequiredAttendees) Then
             For counter = LBound(RequiredAttendees) To UBound(RequiredAttendees)
                 Set olRecip = .Recipients.Add(RequiredAttendees(counter))
-                olRecip.type = olRequired
+                olRecip.Type = olRequired
             Next
         Else
             If RequiredAttendees <> "" Then
                 Set olRecip = .Recipients.Add(RequiredAttendees)
-                olRecip.type = olRequired
+                olRecip.Type = olRequired
             End If
         End If
         CurrentProperty = "OptionalAttendees"
         If IsArray(OptionalAttendees) Then
             For counter = LBound(OptionalAttendees) To UBound(OptionalAttendees)
                 Set olRecip = .Recipients.Add(OptionalAttendees(counter))
-                olRecip.type = olOptional
+                olRecip.Type = olOptional
             Next
         Else
             If OptionalAttendees <> "" Then
                 Set olRecip = .Recipients.Add(OptionalAttendees)
-                olRecip.type = olOptional
+                olRecip.Type = olOptional
             End If
         End If
         CurrentProperty = "Resources"
         If IsArray(Resources) Then
             For counter = LBound(Resources) To UBound(Resources)
                 Set olRecip = .Recipients.Add(Resources(counter))
-                olRecip.type = olResource
+                olRecip.Type = olResource
             Next
         Else
             If Resources <> "" Then
                 Set olRecip = .Recipients.Add(Resources)
-                olRecip.type = olResource
+                olRecip.Type = olResource
             End If
         End If
         CurrentProperty = "Organizer"
         If IsArray(Organizer) Then
             For counter = LBound(Organizer) To UBound(Organizer)
                 Set olRecip = .Recipients.Add(Organizer(counter))
-                olRecip.type = olOrganizer
+                olRecip.Type = olOrganizer
             Next
         Else
             If Organizer <> "" Then
                 Set olRecip = .Recipients.Add(Organizer)
-                olRecip.type = olOrganizer
+                olRecip.Type = olOrganizer
             End If
         End If
         
