@@ -392,7 +392,7 @@ WKS.Range("A1:E" & inV - 1).BorderAround Weight:=xlMedium
 Dim FileName As String
 FileName = "H:\" & partNum & "_Accounting_Info_" & nowString & ".xlsx"
 WB.SaveAs FileName, , , , True
-MsgBox "AIF Complete. File path: " & FileName, vbOKOnly, "Notice"
+MsgBox "Export Complete. File path: " & FileName & vbNewLine & "Do you want to open this file?", vbYesNo, "Notice"
 
 '---Cleanup---
 XL.Visible = True
