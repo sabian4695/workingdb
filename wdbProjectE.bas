@@ -5,7 +5,7 @@ Dim XL As Excel.Application, WB As Excel.Workbook, WKS As Excel.Worksheet
 Dim inV As Long
 
 Public Function checkAIFfields(partNum As String) As Boolean
-On Error GoTo err_handler
+'On Error GoTo err_handler
 checkAIFfields = False
 
 '---Setup Variables---
@@ -13,158 +13,123 @@ Dim db As Database
 Set db = CurrentDb()
 Dim rsPI As Recordset, rsPack As Recordset, rsPackC As Recordset, rsComp As Recordset, rsAI As Recordset
 Dim rsPE As Recordset, rsPMI As Recordset
-Dim errorTxt As String
+Dim errorArray
 
-If findDept(partNum, "Project", True) = "" Then
-    errorTxt = "Project Engineer"
-    GoTo sendMsg
-End If
+Set errorArray = CreateObject("System.Collections.ArrayList")
+
+If findDept(partNum, "Project", True) = "" Then errorArray.Add "Project Engineer"
 
 '---Grab General Data---
 Set rsPI = db.OpenRecordset("SELECT * from tblPartInfo WHERE partNumber = '" & partNum & "'")
 Set rsPack = db.OpenRecordset("SELECT * from tblPartPackagingInfo WHERE partInfoId = " & rsPI!recordId & " AND packType = 1")
 
-'check part info stuff
-Select Case ""
-    Case Nz(rsPI!dataStatus) 'always required
-        errorTxt = "Data Status"
-    Case Nz(rsPI!customerId)  'always required
-        errorTxt = "Customer"
-    Case Nz(rsPI!unitId)  'always required
-        errorTxt = "Unit"
-    Case Nz(rsPI!partType)  'always required
-        errorTxt = "Part Type"
-    Case Nz(rsPI!finishLocator)  'always required
-        errorTxt = "Finish Locator"
-    Case Nz(rsPI!finishSubInv)  'always required
-        errorTxt = "Finish Sub-Inventory"
-    Case Nz(rsPI!quoteInfoId)  'always required
-        errorTxt = "Quote Information"
-    Case Nz(DLookup("quotedCost", "tblPartQuoteInfo", "recordId = " & rsPI!quoteInfoId)) 'always required
-        errorTxt = "Quoted Cost"
-    Case Nz(rsPI!sellingPrice) 'required always if FG
-        errorTxt = "Selling Price"
-End Select
-If errorTxt <> "" Then GoTo sendMsg
+'check part info stuff - always reqruied
+If Nz(rsPI!dataStatus) = "" Then errorArray.Add "Data Status"
+If Nz(rsPI!customerId) = "" Then errorArray.Add "Customer"
+If Nz(rsPI!unitId) = "" Then errorArray.Add "Unit"
+If Nz(rsPI!partType) = "" Then errorArray.Add "Part Type"
+If Nz(rsPI!finishLocator) = "" Then errorArray.Add "Finish Locator"
+If Nz(rsPI!finishSubInv) = "" Then errorArray.Add "Finish Sub-Inventory"
+If Nz(rsPI!quoteInfoId) = "" Then errorArray.Add "Quote Information"
+If Nz(DLookup("quotedCost", "tblPartQuoteInfo", "recordId = " & rsPI!quoteInfoId)) = "" Then errorArray.Add "Quoted Cost"
+If Nz(rsPI!sellingPrice) = "" Then errorArray.Add "Selling Price" 'required always if FG
 
 If rsPI!partType = 1 Or rsPI!partType = 4 Then 'molded / new color
-    If Nz(rsPI!moldInfoId) = "" Then errorTxt = "Molding Info" 'always required
-    If errorTxt <> "" Then GoTo sendMsg
+    If Nz(rsPI!moldInfoId) = "" Then
+        errorArray.Add "Molding Info" 'always required
+        GoTo skipMold
+    End If
     
     Set rsPMI = db.OpenRecordset("SELECT * from tblPartMoldingInfo WHERE recordId = " & rsPI!moldInfoId)
-    Select Case True
-        Case Nz(rsPMI!itemWeight100Pc) = "" And rsPI!dataStatus = 2 And rsPI!unitId = 1 'required for TRANSFER and U01 only
-            errorTxt = "100 Piece Weight"
-        Case Nz(rsPMI!inspection) = "" 'always required
-            errorTxt = "Tool Inspection Level"
-        Case Nz(rsPMI!measurePack) = "" 'always required
-            errorTxt = "Tool Measure Pack Level"
-        Case Nz(rsPMI!annealing) = "" 'always required
-            errorTxt = "Tool Annealing Level"
-        Case Nz(rsPMI!automated) = "" 'always required
-            errorTxt = "Tool Automation Type"
-        Case Nz(rsPMI!piecesPerHour) = "" And rsPI!dataStatus = 2 'required for transfer
-            errorTxt = "Pieces Per Hour"
-        Case Nz(rsPMI!toolNumber) = "" 'always required
-            errorTxt = "Tool Number"
-        Case Nz(rsPMI!pressSize) = "" 'always required
-            errorTxt = "Press Tonnage"
-        Case Nz(rsPMI!assignedPress) = "" And rsPI!dataStatus = 2 'required for transfer
-            errorTxt = "Assigned Press"
-        Case Nz(rsPMI!toolType) = "" 'always required
-            errorTxt = "Tool Level"
-        Case Nz(rsPMI!gateCutting) = "" 'always required
-            errorTxt = "Tool Gate Level"
-        Case Nz(rsPMI!materialNumber) = "" 'always required
-            errorTxt = "Material Number"
-        Case Nz(rsPMI!pieceWeight) = "" 'always required
-            errorTxt = "Piece Weight"
-    End Select
-    If errorTxt <> "" Then GoTo sendMsg
-    
+
+    'always required
+    If Nz(rsPMI!inspection) = "" Then errorArray.Add "Tool Inspection Level"
+    If Nz(rsPMI!measurePack) = "" Then errorArray.Add "Tool Measure Pack Level"
+    If Nz(rsPMI!annealing) = "" Then errorArray.Add "Tool Annealing Level"
+    If Nz(rsPMI!automated) = "" Then errorArray.Add "Tool Automation Type"
+    If Nz(rsPMI!toolType) = "" Then errorArray.Add "Tool Level"
+    If Nz(rsPMI!gateCutting) = "" Then errorArray.Add "Tool Gate Level"
+    If Nz(rsPMI!materialNumber) = "" Then errorArray.Add "Material Number"
+    If Nz(rsPMI!pieceWeight) = "" Then errorArray.Add "Piece Weight"
     If Nz(rsPMI!materialNumber1) <> "" Then 'if there is a second material, must enter wieght for that material
-        If Nz(rsPMI!matNum1PieceWeight) = "" Then errorTxt = "Second Material Piece Weight"
+        If Nz(rsPMI!matNum1PieceWeight) = "" Then errorArray.Add "Second Material Piece Weight"
     End If
-    If errorTxt <> "" Then GoTo sendMsg
+    If Nz(rsPMI!toolNumber) = "" Then errorArray.Add "Tool Number"
+    If Nz(rsPMI!pressSize) = "" Then errorArray.Add "Press Tonnage"
+    
+    If rsPI!dataStatus = 2 Then 'required for transfer
+        If Nz(rsPMI!itemWeight100Pc) = "" And rsPI!unitId = 1 Then errorArray.Add "100 Piece Weight" 'U01 only
+        If Nz(rsPMI!piecesPerHour) = "" Then errorArray.Add "Pieces Per Hour"
+        If Nz(rsPMI!assignedPress) = "" Then errorArray.Add "Assigned Press"
+    End If
     
     rsPMI.Close
     Set rsPMI = Nothing
 End If
+skipMold:
 
 If rsPI!partType = 2 Or rsPI!partType = 5 Then
-    If Nz(rsPI!assemblyInfoId) = "" Then errorTxt = "Assembly Info"
-    If errorTxt <> "" Then GoTo sendMsg
+    If Nz(rsPI!assemblyInfoId) = "" Then
+        errorArray.Add "Assembly Info"
+        GoTo skipAssy
+    End If
     
     Set rsAI = db.OpenRecordset("SELECT * from tblPartAssemblyInfo WHERE recordId = " & rsPI!assemblyInfoId)
 
-    Select Case True
-        Case Nz(rsAI!assemblyWeight100Pc) = "" And rsPI!dataStatus = 2 'required for transfer
-            errorTxt = "100 Piece Weight"
-        Case Nz(rsAI!assemblyType) = "" 'always required
-            errorTxt = "Assembly Type"
-        Case Nz(rsAI!assemblyAnnealing) = "" 'always required
-            errorTxt = "Assembly Annealing Level"
-        Case Nz(rsAI!assemblyInspection) = "" 'always required
-            errorTxt = "Assembly Inspection Level)"
-        Case Nz(rsAI!assemblyMeasPack) = "" 'always required
-            errorTxt = "Assembly Measure Pack Level"
-        Case Nz(rsAI!partsPerHour) = "" And rsPI!dataStatus = 2 'required for transfer
-            errorTxt = "Assembly Parts Per Hour"
-        Case Nz(rsAI!resource) = "" And rsPI!dataStatus = 2 'required for transfer
-            errorTxt = "Assembly Resource"
-        Case Nz(rsAI!machineLine) = "" And rsPI!dataStatus = 2 'required for transfer
-            errorTxt = "Assembly Machine Line"
-    End Select
-    If errorTxt <> "" Then GoTo sendMsg
+    'always required
+    If Nz(rsAI!assemblyType) = "" Then errorArray.Add "Assembly Type"
+    If Nz(rsAI!assemblyAnnealing) = "" Then errorArray.Add "Assembly Annealing Level"
+    If Nz(rsAI!assemblyInspection) = "" Then errorArray.Add "Assembly Inspection Level)"
+    If Nz(rsAI!assemblyMeasPack) = "" Then errorArray.Add "Assembly Measure Pack Level"
+    
+    If rsPI!dataStatus = 2 Then 'required for transfer
+        If Nz(rsAI!assemblyWeight100Pc) = "" Then errorArray.Add "100 Piece Weight"
+        If Nz(rsAI!partsPerHour) = "" Then errorArray.Add "Assembly Parts Per Hour"
+        If Nz(rsAI!resource) = "" Then errorArray.Add "Assembly Resource"
+        If Nz(rsAI!machineLine) = "" Then errorArray.Add "Assembly Machine Line"
+    End If
 
     rsAI.Close
     Set rsAI = Nothing
     
     Set rsComp = db.OpenRecordset("SELECT * from tblPartComponents WHERE assemblyNumber = '" & partNum & "'")
-    If rsComp.RecordCount = 0 Then errorTxt = "Component Information"
-    If errorTxt <> "" Then GoTo sendMsg
+    If rsComp.RecordCount = 0 Then
+        errorArray.Add "Component Information"
+        GoTo skipAssy
+    End If
     
     Do While Not rsComp.EOF
-        Select Case True
-            Case Nz(rsComp!componentNumber) = "" 'always required
-                errorTxt = "Blank Component Number"
-            Case Nz(rsComp!quantity) = "" 'always required
-                errorTxt = "Blank Component Quantity"
-            Case Nz(rsComp!finishLocator) = "" And rsPI!dataStatus = 2 'required for transfer
-                errorTxt = "Component Finish Locator"
-            Case Nz(rsComp!finishSubInv) = "" And rsPI!dataStatus = 2 'required for transfer
-                errorTxt = "Component Sub-Inventory"
-        End Select
-        If errorTxt <> "" Then GoTo sendMsg
+        'always required
+        If Nz(rsComp!componentNumber) = "" Then errorArray.Add "Blank Component Number" 'always required
+        If Nz(rsComp!quantity) = "" Then errorArray.Add "Blank Component Quantity" 'always required
+        
+        If rsPI!dataStatus = 2 Then 'required for transfer
+            If Nz(rsComp!finishLocator) = "" Then errorArray.Add "Component Finish Locator"
+            If Nz(rsComp!finishSubInv) = "" Then errorArray.Add "Component Sub-Inventory"
+        End If
+        
         rsComp.MoveNext
     Loop
     rsComp.Close
     Set rsComp = Nothing
 End If
+skipAssy:
 
-If rsPack.RecordCount = 0 Then 'required for transfer
-    If rsPI!dataStatus = 2 Then errorTxt = "Packaging Information"
+If rsPack.RecordCount = 0 Then
+    If rsPI!dataStatus = 2 Then errorArray.Add "Packaging Information" 'required for transfer
 Else
     Do While Not rsPack.EOF
-        If Nz(rsPack!packType) = "" Then 'required for transfer
-            errorTxt = "Packaging Type"
-        End If
+        If Nz(rsPack!packType) = "" Then errorArray.Add "Packaging Type" 'required for transfer
+
         Set rsPackC = db.OpenRecordset("SELECT * from tblPartPackagingComponents WHERE packagingInfoId = " & rsPack!recordId)
-        If rsPackC.RecordCount = 0 Then 'required for transfer
-            If rsPI!dataStatus = 2 Then errorTxt = "Packaging Components"
-        End If
-        If errorTxt <> "" Then GoTo sendMsg
+        If rsPackC.RecordCount = 0 And rsPI!dataStatus = 2 Then errorArray.Add "Packaging Components" 'required for transfer
         
         Do While Not rsPackC.EOF
-            Select Case True
-                Case Nz(rsPackC!componentType) = "" And rsPI!dataStatus = 2 'required for transfer
-                    errorTxt = "Packaging Component Type"
-                Case Nz(rsPackC!componentPN) = "" And rsPI!dataStatus = 2 'required for transfer
-                    errorTxt = "Packaging Component Part Number"
-                Case Nz(rsPackC!componentQuantity) = "" And rsPI!dataStatus = 2 'required for transfer
-                    errorTxt = "Packing Component Quantity"
-            End Select
-            If errorTxt <> "" Then GoTo sendMsg
+            If rsPI!dataStatus = 2 Then 'required for transfer
+                If Nz(rsPackC!componentType) = "" Then errorArray.Add "Packaging Component Type"
+                If Nz(rsPackC!componentPN) = "" Then errorArray.Add "Packaging Component Part Number"
+                If Nz(rsPackC!componentQuantity) = "" Then errorArray.Add "Packing Component Quantity"
+            End If
             rsPackC.MoveNext
         Loop
         rsPack.MoveNext
@@ -173,24 +138,25 @@ Else
     
     rsPack.Close: Set rsPack = Nothing
 End If
-If errorTxt <> "" Then GoTo sendMsg
 
-If rsPI!unitId = 3 Then
-    Select Case True
-        Case Nz(rsPI!outsourceInfoId) = "" And rsPI!dataStatus = 2 'required for transfer
-            errorTxt = "Outsource Info"
-        Case Nz(DLookup("outsourceCost", "tblPartOutsourceInfo", "recordId = " & rsPI!outsourceInfoId)) = "" And rsPI!dataStatus = 2 'required for transfer
-            errorTxt = "Outsource Cost"
-    End Select
-
-    If errorTxt <> "" Then GoTo sendMsg
+If rsPI!unitId = 3 And rsPI!dataStatus = 2 Then 'if U06 - these are required for transfer
+    If Nz(rsPI!outsourceInfoId) = "" Then errorArray.Add "Outsource Info"
+    If Nz(DLookup("outsourceCost", "tblPartOutsourceInfo", "recordId = " & rsPI!outsourceInfoId)) = "" Then errorArray.Add "Outsource Cost"
 End If
+
+If errorArray.count > 0 Then GoTo sendMsg
 
 checkAIFfields = True
 GoTo exitFunction
 
 sendMsg:
-MsgBox "Please Fix " & errorTxt, vbOKOnly, "Fix this to export"
+Dim errorTxtLines As String, element
+errorTxtLines = ""
+For Each element In errorArray
+    errorTxtLines = errorTxtLines & vbNewLine & element
+Next element
+
+MsgBox "Please fix these items:" & vbNewLine & errorTxtLines, vbOKOnly, "Fix this to export"
 
 exitFunction:
 On Error Resume Next
@@ -208,7 +174,7 @@ err_handler:
 End Function
 
 Public Function exportAIF(partNum As String) As Boolean
-On Error GoTo err_handler
+'On Error GoTo err_handler
 exportAIF = False
 
 '---Setup Variables---
@@ -260,8 +226,8 @@ aifInsert "Planner", rsPE!firstName & " " & rsPE!lastName, firstColBold:=True
 aifInsert "Mark Code", Nz(rsPI!partMarkCode), firstColBold:=True
 aifInsert "Customer", DLookup("CUSTOMER_NAME", "APPS_XXCUS_CUSTOMERS", "CUSTOMER_ID = " & rsPI!customerId), firstColBold:=True
 aifInsert "Unit", rsU!unitName, firstColBold:=True
-aifInsert "Mexico Rates", rsU!Org = "CUU", firstColBold:=True
-aifInsert "Org", rsU!Org, firstColBold:=True 'is this supposed to be UNIT based, or the developing ORG?
+aifInsert "Mexico Rates", Nz(rsU!Org) = "CUU", firstColBold:=True
+aifInsert "Org", Nz(rsU!Org, rsPI!developingLocation), firstColBold:=True  'is this supposed to be UNIT based, or the developing ORG?
 aifInsert "Part Type", DLookup("partType", "tblDropDownsSP", "ID = " & rsPI!partType), firstColBold:=True
 aifInsert "Routing Finish", DLookup("finishLocator", "tblDropDownsSP", "ID = " & rsPI!finishLocator), firstColBold:=True
 aifInsert "Sub-Location", DLookup("finishSubInv", "tblDropDownsSP", "ID = " & rsPI!finishSubInv), firstColBold:=True
@@ -301,7 +267,7 @@ Select Case rsPI!partType
         End If
         If rsPMI!regrind Then
             mat0 = 0: mat1 = 0
-            orgID = DLookup("ID", "tblOrgs", "Org = '" & rsU!Org & "'")
+            orgID = DLookup("ID", "tblOrgs", "Org = '" & Nz(rsU!Org, rsPI!developingLocation) & "'")
             If Nz(rsPMI!materialNumber) <> "" Then
                 mat0 = rsPMI!pieceWeight * 0.00220462 * 0.06 * DLookup("ITEM_COST", "APPS_CST_ITEM_COST_TYPE_V", "COST_TYPE = 'Frozen' AND ITEM_NUMBER = '" & Nz(rsPMI!materialNumber) & "' AND ORGANIZATION_ID = " & orgID)
             End If
@@ -392,7 +358,7 @@ WKS.Range("A1:E" & inV - 1).BorderAround Weight:=xlMedium
 Dim FileName As String
 FileName = "H:\" & partNum & "_Accounting_Info_" & nowString & ".xlsx"
 WB.SaveAs FileName, , , , True
-MsgBox "Export Complete. File path: " & FileName & vbNewLine & "Do you want to open this file?", vbYesNo, "Notice"
+MsgBox "Export Complete. File path: " & FileName, vbOKOnly, "Notice"
 
 '---Cleanup---
 XL.Visible = True
