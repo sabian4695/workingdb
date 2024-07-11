@@ -5,7 +5,7 @@ Dim XL As Excel.Application, WB As Excel.Workbook, WKS As Excel.Worksheet
 Dim inV As Long
 
 Public Function checkAIFfields(partNum As String) As Boolean
-'On Error GoTo err_handler
+On Error GoTo err_handler
 checkAIFfields = False
 
 '---Setup Variables---
@@ -174,7 +174,7 @@ err_handler:
 End Function
 
 Public Function exportAIF(partNum As String) As Boolean
-'On Error GoTo err_handler
+On Error GoTo err_handler
 exportAIF = False
 
 '---Setup Variables---
