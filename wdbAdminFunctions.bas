@@ -89,7 +89,7 @@ Public Function UISetRoundRect(ByVal UIForm As Form) As Boolean
         
         ReleaseDC 0, hDC
         
-        hRgn = CreateRoundRectRgn(0, 0, intRight, intHeight, 20, 20)
+        hRgn = CreateRoundRectRgn(0, 0, intRight, intHeight, 25, 25)
         SetWindowRgn .hWnd, hRgn, True
     End With
     
