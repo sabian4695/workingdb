@@ -3,8 +3,6 @@ Option Explicit
 
 Public bClone As Boolean
 
-Declare PtrSafe Function IsIconic Lib "user32" (ByVal hWnd As Long) As Integer
-
 Public Function exportSQL(sqlString As String, FileName As String)
 
 On Error Resume Next
@@ -38,9 +36,11 @@ TempVars.Add "snackMessage", sMessage
 TempVars.Add "snackAutoClose", autoClose
 
 If centerBool Then
+    TempVars.Add "snackCenter", "True"
     TempVars.Add "snackLeft", forms(refForm).WindowLeft + forms(refForm).WindowWidth / 2 - 3393
     TempVars.Add "snackTop", forms(refForm).WindowTop + forms(refForm).WindowHeight / 2 - 500
 Else
+    TempVars.Add "snackCenter", "False"
     TempVars.Add "snackLeft", forms(refForm).WindowLeft + 200
     TempVars.Add "snackTop", forms(refForm).WindowTop + forms(refForm).WindowHeight - 1250
 End If

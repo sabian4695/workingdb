@@ -6,7 +6,7 @@ Global Const SW_SHOWNORMAL = 1
 Global Const SW_SHOWMINIMIZED = 2
 Global Const SW_SHOWMAXIMIZED = 3
 
-Private Type Rect
+Private Type RECT
 x1 As Long
 y1 As Long
 x2 As Long
@@ -16,14 +16,84 @@ End Type
 Private Declare PtrSafe Function apiShowWindow Lib "user32" Alias "ShowWindow" (ByVal hWnd As Long, ByVal nCmdShow As Long) As Long
 Private Declare PtrSafe Function GetDesktopWindow Lib "user32" () As Long
 Private Declare PtrSafe Function GetWindowRect Lib "user32" _
-(ByVal hWnd As Long, r As Rect) As Long
-Private Declare PtrSafe Function IsZoomed Lib "user32" _
+(ByVal hWnd As Long, r As RECT) As Long
+Public Declare PtrSafe Function IsZoomed Lib "user32" _
 (ByVal hWnd As Long) As Long
-Private Declare PtrSafe Function MoveWindow Lib "user32" _
-(ByVal hWnd As Long, ByVal X As Long, ByVal Y As Long, _
-ByVal dx As Long, ByVal dy As Long, ByVal fRepaint As Long) As Long
+Private Declare PtrSafe Function moveWindow Lib "user32" _
+Alias "MoveWindow" (ByVal hWnd As Long, ByVal X As Long, ByVal Y As _
+Long, ByVal dx As Long, ByVal dy As Long, ByVal fRepaint As Long) As Long
 Private Declare PtrSafe Function ShowWindow Lib "user32" _
 (ByVal hWnd As Long, ByVal nCmdShow As Long) As Long
+
+Private Declare PtrSafe Function CreateRoundRectRgn Lib "gdi32" ( _
+        ByVal nLeftRect As Long, ByVal nTopRect As Long, ByVal nRightRect As Long, _
+        ByVal nBottomRect As Long, ByVal nWidthEllipse As Long, ByVal nHeightEllipse As Long) As LongPtr
+
+Private Declare PtrSafe Function SetWindowRgn Lib "user32" ( _
+        ByVal hWnd As LongPtr, ByVal hRgn As LongPtr, ByVal bRedraw As Boolean) As Long
+
+'for rounding window corners
+Private Declare PtrSafe Function GetDC Lib "user32" (ByVal hWnd As LongPtr) As LongPtr
+Private Declare PtrSafe Function ReleaseDC Lib "user32" (ByVal hWnd As LongPtr, ByVal hDC As LongPtr) As Long
+Private Declare PtrSafe Function GetDeviceCaps Lib "gdi32" (ByVal hDC As LongPtr, ByVal nIndex As Long) As Long
+
+'to move windows by clicking
+Public Declare PtrSafe Function SendMessage Lib "user32" Alias "SendMessageA" (ByVal hWnd As LongPtr, _
+    ByVal wMsg As Long, ByVal wParam As LongPtr, lParam As Any) As LongPtr
+
+Public Declare PtrSafe Function ReleaseCapture Lib "user32.dll" () As Long
+
+Declare PtrSafe Function SetWindowPos Lib "user32" (ByVal hWnd As LongPtr, ByVal hWndInsertAfter As LongPtr, ByVal X As Long, ByVal Y As Long, _
+    ByVal cx As Long, ByVal cy As Long, ByVal wFlags As Long) As Long
+Declare PtrSafe Function GetCursorPos Lib "user32" (lpPoint As POINTAPI) As Long
+
+Public Type POINTAPI
+    X As Long
+    Y As Long
+End Type
+
+Dim AppX As Long, AppY As Long, AppTop As Long, AppLeft As Long, WinRECT As RECT, APointAPI As POINTAPI
+
+Sub AppWindowSelect()
+    'select application window
+    GetWindowRect Application.hWndAccessApp, WinRECT
+    AppTop = WinRECT.y1
+    AppLeft = WinRECT.x1
+    GetCursorPos APointAPI
+    AppX = APointAPI.X
+    AppY = APointAPI.Y
+End Sub
+
+Sub AppWindowMove()
+    'drag application window
+    GetCursorPos APointAPI
+    SetWindowPos Application.hWndAccessApp, 0, AppLeft - (AppX - APointAPI.X), AppTop - (AppY - APointAPI.Y), _
+        0, 0, &H4 + &H1
+
+End Sub
+
+Sub moveForm(frm As Form)
+    ReleaseCapture
+    SendMessage frm.hWnd, &HA1, &H2, 0
+End Sub
+                                  
+Public Function UISetRoundRect(ByVal UIForm As Form) As Boolean
+    Dim intRight As Integer, intHeight As Integer
+    Dim hRgn As LongPtr, hDC As LongPtr
+    
+    hDC = GetDC(0)
+    
+    With UIForm
+        intRight = (.WindowWidth / 1440) * GetDeviceCaps(hDC, 88)
+        intHeight = (.WindowHeight / 1440) * GetDeviceCaps(hDC, 90) + 1
+        
+        ReleaseDC 0, hDC
+        
+        hRgn = CreateRoundRectRgn(0, 0, intRight, intHeight, 20, 20)
+        SetWindowRgn .hWnd, hRgn, True
+    End With
+    
+End Function
 
 Function logClick(modName As String, formName As String, Optional dataTag0 = "", Optional dataTag1 = "")
 On Error Resume Next
@@ -184,7 +254,7 @@ Sub SizeAccess(ByVal dx As Long, ByVal dy As Long)
 
 Const SW_RESTORE As Long = 9
 Dim h As Long
-Dim r As Rect
+Dim r As RECT
 '
 On Error Resume Next
 '
@@ -197,10 +267,10 @@ GetWindowRect GetDesktopWindow(), r
 If ((r.x2 - r.x1) - dx) < 0 Or ((r.y2 - r.y1) - dy) < 0 Then
 'Desktop smaller than requested size
 'so size to Desktop
-MoveWindow h, r.x1, r.y1, r.x2, r.y2, True
+moveWindow h, r.x1, r.y1, r.x2, r.y2, True
 Else
 'Adjust to requested size and center
-MoveWindow h, _
+moveWindow h, _
 r.x1 + ((r.x2 - r.x1) - dx) \ 2, _
 r.y1 + ((r.y2 - r.y1) - dy) \ 2, _
 dx, dy, True
