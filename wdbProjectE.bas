@@ -56,10 +56,10 @@ If rsPI!partType = 1 Or rsPI!partType = 4 Then 'molded / new color
     End If
     If Nz(rsPMI!toolNumber) = "" Then errorArray.Add "Tool Number"
     If Nz(rsPMI!pressSize) = "" Then errorArray.Add "Press Tonnage"
+    If Nz(rsPMI!piecesPerHour) = "" Then errorArray.Add "Pieces Per Hour"
     
     If rsPI!dataStatus = 2 Then 'required for transfer
         If Nz(rsPMI!itemWeight100Pc) = "" And rsPI!unitId = 1 Then errorArray.Add "100 Piece Weight" 'U01 only
-        If Nz(rsPMI!piecesPerHour) = "" Then errorArray.Add "Pieces Per Hour"
         If Nz(rsPMI!assignedPress) = "" Then errorArray.Add "Assigned Press"
     End If
     
@@ -81,10 +81,10 @@ If rsPI!partType = 2 Or rsPI!partType = 5 Then
     If Nz(rsAI!assemblyAnnealing) = "" Then errorArray.Add "Assembly Annealing Level"
     If Nz(rsAI!assemblyInspection) = "" Then errorArray.Add "Assembly Inspection Level)"
     If Nz(rsAI!assemblyMeasPack) = "" Then errorArray.Add "Assembly Measure Pack Level"
+    If Nz(rsAI!partsPerHour) = "" Then errorArray.Add "Assembly Parts Per Hour"
     
     If rsPI!dataStatus = 2 Then 'required for transfer
         If Nz(rsAI!assemblyWeight100Pc) = "" Then errorArray.Add "100 Piece Weight"
-        If Nz(rsAI!partsPerHour) = "" Then errorArray.Add "Assembly Parts Per Hour"
         If Nz(rsAI!resource) = "" Then errorArray.Add "Assembly Resource"
         If Nz(rsAI!machineLine) = "" Then errorArray.Add "Assembly Machine Line"
     End If
