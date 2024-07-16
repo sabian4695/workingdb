@@ -6,12 +6,9 @@ Declare PtrSafe Function ShellExecute Lib "shell32.dll" Alias "ShellExecuteA" (B
 
 Public Sub openPath(Path)
 On Error GoTo err_handler
-'    If StrConv(Right(Path, 4), vbLowerCase) = ".pdf" Then ' COMMENTING OUT DUE TO ISSUE WITH 28717
-'        Shell "explorer.exe " & Path, vbNormalFocus
-'        Exit Sub
-'    End If
-    
-    CreateObject("Shell.Application").open CVar(Path)
+
+CreateObject("Shell.Application").open CVar(Path)
+
 Exit Sub
 err_handler:
     Call handleError("modGlobal", "openPath", Err.Description, Err.number)
@@ -25,13 +22,23 @@ replaceDriveLetters = Replace(linkInput, "S:\", "\\nas01\allshare\")
 
 End Function
 
+Function addLastSlash(linkString As String) As String
+On Error GoTo err_handler
+addLastSlash = linkString
+If Right(addLastSlash, 1) <> "\" Then addLastSlash = addLastSlash & "\"
+
+Exit Function
+err_handler:
+    Call handleError("modGlobal", "addLastSlash", Err.Description, Err.number)
+End Function
+
 Function createShortcut(lnkLocation As String, targetLocation As String, shortcutName As String)
 On Error GoTo err_handler
 
 With CreateObject("WScript.Shell").createShortcut(lnkLocation & ".lnk")
     .TargetPath = targetLocation
     .Description = shortcutName
-     .save
+    .save
 End With
 
 Exit Function
