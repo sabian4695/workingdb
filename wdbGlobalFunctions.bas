@@ -3,6 +3,23 @@ Option Explicit
 
 Public bClone As Boolean
 
+Function testThis()
+Dim obj As AccessObject, dbs As Object
+Set dbs = Application.CurrentProject
+' Search for open AccessObject objects in AllForms collection.
+For Each obj In dbs.AllForms
+    If Left(obj.name, 1) = "f" Then
+        DoCmd.OpenForm obj.name, acDesign
+'        If forms(obj.name).Modal Then
+'            On Error Resume Next
+'            forms(obj.name).Controls("lblTitleBar").LeftMargin = 144
+'        End If
+'        DoCmd.Close acForm, obj.name, acSaveYes
+    End If
+Next obj
+
+End Function
+
 Public Function exportSQL(sqlString As String, FileName As String)
 
 On Error Resume Next

@@ -13,6 +13,13 @@ x2 As Long
 y2 As Long
 End Type
 
+Public Enum RESIZEDIRECTION
+    none
+    Bottom
+End Enum
+
+Public resizeDir As RESIZEDIRECTION
+
 Private Declare PtrSafe Function apiShowWindow Lib "user32" Alias "ShowWindow" (ByVal hWnd As Long, ByVal nCmdShow As Long) As Long
 Private Declare PtrSafe Function GetDesktopWindow Lib "user32" () As Long
 Private Declare PtrSafe Function GetWindowRect Lib "user32" _
@@ -47,12 +54,28 @@ Declare PtrSafe Function SetWindowPos Lib "user32" (ByVal hWnd As LongPtr, ByVal
     ByVal cx As Long, ByVal cy As Long, ByVal wFlags As Long) As Long
 Declare PtrSafe Function GetCursorPos Lib "user32" (lpPoint As POINTAPI) As Long
 
+Private Declare PtrSafe Function LoadCursor Lib "user32" Alias "LoadCursorA" (ByVal hInstance As LongPtr, ByVal lpCursorName As Long) As LongPtr
+Private Declare PtrSafe Function SetCursor Lib "user32" (ByVal hCursor As LongPtr) As LongPtr
+
 Public Type POINTAPI
     X As Long
     Y As Long
 End Type
 
 Dim AppX As Long, AppY As Long, AppTop As Long, AppLeft As Long, WinRECT As RECT, APointAPI As POINTAPI
+
+Public Sub ChangeCursorTo(Optional ByVal lngCursor As Long = 32512&)
+    SetCursor LoadCursor(0&, lngCursor)
+End Sub
+
+Public Function ResizeFormWindow(frm As Form, direction As RESIZEDIRECTION)
+
+    ChangeCursorTo (32645&)
+    With frm
+        ReleaseCapture
+        SendMessage .hWnd, &HA1, 15, 0
+    End With
+End Function
 
 Sub AppWindowSelect()
     'select application window
