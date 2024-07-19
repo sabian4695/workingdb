@@ -26,7 +26,13 @@ Set rsPack = db.OpenRecordset("SELECT * from tblPartPackagingInfo WHERE partInfo
 'check part info stuff - always reqruied
 If Nz(rsPI!dataStatus) = "" Then errorArray.Add "Data Status"
 If Nz(rsPI!customerId) = "" Then errorArray.Add "Customer"
-If Nz(rsPI!unitId) = "" Then errorArray.Add "Unit"
+If Nz(rsPI!developingLocation) = "" Then errorArray.Add "Developing Org"
+
+If rsPI!dataStatus = 2 Then
+    If Nz(rsPI!unitId) = "" Then errorArray.Add "MP Unit"
+    If Nz(rsPI!developingUnit) = "" Then errorArray.Add "Dev Unit"
+End If
+
 If Nz(rsPI!partType) = "" Then errorArray.Add "Part Type"
 If Nz(rsPI!finishLocator) = "" Then errorArray.Add "Finish Locator"
 If Nz(rsPI!finishSubInv) = "" Then errorArray.Add "Finish Sub-Inventory"
@@ -225,7 +231,14 @@ aifInsert "Data Status", DLookup("partDataStatus", "tblDropDownsSP", "ID = " & r
 aifInsert "Planner", rsPE!firstName & " " & rsPE!lastName, firstColBold:=True
 aifInsert "Mark Code", Nz(rsPI!partMarkCode), firstColBold:=True
 aifInsert "Customer", DLookup("CUSTOMER_NAME", "APPS_XXCUS_CUSTOMERS", "CUSTOMER_ID = " & rsPI!customerId), firstColBold:=True
-aifInsert "Unit", rsU!unitName, firstColBold:=True
+
+If rsPI!dataStatus = 2 Then
+    aifInsert "MP Unit", rsU!unitName, firstColBold:=True
+    aifInsert "Dev Unit", rsPI!developingUnit, firstColBold:=True
+Else
+    aifInsert "Unit", "U12"
+End If
+
 aifInsert "Mexico Rates", Nz(rsU!Org) = "CUU", firstColBold:=True
 aifInsert "Org", Nz(rsU!Org, rsPI!developingLocation), firstColBold:=True  'is this supposed to be UNIT based, or the developing ORG?
 aifInsert "Part Type", DLookup("partType", "tblDropDownsSP", "ID = " & rsPI!partType), firstColBold:=True
