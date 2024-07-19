@@ -13,9 +13,9 @@ Dim db As Database
 Set db = CurrentDb()
 Dim rsPI As Recordset, rsPack As Recordset, rsPackC As Recordset, rsComp As Recordset, rsAI As Recordset
 Dim rsPE As Recordset, rsPMI As Recordset
-Dim errorArray
 
-Set errorArray = CreateObject("System.Collections.ArrayList")
+Dim errorArray As Collection
+Set errorArray = New Collection
 
 If findDept(partNum, "Project", True) = "" Then errorArray.Add "Project Engineer"
 
@@ -236,7 +236,7 @@ If rsPI!dataStatus = 2 Then
     aifInsert "MP Unit", rsU!unitName, firstColBold:=True
     aifInsert "Dev Unit", rsPI!developingUnit, firstColBold:=True
 Else
-    aifInsert "Unit", "U12"
+    aifInsert "Unit", "U12", firstColBold:=True
 End If
 
 aifInsert "Mexico Rates", Nz(rsU!Org) = "CUU", firstColBold:=True

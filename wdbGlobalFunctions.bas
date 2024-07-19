@@ -539,7 +539,7 @@ Dim rsAnalytics As Recordset, ranThisWeek As Boolean
 Set rsAnalytics = db.OpenRecordset("SELECT max(dateUsed) as anaDate from tblAnalytics WHERE module = 'firstTimeRun'")
 If Format(rsAnalytics!anaDate, "mm/dd/yyyy") = Format(Date, "mm/dd/yyyy") Then Exit Sub 'if max date is today, then this has already ran.
 
-'Call grabSummaryInfo 'disabled while in Beta
+Call grabSummaryInfo
 Call checkProgramEvents
 Call scanSteps("all", "firstTimeRun")
 
@@ -664,8 +664,8 @@ nextStep:
             .addNew
             !recipientUser = rsPeople!User
             !recipientEmail = rsPeople!userEmail
-            !senderUser = Environ("username")
-            !senderEmail = getEmail(Environ("username"))
+            !senderUser = "workingDB"
+            !senderEmail = "workingDB@us.nifco.com"
             !sentDate = Now()
             !readDate = Now()
             !notificationType = 9
