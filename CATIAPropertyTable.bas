@@ -70,7 +70,7 @@ Public Function fncAddRecord(ByRef itypRecord As Record) As Long
     lngCnt = Me.fncCount()
     
     Dim strType As String
-    strType = itypRecord.Properties(modMain.fncGetIndex(TITLE_FILEDATATYPE) - 1)
+    strType = itypRecord.Properties(modMain.fncGetIndex("File_Data_Type") - 1)
     
     If strType = "Component" Then
         fncAddRecord = 0
@@ -190,15 +190,15 @@ Public Function fncCheckBlank(ByRef ostrPropertyName As String) As String
         Dim lngValIndex As Long
         Dim strValue As String
     
-        lngValIndex = modMain.fncGetIndex(TITLE_CLASSIFICATION) - 1
+        lngValIndex = modMain.fncGetIndex("Classification") - 1
         strValue = typRecord.Properties(lngValIndex)
         
         If typRecord.Level <= 1 Then
-            If strValue = VALUE_2KMOULD Or _
-               strValue = VALUE_SUBPRODUCT Or _
-               strValue = VALUE_REFERENCE Or _
-               strValue = VALUE_LAYOUT Or _
-               strValue = VALUE_CUSTOMERAPPROVEDDATA Then
+            If strValue = "2K mould" Or _
+               strValue = "SubProduct" Or _
+               strValue = "Reference" Or _
+               strValue = "LayOut" Or _
+               strValue = "Customer approved data" Then
                 blnNoCheckFlag = True
             Else
                 blnNoCheckFlag = False
@@ -215,14 +215,14 @@ Public Function fncCheckBlank(ByRef ostrPropertyName As String) As String
             GoTo CONTINUE
         End If
         
-        lngValIndex = modMain.fncGetIndex(TITLE_DESIGNNO) - 1
+        lngValIndex = modMain.fncGetIndex("Design_No") - 1
         strValue = typRecord.Properties(lngValIndex)
         If Trim(strValue) = "" Then
             fncCheckBlank = "E034"
             Exit Function
         End If
 
-        lngValIndex = modMain.fncGetIndex(TITLE_CURRENTSTATUS) - 1
+        lngValIndex = modMain.fncGetIndex("Current_Status") - 1
         strValue = typRecord.Properties(lngValIndex)
         If Trim(strValue) = "" Then
             fncCheckBlank = "E047"
@@ -343,8 +343,8 @@ Public Function fncReplaceProhibitCharacter() As Boolean
 
     Dim lngIndex_FileDataName As Long
     Dim lngIndex_FullDesignNo As Long
-    lngIndex_FileDataName = modMain.fncGetIndex(TITLE_FILEDATANAME)
-    lngIndex_FullDesignNo = modMain.fncGetIndex(TITLE_FULLDESIGNNO)
+    lngIndex_FileDataName = modMain.fncGetIndex("File_Data_Name")
+    lngIndex_FullDesignNo = modMain.fncGetIndex("Full_Design_No")
 
     Dim lngRecCnt As Long
     lngRecCnt = Me.fncCount
@@ -398,14 +398,14 @@ End Sub
 Private Sub ReplaceString(ByRef ostrString As String)
     On Error Resume Next
     Dim lngSize As Long
-    lngSize = UBound(modConst.glstProhibitCharacter)
+    lngSize = UBound(modMain.glstProhibitCharacter)
     On Error GoTo 0
 
     Dim i As Long
     For i = 1 To lngSize
         Dim strFind As String
-        strFind = modConst.glstProhibitCharacter(i)
-        ostrString = Replace(ostrString, strFind, modConst.REPLACE_CHAR)
+        strFind = modMain.glstProhibitCharacter(i)
+        ostrString = Replace(ostrString, strFind, " ")
     Next i
 End Sub
 
@@ -422,16 +422,16 @@ Public Sub SetDefaultDesinerSection()
     Dim lngIndex_FileDataType As Long
     Dim lngIndex_MaterialGrade As Long
     lngIndex_Designer = modMain.fncGetIndex(modMain.gstrDesignerName) - 1
-    lngIndex_Section = modMain.fncGetIndex(TITLE_SECTION) - 1
-    lngIndex_Status = modMain.fncGetIndex(TITLE_CURRENTSTATUS) - 1
-    lngIndex_DesignNo = modMain.fncGetIndex(TITLE_DESIGNNO) - 1
-    lngIndex_RevisionNo = modMain.fncGetIndex(TITLE_REVISIONNO) - 1
-    lngIndex_FileDataName = modMain.fncGetIndex(TITLE_FILEDATANAME) - 1
-    lngIndex_FullDesignNo = modMain.fncGetIndex(TITLE_FULLDESIGNNO) - 1
-    lngIndex_Classification = modMain.fncGetIndex(TITLE_CLASSIFICATION) - 1
-    lngIndex_FileName = modMain.fncGetIndex(TITLE_FILENAME) - 1
-    lngIndex_FileDataType = modMain.fncGetIndex(TITLE_FILEDATATYPE) - 1
-    lngIndex_MaterialGrade = modMain.fncGetIndex(TITLE_MATERIALGRADE) - 1
+    lngIndex_Section = modMain.fncGetIndex("Section") - 1
+    lngIndex_Status = modMain.fncGetIndex("Current_Status") - 1
+    lngIndex_DesignNo = modMain.fncGetIndex("Design_No") - 1
+    lngIndex_RevisionNo = modMain.fncGetIndex("Revision_No") - 1
+    lngIndex_FileDataName = modMain.fncGetIndex("File_Data_Name") - 1
+    lngIndex_FullDesignNo = modMain.fncGetIndex("Full_Design_No") - 1
+    lngIndex_Classification = modMain.fncGetIndex("Classification") - 1
+    lngIndex_FileName = modMain.fncGetIndex("FileName") - 1
+    lngIndex_FileDataType = modMain.fncGetIndex("File_Data_Type") - 1
+    lngIndex_MaterialGrade = modMain.fncGetIndex("Material_Grade") - 1
     
     Dim blnNoCheckFlag As Boolean
     blnNoCheckFlag = False
@@ -468,17 +468,17 @@ Public Sub SetDefaultDesinerSection()
             blnNoCheckFlag = True
             blnSetFileName = True
         ElseIf mRecords(i).Level <= 1 Then
-            If strClassification = VALUE_2KMOULD Or _
-               strClassification = VALUE_SUBPRODUCT Or _
-               strClassification = VALUE_REFERENCE Or _
-               strClassification = VALUE_LAYOUT Or _
-               strClassification = VALUE_CUSTOMERAPPROVEDDATA Then
+            If strClassification = "2K mould (CATPart)" Or _
+               strClassification = "SubProduct" Or _
+               strClassification = "Reference" Or _
+               strClassification = "LayOut" Or _
+               strClassification = "Customer approved data" Then
                 blnNoCheckFlag = True
             Else
                 blnNoCheckFlag = False
             End If
             
-            If strClassification = VALUE_CUSTOMERAPPROVEDDATA Then
+            If strClassification = "Customer approved data" Then
                 blnSetFileName = True
             Else
                 blnSetFileName = False
@@ -491,8 +491,8 @@ Public Sub SetDefaultDesinerSection()
             GoTo CONTINUE
         End If
         
-        If Trim(modSetting.gstrUnsetMaterialGrade) = "1" And strClassification = VALUE_SUBMISSIONDATA Then
-            mRecords(i).Properties(lngIndex_MaterialGrade) = VALUE_UNSET_STR
+        If Trim(modSetting.gstrUnsetMaterialGrade) = "1" And strClassification = "Submission data" Then
+            mRecords(i).Properties(lngIndex_MaterialGrade) = "Unset"
         End If
         
         If Trim(modSetting.gstrAutoInput) = "0" Then
@@ -565,7 +565,7 @@ Public Sub SetDefaultDesinerSection()
             GoTo CONTINUE
         End If
         
-        If blnNoCheckFlag = False And (strStatus <> VALUE_MASSPRODUCT And strStatus <> VALUE_PROTOTYPESTUDY) Then
+        If blnNoCheckFlag = False And (strStatus <> "Mass production" And strStatus <> "Prototype/Study") Then
             On Error Resume Next
             Dim lngStatusCnt As Long
             lngStatusCnt = UBound(gUnknownStatus)
@@ -578,19 +578,19 @@ Public Sub SetDefaultDesinerSection()
         End If
         
         Dim strStatusCode As String
-        If strClassification = VALUE_CUSTOMERAPPROVEDDATA Then
+        If strClassification = "Customer approved data" Then
             strStatusCode = "C"
 '        ElseIf strClassification = "Reference" Then
 '            strStatusCode = "R"
         Else
             If blnOldSection = False Then
-                If strStatus = VALUE_MASSPRODUCT Then
+                If strStatus = "Mass production" Then
                     strStatusCode = "M"
-                ElseIf strStatus = VALUE_PROTOTYPESTUDY Then
+                ElseIf strStatus = "Prototype/Study" Then
                     strStatusCode = "T"
                 End If
             Else
-                If strStatus = VALUE_PROTOTYPESTUDY Then
+                If strStatus = "Prototype/Study" Then
                     strStatusCode = "T"
                 Else
                     strStatusCode = ""
@@ -641,11 +641,11 @@ Public Sub SetDefaultDesinerSection()
         Dim strEndChar As String
         strEndChar = ""
 
-        If strClassification = VALUE_2KMOULD Or _
-           strClassification = VALUE_REFERENCE Or _
-           strClassification = VALUE_SUBPRODUCT Then
+        If strClassification = "2K mould (CATPart)" Or _
+           strClassification = "Reference" Or _
+           strClassification = "SubProduct" Then
             strEndChar = "S"
-        ElseIf strClassification = VALUE_LAYOUT Then
+        ElseIf strClassification = "LayOut" Then
             strEndChar = "U"
         ElseIf 2 <= Len(strRevisionNo) And IsNumeric(Right(strRevisionNo, 2)) = True Then
             Dim lngRevNo As Long
@@ -655,17 +655,17 @@ Public Sub SetDefaultDesinerSection()
             Else
                 strEndChar = "S"
             End If
-        ElseIf strClassification = VALUE_SUBMISSIONDATA Then
+        ElseIf strClassification = "Submission data" Then
             strEndChar = "U"
         Else
             strEndChar = "S"
         End If
         
-        If strClassification = VALUE_SUBPRODUCT Or _
-           strClassification = VALUE_REFERENCE Or _
-           strClassification = VALUE_LAYOUT Then
+        If strClassification = "SubProduct" Or _
+           strClassification = "Reference" Or _
+           strClassification = "LayOut" Then
             strEndChar = "00" & strEndChar
-        ElseIf strClassification = VALUE_2KMOULD Then
+        ElseIf strClassification = "2K mould (CATPart)" Then
             strEndChar = strEndChar
         ElseIf Len(strRevisionNo) = 2 Then
         ElseIf Len(strRevisionNo) = 4 Then
@@ -675,13 +675,13 @@ Public Sub SetDefaultDesinerSection()
         End If
         
         Dim strHeadChar As String
-        If strClassification = VALUE_SUBPRODUCT Then
+        If strClassification = "SubProduct" Then
             strHeadChar = "S"
-        ElseIf strClassification = VALUE_REFERENCE Then
+        ElseIf strClassification = "Reference" Then
             strHeadChar = "J"
-        ElseIf strClassification = VALUE_LAYOUT Then
+        ElseIf strClassification = "LayOut" Then
             strHeadChar = "L"
-        ElseIf strClassification = VALUE_2KMOULD Then
+        ElseIf strClassification = "2K mould (CATPart)" Then
             strHeadChar = "W"
         Else
             strHeadChar = ""
@@ -692,10 +692,10 @@ Public Sub SetDefaultDesinerSection()
         If blnOldSection = True And strStatusCode = "C" Then
             strFileDataName = strStatusCode & strOfficeCode & strDesignNo
         ElseIf blnOldSection = True And _
-                  (strClassification = VALUE_SUBPRODUCT Or _
-                   strClassification = VALUE_REFERENCE Or _
-                   strClassification = VALUE_LAYOUT Or _
-                   strClassification = VALUE_2KMOULD) Then
+                  (strClassification = "SubProduct" Or _
+                   strClassification = "Reference" Or _
+                   strClassification = "LayOut" Or _
+                   strClassification = "2K mould (CATPart)") Then
             strFileDataName = strHeadChar & strOfficeCode & strStatusCode & strDesignNo
         ElseIf blnOldSection = True Then
             strFileDataName = strOfficeCode & strStatusCode & strDesignNo
@@ -713,9 +713,9 @@ Public Sub SetDefaultDesinerSection()
             If Len(strRevisionNo) = 4 Then
                 intIncrement = 0
             ElseIf strRevisionNo = "" Or _
-               strClassification = VALUE_SUBPRODUCT Or _
-               strClassification = VALUE_REFERENCE Or _
-               strClassification = VALUE_LAYOUT Then
+               strClassification = "SubProduct" Or _
+               strClassification = "Reference" Or _
+               strClassification = "LayOut" Then
                 intIncrement = 0
             Else
                 intIncrement = 1
@@ -798,7 +798,7 @@ CONTINUE:
             strLastChar2 = "S"
         ElseIf Right(strName, 2) = "-U" Then
             strLastChar2 = "U"
-        ElseIf strClassification2 = VALUE_2KMOULD Then
+        ElseIf strClassification2 = "2K mould (CATPart)" Then
             strLastChar2 = Right(strName, 1)
         Else
             GoTo CONTINUE3
@@ -824,7 +824,7 @@ CONTINUE6:
         Next k
 
         If lngCnt <= 0 Then
-            If strClassification2 = VALUE_2KMOULD And Right(strName, 2) = "-S" Then
+            If strClassification2 = "2K mould (CATPart)" And Right(strName, 2) = "-S" Then
                 mRecords(i).Properties(lngIndex_FileDataName) = Left(strName, Len(strName) - 2) & "-1" & strLastChar2
 
             End If
@@ -832,7 +832,7 @@ CONTINUE6:
         End If
         
         Dim strHeadFileName As String
-        If strClassification2 = VALUE_2KMOULD Then
+        If strClassification2 = "2K mould (CATPart)" Then
             strHeadFileName = Left(strName, Len(strName) - 3)
         Else
             strHeadFileName = Left(strName, Len(strName) - 2)
@@ -914,9 +914,9 @@ Public Sub SetDummyBlank()
                 
                 Dim strDummyValue As String
                 If strDataType = "0" Then
-                    strDummyValue = VALUE_UNSET_STR
+                    strDummyValue = "Unset"
                 Else
-                    strDummyValue = VALUE_UNSET_NUM
+                    strDummyValue = "999"
                 End If
                 mRecords(i).Properties(j) = strDummyValue
                     
@@ -969,18 +969,18 @@ Public Function fncSetPropertyFromDB(ByRef ilstModelID() As String, _
                 End If
             End If
             
-            If modMain.gcurMainProperty(j) = TITLE_FILEDATATYPE Then
-                If StrConv(lstProperties(j), vbUpperCase) = StrConv(CATDRAWING, vbUpperCase) Then
-                    lstProperties(j) = CATDRAWING
-                ElseIf StrConv(lstProperties(j), vbUpperCase) = StrConv(CATPRODUCT, vbUpperCase) Then
-                    lstProperties(j) = CATPRODUCT
-                ElseIf StrConv(lstProperties(j), vbUpperCase) = StrConv(CATPART, vbUpperCase) Then
-                    lstProperties(j) = CATPART
+            If modMain.gcurMainProperty(j) = "File_Data_Type" Then
+                If StrConv(lstProperties(j), vbUpperCase) = StrConv("CATDrawing", vbUpperCase) Then
+                    lstProperties(j) = "CATDrawing"
+                ElseIf StrConv(lstProperties(j), vbUpperCase) = StrConv("CATProduct", vbUpperCase) Then
+                    lstProperties(j) = "CATProduct"
+                ElseIf StrConv(lstProperties(j), vbUpperCase) = StrConv("CATPart", vbUpperCase) Then
+                    lstProperties(j) = "CATPart"
                 End If
             End If
             
             
-            If modMain.gcurMainProperty(j) = TITLE_REVISIONNO Then
+            If modMain.gcurMainProperty(j) = "Revision_No" Then
                 Dim strFullDesignNo As String
                 strFullDesignNo = lstProperties(j)
                 
@@ -1005,7 +1005,7 @@ Public Function fncSetPropertyFromDB(ByRef ilstModelID() As String, _
                 End If
             End If
             
-            If modMain.gcurMainProperty(j) = TITLE_DESIGNNO Then
+            If modMain.gcurMainProperty(j) = "Design_No" Then
                 Dim strDesignNo As String
                 strDesignNo = lstProperties(j)
                 
@@ -1134,7 +1134,7 @@ Public Sub SortDrawing()
     Dim lngRecCnt As Long
     Dim lngIndex_Type As Long
     lngRecCnt = Me.fncCount
-    lngIndex_Type = modMain.fncGetIndex(TITLE_FILEDATATYPE)
+    lngIndex_Type = modMain.fncGetIndex("File_Data_Type")
     
     Dim blnSorted As Boolean
     Do
@@ -1144,7 +1144,7 @@ Public Sub SortDrawing()
         Dim i As Long
         For i = 1 To lngRecCnt - 1
             
-            If mRecords(i + 1).Properties(lngIndex_Type) <> CATDRAWING Then
+            If mRecords(i + 1).Properties(lngIndex_Type) <> "CATDrawing" Then
                 Exit For
             End If
             
@@ -1166,8 +1166,8 @@ Public Function fncIs2DNumbered() As Boolean
 
     Dim lngIndex_Type As Long
     Dim lngIndex_DesignNo As Long
-    lngIndex_Type = modMain.fncGetIndex(TITLE_FILEDATATYPE)
-    lngIndex_DesignNo = modMain.fncGetIndex(TITLE_DESIGNNO)
+    lngIndex_Type = modMain.fncGetIndex("File_Data_Type")
+    lngIndex_DesignNo = modMain.fncGetIndex("Design_No")
 
     Dim lngRecCnt As Long
     lngRecCnt = Me.fncCount
@@ -1183,7 +1183,7 @@ Public Function fncIs2DNumbered() As Boolean
         
         Dim typRecord As Record
         If mRecords(i).Sel = True And mRecords(i).LinkID <> "-" And str3DDesignNo = "" _
-                                    And (strType = CATPART Or strType = CATPRODUCT) Then
+                                    And (strType = "CATPart" Or strType = "CATProduct") Then
             
             Dim lngLinkID As Long
             lngLinkID = mRecords(i).LinkID
@@ -1204,24 +1204,24 @@ Public Sub CorrectOrName()
     Dim lngIndex_Section As Long
     Dim lngIndex_CurrentStatus As Long
     lngRecCnt = Me.fncCount
-    lngIndex_Section = modMain.fncGetIndex(TITLE_SECTION)
-    lngIndex_CurrentStatus = modMain.fncGetIndex(TITLE_CURRENTSTATUS)
+    lngIndex_Section = modMain.fncGetIndex("Section")
+    lngIndex_CurrentStatus = modMain.fncGetIndex("Current_Status")
     
     Dim i As Long
     For i = 1 To lngRecCnt
         Dim strSection As String
         strSection = mRecords(i).Properties(lngIndex_Section)
-        If UCase(VALUE_FCS) = UCase(Trim(strSection)) Then
-            mRecords(i).Properties(lngIndex_Section) = VALUE_FCS
-        ElseIf 0 < InStr(UCase(strSection), UCase(VALUE_EPWR)) Then
-            mRecords(i).Properties(lngIndex_Section) = VALUE_FCS
+        If UCase("FCS") = UCase(Trim(strSection)) Then
+            mRecords(i).Properties(lngIndex_Section) = "FCS"
+        ElseIf 0 < InStr(UCase(strSection), UCase("PWR")) Then
+            mRecords(i).Properties(lngIndex_Section) = "FCS"
         End If
         
         Dim strCurrentStatus As String
         strCurrentStatus = mRecords(i).Properties(lngIndex_CurrentStatus)
-        If UCase(VALUE_PROTOTYPE) = UCase(Trim(strCurrentStatus)) Or _
-           UCase(VALUE_STUDY) = UCase(Trim(strCurrentStatus)) Then
-            mRecords(i).Properties(lngIndex_CurrentStatus) = VALUE_PROTOTYPESTUDY
+        If UCase("Prototype") = UCase(Trim(strCurrentStatus)) Or _
+           UCase("Study") = UCase(Trim(strCurrentStatus)) Then
+            mRecords(i).Properties(lngIndex_CurrentStatus) = "Prototype/Study"
         End If
     Next i
 End Sub

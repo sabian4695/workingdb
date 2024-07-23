@@ -923,7 +923,7 @@ err_handler:
     Call handleError("wdbProjectE", "setBarColorPercent", Err.Description, Err.number)
 End Function
 
-Function notifyPE(partNum As String, notiType As String, stepTitle As String, Optional sendAlways As Boolean = False) As Boolean
+Function notifyPE(partNum As String, notiType As String, stepTitle As String, Optional sendAlways As Boolean = False, Optional stepAction As Boolean = False) As Boolean
 On Error GoTo err_handler
 
 notifyPE = False
@@ -941,8 +941,13 @@ Do While Not rsPartTeam.EOF
     If sendTo = Environ("username") And Not sendAlways Then GoTo nextRec
     
     'actually send notification
-    Dim body As String
-    body = emailContentGen(partNum & " Step " & notiType, "WDB Step " & notiType, "This step has been " & notiType, stepTitle, "Part Number: " & partNum, "Closed by: " & getFullName(), "Closed On: " & CStr(Date))
+    Dim body As String, closedBy As String
+    If stepAction Then
+        closedBy = "stepAction"
+    Else
+        closedBy = getFullName()
+    End If
+    body = emailContentGen(partNum & " Step " & notiType, "WDB Step " & notiType, "This step has been " & notiType, stepTitle, "Part Number: " & partNum, "Closed by: " & closedBy, "Closed On: " & CStr(Date))
     Call sendNotification(sendTo, 10, 2, stepTitle & " for " & partNum & " has been " & notiType, body, "Part Project", CLng(partNum))
     
 nextRec:
@@ -978,7 +983,7 @@ err_handler:
 End Function
 
 Function scanSteps(partNum As String, routineName As String, Optional identifier As Variant = "notFound") As Boolean
-'On Error GoTo err_handler
+On Error GoTo err_handler
 
 scanSteps = False
 'this scans to see if there is a step action that needs to be deleted per its own requirements
@@ -1081,7 +1086,7 @@ performAction:
                 If CurrentProject.AllForms("frmPartDashboard").IsLoaded Then Form_sfrmPartDashboardDates.Requery
             End If
             
-            Call notifyPE(rsSteps!partNumber, "Closed", rsSteps!stepType)
+            Call notifyPE(rsSteps!partNumber, "Closed", rsSteps!stepType, True)
             If CurrentProject.AllForms("frmPartDashboard").IsLoaded Then Form_sfrmPartDashboard.Requery
     End Select
 

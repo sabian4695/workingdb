@@ -22,12 +22,12 @@ Public Function fncInit()
     On Error GoTo 0
 
     If mobjCATIA Is Nothing Then
-        Call modMessage.Show("E003")
+        MsgBox "Catia isn't running!", vbCritical, "Error"
         Exit Function
     End If
 
     If mobjCATIA.Windows.count = 0 Then
-        Call modMessage.Show("E005")
+        MsgBox "No Catia files found", vbCritical, "Error"
         Exit Function
     End If
     
@@ -222,11 +222,11 @@ Private Function fncGetOldNumberingProperty(ByRef iobjTable As CATIAPropertyTabl
         If Trim(typRecord.ModelDrawingID) = "" Then GoTo CONTINUE
         
         Dim lngTypeIndex As Long
-        lngTypeIndex = modMain.fncGetIndex(TITLE_FILEDATATYPE)
+        lngTypeIndex = modMain.fncGetIndex("File_Data_Type")
         Dim strType As String
         strType = typRecord.Properties(lngTypeIndex)
 
-        If strType = CATPRODUCT Or strType = CATPART Then
+        If strType = "CATProduct" Or strType = "CATPart" Then
             On Error Resume Next
             Dim lngIndex As Long
             lngIndex = UBound(lstModelID)
@@ -270,7 +270,7 @@ Private Function fncGetPropertyFromDrawing(ByRef iobjDrawDoc As Object, _
     strParamName = ""
     strFilePath = iobjDrawDoc.fullName
     strFileName = fncSplitFileName(iobjDrawDoc.name)
-    strParamName = modDefineDrawing.fncGetDrawingParamName(TITLE_MODELIDDRAWID)
+    strParamName = modDefineDrawing.fncGetDrawingParamName("ModelID/DrawingID")
     strDrawingID = fncGetDrawingParam(iobjDrawDoc, strParamName)
     strDrawLinkTo = fncGetDrawingLink(iobjDrawDoc)
 
@@ -448,8 +448,8 @@ Private Function fncGetExtendPropertiesFromDraw(ByRef iobjDrawDoc As Object, _
         strTextName = ""
         strParamName = ""
         '/ TITLE_FILEDATATYP-Text Parameter
-        If modMain.gcurMainProperty(i) = TITLE_FILEDATATYPE Then
-            strTemp = CATDRAWING
+        If modMain.gcurMainProperty(i) = "File_Data_Type" Then
+            strTemp = "CATDrawing"
         Else
             If iblnLoad2dText = True Then
                 strTextName = modDefineDrawing.fncGetDrawingTextName(modMain.gcurMainProperty(i))
@@ -459,8 +459,8 @@ Private Function fncGetExtendPropertiesFromDraw(ByRef iobjDrawDoc As Object, _
             Dim blnGetText As Boolean: blnGetText = False
             If strTextName <> "" And iblnLoad2dText = True Then
                 blnGetText = fncGetDrawingText(lstDrawText, strTextName, strTemp)
-                strTemp = Replace(strTemp, vbLf, REPLACE_NEW_LINE_DRAWTEXT)
-                If modMain.gcurMainProperty(i) = TITLE_FULLDESIGNNO Then blnDesignNoFromText = True
+                strTemp = Replace(strTemp, vbLf, " ")
+                If modMain.gcurMainProperty(i) = "Full_Design_No" Then blnDesignNoFromText = True
             ElseIf strParamName <> "" And iblnLoad2dText = False Then
                 strTemp = fncGetDrawingParam(iobjDrawDoc, strParamName)
             Else
@@ -476,9 +476,9 @@ Private Function fncGetExtendPropertiesFromDraw(ByRef iobjDrawDoc As Object, _
         Dim lngIndex_FullDesignNo As Long
         Dim lngIndex_DesignNo As Long
         Dim lngIndex_BranchNo As Long
-        lngIndex_FullDesignNo = fncGetIndex(TITLE_FULLDESIGNNO)
-        lngIndex_DesignNo = fncGetIndex(TITLE_DESIGNNO)
-        lngIndex_BranchNo = fncGetIndex(TITLE_REVISIONNO)
+        lngIndex_FullDesignNo = fncGetIndex("Full_Design_No")
+        lngIndex_DesignNo = fncGetIndex("Design_No")
+        lngIndex_BranchNo = fncGetIndex("Revision_No")
         Dim strDesignNo As String
         Dim strBranchNo As String
         strDesignNo = ostrProperties(lngIndex_FullDesignNo)
@@ -516,14 +516,14 @@ Private Function fncGetExtendPropertiesFromDraw(ByRef iobjDrawDoc As Object, _
             If IsNumeric(strRightBranch) = True Then
                 Dim strClassVal As String
                 If 0 <= strRightBranch And strRightBranch <= 79 Then
-                    strClassVal = VALUE_INTERNALDATA
+                    strClassVal = "Internal data"
                 ElseIf 80 <= strRightBranch And strRightBranch <= 99 Then
-                    strClassVal = VALUE_SUBMISSIONDATA
+                    strClassVal = "Submission data"
                 Else
                     strClassVal = ""
                 End If
                 Dim lngIndex_Classification As Long
-                lngIndex_Classification = fncGetIndex(TITLE_CLASSIFICATION)
+                lngIndex_Classification = fncGetIndex("Classification")
                 ostrProperties(lngIndex_Classification) = strClassVal
             End If
         End If
@@ -566,7 +566,7 @@ Private Function fncGetExtendPropertiesFromDraw(ByRef iobjDrawDoc As Object, _
         If strSection <> "" Then
             '/ NF_Section
             Dim lngIndex_Section As Long
-            lngIndex_Section = fncGetIndex(TITLE_SECTION)
+            lngIndex_Section = fncGetIndex("Section")
             ostrProperties(lngIndex_Section) = strSection
             If IsNumeric(strSectionCode) = True Then
                 blnOldSection = False
@@ -599,25 +599,25 @@ Private Function fncGetExtendPropertiesFromDraw(ByRef iobjDrawDoc As Object, _
         If Trim(strStatusCode) <> "" Then
             If blnOldSection = False Then
                 If strStatusCode = "M" Then
-                    strStatus = VALUE_MASSPRODUCT
+                    strStatus = "Mass production"
                 ElseIf strStatusCode = "T" Then
-                    strStatus = VALUE_PROTOTYPESTUDY
+                    strStatus = "Prototype/Study"
                 Else
                     strStatus = ""
                 End If
             Else
                 If strStatusCode = "T" Then
-                    strStatus = VALUE_PROTOTYPESTUDY
+                    strStatus = "Prototype/Study"
                     On Error Resume Next
                 Else
-                    strStatus = VALUE_MASSPRODUCT
+                    strStatus = "Mass production"
                 End If
             End If
         End If
         
         '/ Status
         Dim lngIndex_Status As Long
-        lngIndex_Status = fncGetIndex(TITLE_CURRENTSTATUS)
+        lngIndex_Status = fncGetIndex("Current_Status")
         ostrProperties(lngIndex_Status) = strStatus
         '/DesignNo
         If blnOldSection = True Then ostrProperties(lngIndex_DesignNo) = strSectionCode & strDesignNo
@@ -625,7 +625,7 @@ Private Function fncGetExtendPropertiesFromDraw(ByRef iobjDrawDoc As Object, _
     
     '/ NF_DesignerAliasName
     Dim lngIndex_Designer As Long
-    lngIndex_Designer = fncGetIndex(TITLE_DESIGNER)
+    lngIndex_Designer = fncGetIndex("Designer")
     
     Dim strDesigner As String
     strDesigner = ostrProperties(lngIndex_Designer)
@@ -651,7 +651,7 @@ Private Function fncGetPropertyFromProduct(ByRef iobjProduct As Object, ByVal ii
     strFileName = fncSplitFileName(strFileName)
     strPartNumber = iobjProduct.partNumber
     strInstanceName = iobjProduct.name
-    strPropName = modDefineDrawing.fncGetPropertyName(TITLE_MODELIDDRAWID)
+    strPropName = modDefineDrawing.fncGetPropertyName("ModelID/DrawingID")
     strModelID = fncGetUserRefProperty(iobjProduct, strPropName)
     
     Dim strProperties() As String
@@ -696,9 +696,9 @@ Private Function fncGetDocType(ByRef iobjProduct As Object, ByRef ostrDocType As
         Set objParentProd = iobjProduct.Parent
     
         If TypeName(objParentProd) = "ProductDocument" Then
-            strType = CATPRODUCT
+            strType = "CATProduct"
         ElseIf TypeName(objParentProd) = "PartDocument" Then
-            strType = CATPART
+            strType = "CATPart"
         End If
     Else
         Dim strParentPath As String, strPath As String
@@ -713,9 +713,9 @@ Private Function fncGetDocType(ByRef iobjProduct As Object, ByRef ostrDocType As
         If strParentPath = strPath Then
             strType = "Component"
         ElseIf TypeName(objDoc) = "ProductDocument" Then
-            strType = CATPRODUCT
+            strType = "CATProduct"
         ElseIf TypeName(objDoc) = "PartDocument" Then
-            strType = CATPART
+            strType = "CATPart"
         End If
     End If
     
@@ -802,7 +802,7 @@ Private Function fncGetUserRefProperties(ByRef iobjProduct As Object, ByRef ostr
         Dim strPropName As String
         strPropName = modDefineDrawing.fncGetPropertyName(modMain.gcurMainProperty(i))
 
-        If modMain.gcurMainProperty(i) = TITLE_FILEDATATYPE Then
+        If modMain.gcurMainProperty(i) = "File_Data_Type" Then
             If fncGetDocType(iobjProduct, strTemp) = False Then Exit Function
         Else
             strTemp = ""
@@ -920,7 +920,7 @@ Public Function fncSetProperty(ByRef iobjCatiaData As CATIAPropertyTable, _
         If Trim(typExcelRecord.Sel) = True Then
             '/ SET PROPERTY
             If iblnSetTitleBlock = False Then
-                If typCATIARecord.Properties(modMain.fncGetIndex(TITLE_FILEDATATYPE) - 1) = CATDRAWING Then
+                If typCATIARecord.Properties(modMain.fncGetIndex("File_Data_Type") - 1) = "CATDrawing" Then
                     If fncSetPropertyToDrawing(typCATIARecord.CatiaObject, typExcelRecord) = False Then Exit Function
                 Else
                     If fncSetPropertyToProduct(typCATIARecord.CatiaObject, typExcelRecord) = False Then Exit Function
@@ -928,7 +928,7 @@ Public Function fncSetProperty(ByRef iobjCatiaData As CATIAPropertyTable, _
             '/ SET title block
             Else
                 '/ DrawingText
-                If typCATIARecord.Properties(modMain.fncGetIndex(TITLE_FILEDATATYPE) - 1) = CATDRAWING Then
+                If typCATIARecord.Properties(modMain.fncGetIndex("File_Data_Type") - 1) = "CATDrawing" Then
                     If fncSetPropertyToTitleBlock(typCATIARecord.CatiaObject, typExcelRecord) = False Then Exit Function
                 End If
             End If
@@ -940,7 +940,7 @@ Public Function fncSetProperty(ByRef iobjCatiaData As CATIAPropertyTable, _
         For i = 1 To lngCnt
             Dim typRecord As Record
             If iobjCatiaData.fncItem(i, typRecord) = False Then Exit Function
-            If typRecord.Properties(modMain.fncGetIndex(TITLE_FILEDATATYPE)) = CATDRAWING Then Call typRecord.CatiaObject.Update
+            If typRecord.Properties(modMain.fncGetIndex("File_Data_Type")) = "CATDrawing" Then Call typRecord.CatiaObject.Update
         Next i
     End If
     
@@ -958,7 +958,7 @@ Private Function fncSetPropertyToDrawing(ByRef iobjDrawDoc As Object, _
     strParamName = ""
 
     '/ DrawingID
-    strParamName = modDefineDrawing.fncGetDrawingParamName(TITLE_MODELIDDRAWID)
+    strParamName = modDefineDrawing.fncGetDrawingParamName("ModelID/DrawingID")
     Call fncDeleteParam(iobjDrawDoc, strParamName)
     Call fncSetExtendPropertiesFromDraw(iobjDrawDoc, iobjRecord.Properties)
     
@@ -987,7 +987,7 @@ Private Function fncSetDrawingParam(ByRef iobjDrawDoc As Object, ByVal istrParam
     On Error GoTo 0
     
     Dim strTemp As String
-    strTemp = Replace(istrValue, vbLf, REPLACE_NEW_LINE_DRAWTEXT)
+    strTemp = Replace(istrValue, vbLf, " ")
     
     If objParam Is Nothing Then
         Set objParam = objParams.CreateString(istrParamName, strTemp)
@@ -1006,9 +1006,9 @@ Private Function fncSetExtendPropertiesFromDraw(ByRef iobjDrawDoc As Object, _
     Dim lngIndex_Section As Long
     Dim lngIndex_Status As Long
     Dim lngIndex_Revision As Long
-    lngIndex_Section = modMain.fncGetIndex(TITLE_SECTION)
-    lngIndex_Status = modMain.fncGetIndex(TITLE_CURRENTSTATUS)
-    lngIndex_Revision = modMain.fncGetIndex(TITLE_REVISIONNO)
+    lngIndex_Section = modMain.fncGetIndex("Section")
+    lngIndex_Status = modMain.fncGetIndex("Current_Status")
+    lngIndex_Revision = modMain.fncGetIndex("Revision_No")
     
     '/ Main
     On Error Resume Next
@@ -1034,9 +1034,9 @@ Private Function fncSetPropertyToTitleBlock(ByRef iobjDrawDoc As Object, _
     Dim lngIndex_Section As Long
     Dim lngIndex_Status As Long
     Dim lngIndex_Revision As Long
-    lngIndex_Section = modMain.fncGetIndex(TITLE_SECTION)
-    lngIndex_Status = modMain.fncGetIndex(TITLE_CURRENTSTATUS)
-    lngIndex_Revision = modMain.fncGetIndex(TITLE_REVISIONNO)
+    lngIndex_Section = modMain.fncGetIndex("Section")
+    lngIndex_Status = modMain.fncGetIndex("Current_Status")
+    lngIndex_Revision = modMain.fncGetIndex("Revision_No")
     
     Dim lstDrawText() As Object
     Call GetDrawText(iobjDrawDoc, lstDrawText)
@@ -1052,7 +1052,7 @@ Private Function fncSetPropertyToTitleBlock(ByRef iobjDrawDoc As Object, _
         strTextName = modDefineDrawing.fncGetDrawingTextName(modMain.gcurMainProperty(i)) 'gets name of text field on actual drawing
         
         Dim strValue As String
-        strValue = Replace(iobjRecord.Properties(i), vbLf, REPLACE_NEW_LINE_DRAWTEXT)
+        strValue = Replace(iobjRecord.Properties(i), vbLf, " ")
 
         If strTextName <> "" Then Call fncSetDrawingText(lstDrawText, strTextName, strValue)
     Next i
@@ -1140,7 +1140,7 @@ Private Function fncSetPropertyToProduct(ByRef iobjProduct As Object, _
     If iobjProduct Is Nothing Then Exit Function
     
     Dim strPropName As String
-    strPropName = modDefineDrawing.fncGetPropertyName(TITLE_MODELIDDRAWID)
+    strPropName = modDefineDrawing.fncGetPropertyName("ModelID/DrawingID")
     Call fncDeleteUserRefProperty(iobjProduct, strPropName)
     Call fncSetUserRefProperties(iobjProduct, itypRecord.Properties)
     
@@ -1189,7 +1189,7 @@ Private Function fncSetUserRefProperty(ByRef iobjProduct As Object, ByVal istrPr
     On Error GoTo 0
     
     Dim strTemp As String
-    strTemp = Replace(istrValue, vbLf, REPLACE_NEW_LINE_DRAWTEXT)
+    strTemp = Replace(istrValue, vbLf, " ")
     
     If objParam Is Nothing Then
         Set objParam = objProperties.CreateString(istrPropertyName, strTemp)
@@ -1212,7 +1212,7 @@ Public Function fncDeleteProperty(ByRef iobjCatiaData As CATIAPropertyTable) As 
         Dim typCATIARecord As Record
         If iobjCatiaData.fncItem(i, typCATIARecord) = False Then Exit Function
         
-        If typCATIARecord.Properties(modMain.fncGetIndex(TITLE_FILEDATATYPE) - 1) = CATDRAWING Then
+        If typCATIARecord.Properties(modMain.fncGetIndex("File_Data_Type") - 1) = "CATDrawing" Then
             If fncDeletePropertyOnDrawing(typCATIARecord.CatiaObject) = False Then Exit Function
         Else
             If fncDeletePropertyOnProduct(typCATIARecord.CatiaObject) = False Then Exit Function
@@ -1229,7 +1229,7 @@ Private Function fncDeletePropertyOnDrawing(ByRef iobjDrawDoc As Object) As Bool
     If iobjDrawDoc Is Nothing Then Exit Function
     
     Dim strParamName As String
-    strParamName = modDefineDrawing.fncGetDrawingParamName(TITLE_MODELIDDRAWID)
+    strParamName = modDefineDrawing.fncGetDrawingParamName("ModelID/DrawingID")
     If strParamName <> "" Then Call fncDeleteParam(iobjDrawDoc, strParamName)
     
     Call fncDeleteDrawingParameters(iobjDrawDoc)
@@ -1309,7 +1309,7 @@ Private Function fncDeletePropertyOnProduct(ByRef iobjProduct As Object) As Bool
     
     If iobjProduct Is Nothing Then Exit Function
     Dim strPropertyName As String
-    strPropertyName = modDefineDrawing.fncGetPropertyName(TITLE_MODELIDDRAWID)
+    strPropertyName = modDefineDrawing.fncGetPropertyName("ModelID/DrawingID")
     
     Call fncDeleteUserRefProperty(iobjProduct, strPropertyName)
     Call fncDeleteUserRefProperties(iobjProduct)
@@ -1395,7 +1395,7 @@ Public Function fncSaveData(ByRef iobjCatiaData As CATIAPropertyTable, _
             '/ 3DEX
             Dim lngFileNameIndex As Long
             Dim blnIn3DEX As Boolean
-            lngFileNameIndex = modMain.fncGetIndex(TITLE_FILEDATANAME) - 1
+            lngFileNameIndex = modMain.fncGetIndex("File_Data_Name") - 1
             blnIn3DEX = fncSavedIn3dex(strOldPath)
             If blnIn3DEX = True And _
                typExcelRecord.FileName = typExcelRecord.Properties(lngFileNameIndex) Then
@@ -1403,7 +1403,7 @@ Public Function fncSaveData(ByRef iobjCatiaData As CATIAPropertyTable, _
             End If
             
             Dim lngClassification As Long
-            lngClassification = modMain.fncGetIndex(TITLE_CLASSIFICATION) - 1
+            lngClassification = modMain.fncGetIndex("Classification") - 1
             Dim strClassification As String
             strClassification = typExcelRecord.Properties(lngClassification)
             
@@ -1411,9 +1411,9 @@ Public Function fncSaveData(ByRef iobjCatiaData As CATIAPropertyTable, _
             '/ Reference,SubProduct,Layout
             If blnIn3DEX = True And _
                 Trim(modSetting.gstrSaveAsNewName) = "0" And _
-                (strClassification = VALUE_REFERENCE Or _
-                 strClassification = VALUE_SUBPRODUCT Or _
-                 strClassification = VALUE_LAYOUT) Then
+                (strClassification = "Reference" Or _
+                 strClassification = "SubProduct" Or _
+                 strClassification = "LayOut") Then
                 GoTo CONTINUE
             End If
 
@@ -1447,18 +1447,18 @@ Private Function fncSaveAs(ByRef itypCATIARecord As Record, ByVal istrSaveDir As
     Dim lngFileNameIndex As Long
     Dim lngFileTypeIndex As Long
     Dim lngClassificationIndex As Long
-    lngFileNameIndex = modMain.fncGetIndex(TITLE_FILEDATANAME) + 1
-    lngFileTypeIndex = modMain.fncGetIndex(TITLE_FILEDATATYPE) - 1
-    lngClassificationIndex = modMain.fncGetIndex(modConst.TITLE_CLASSIFICATION) - 1
+    lngFileNameIndex = modMain.fncGetIndex("File_Data_Name") + 1
+    lngFileTypeIndex = modMain.fncGetIndex("File_Data_Type") - 1
+    lngClassificationIndex = modMain.fncGetIndex("Classification") - 1
     
     '/ FileType
     Dim strExtension As String
-    If StrConv(itypExcelRecord.Properties(lngFileTypeIndex), vbUpperCase) = StrConv(CATDRAWING, vbUpperCase) Then
-        strExtension = CATDRAWING
-    ElseIf StrConv(itypExcelRecord.Properties(lngFileTypeIndex), vbUpperCase) = StrConv(CATPRODUCT, vbUpperCase) Then
-        strExtension = CATPRODUCT
-    ElseIf StrConv(itypExcelRecord.Properties(lngFileTypeIndex), vbUpperCase) = StrConv(CATPART, vbUpperCase) Then
-        strExtension = CATPART
+    If StrConv(itypExcelRecord.Properties(lngFileTypeIndex), vbUpperCase) = StrConv("CATDrawing", vbUpperCase) Then
+        strExtension = "CATDrawing"
+    ElseIf StrConv(itypExcelRecord.Properties(lngFileTypeIndex), vbUpperCase) = StrConv("CATProduct", vbUpperCase) Then
+        strExtension = "CATProduct"
+    ElseIf StrConv(itypExcelRecord.Properties(lngFileTypeIndex), vbUpperCase) = StrConv("CATPart", vbUpperCase) Then
+        strExtension = "CATPart"
     Else
         strExtension = itypExcelRecord.Properties(lngFileTypeIndex)
     End If
@@ -1469,9 +1469,9 @@ Private Function fncSaveAs(ByRef itypCATIARecord As Record, ByVal istrSaveDir As
     
     Dim strFileName As String
     If Trim(modSetting.gstrSaveAsNewName) = "0" And _
-      (strClassification = VALUE_REFERENCE Or _
-       strClassification = VALUE_SUBPRODUCT Or _
-       strClassification = VALUE_LAYOUT) Then
+      (strClassification = "Reference" Or _
+       strClassification = "SubProduct" Or _
+       strClassification = "LayOut") Then
         strFileName = itypExcelRecord.FileName
     Else
         strFileName = itypExcelRecord.Properties(lngFileNameIndex)
@@ -1484,7 +1484,7 @@ Private Function fncSaveAs(ByRef itypCATIARecord As Record, ByVal istrSaveDir As
     
     '/ Document
     Dim objDocument As Object
-    If itypCATIARecord.Properties(lngFileTypeIndex) = CATDRAWING Then
+    If itypCATIARecord.Properties(lngFileTypeIndex) = "CATDrawing" Then
         Set objDocument = itypCATIARecord.CatiaObject
     Else
         On Error Resume Next
@@ -1496,13 +1496,13 @@ Private Function fncSaveAs(ByRef itypCATIARecord As Record, ByVal istrSaveDir As
     
     
 'R50-MODELID
-    If itypCATIARecord.Properties(lngFileTypeIndex) = CATDRAWING Then
+    If itypCATIARecord.Properties(lngFileTypeIndex) = "CATDrawing" Then
         Dim strParamName As String
-        strParamName = modDefineDrawing.fncGetDrawingParamName(TITLE_MODELIDDRAWID)
+        strParamName = modDefineDrawing.fncGetDrawingParamName("ModelID/DrawingID")
         If Trim(strParamName) <> "" Then Call fncDeleteParam(itypCATIARecord.CatiaObject, strParamName)
     Else
         Dim strPropName As String
-        strPropName = modDefineDrawing.fncGetPropertyName(TITLE_MODELIDDRAWID)
+        strPropName = modDefineDrawing.fncGetPropertyName("ModelID/DrawingID")
         If Trim(strPropName) <> "" Then Call fncDeleteUserRefProperty(itypCATIARecord.CatiaObject, strPropName)
     End If
     
@@ -1544,9 +1544,9 @@ Public Function fncCheckBeforeSave(ByRef iobjExcelData As CATIAPropertyTable) As
         Dim lngClassification As Long
         Dim lngFileName As Long
         Dim lngFileType As Long
-        lngClassification = modMain.fncGetIndex(TITLE_CLASSIFICATION)
-        lngFileName = modMain.fncGetIndex(TITLE_FILEDATANAME)
-        lngFileType = modMain.fncGetIndex(TITLE_FILEDATATYPE)
+        lngClassification = modMain.fncGetIndex("Classification")
+        lngFileName = modMain.fncGetIndex("File_Data_Name")
+        lngFileType = modMain.fncGetIndex("File_Data_Type")
         
         If typExcelRecord.Properties(lngFileName) = "" Then
             fncCheckBeforeSave = "E046"
@@ -1562,9 +1562,9 @@ Public Function fncCheckBeforeSave(ByRef iobjExcelData As CATIAPropertyTable) As
         Dim strClassification As String
         strClassification = typExcelRecord.Properties(lngClassification)
         If Trim(modSetting.gstrSaveAsNewName) = "0" And _
-           (strClassification = VALUE_REFERENCE Or _
-            strClassification = VALUE_SUBPRODUCT Or _
-            strClassification = VALUE_LAYOUT) Then
+           (strClassification = "Reference" Or _
+            strClassification = "SubProduct" Or _
+            strClassification = "LayOut") Then
             strFileName = typExcelRecord.FileName
         Else
             strFileName = typExcelRecord.Properties(lngFileName) & "." & typExcelRecord.Properties(lngFileType)
@@ -1586,9 +1586,9 @@ Public Function fncCheckBeforeSave(ByRef iobjExcelData As CATIAPropertyTable) As
             Dim strTempClassification As String
             strTempClassification = typTemp.Properties(lngClassification)
             If Trim(modSetting.gstrSaveAsNewName) = "0" And _
-               (strTempClassification = VALUE_REFERENCE Or _
-                strTempClassification = VALUE_SUBPRODUCT Or _
-                strTempClassification = VALUE_LAYOUT) Then
+               (strTempClassification = "Reference" Or _
+                strTempClassification = "SubProduct" Or _
+                strTempClassification = "LayOut") Then
                 strTempFileName = typTemp.FileName
             Else
                 '/ Classification

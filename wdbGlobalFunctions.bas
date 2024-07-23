@@ -3,7 +3,7 @@ Option Explicit
 
 Public bClone As Boolean
 
-Function testThis()
+Function applyToAllForms()
 Dim obj As AccessObject, dbs As Object
 Set dbs = Application.CurrentProject
 ' Search for open AccessObject objects in AllForms collection.

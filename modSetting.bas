@@ -74,31 +74,6 @@ Public Function fncCheck() As Boolean
     fncCheck = True
 End Function
 
-Public Function fncCheckSendToPath() As Boolean
-    fncCheckSendToPath = False
-    
-    If fncCheckDir(gstrSendToPath) = True Then fncCheckSendToPath = True
-End Function
-
-Public Function fncCheck3dexCacheDir() As Boolean
-    fncCheck3dexCacheDir = False
-    
-    If fncCheckDir(gstr3dexCacheDir) = True Then fncCheck3dexCacheDir = True
-End Function
-
-Private Function fncCheckDir(ByVal istrPath As String) As Boolean
-    fncCheckDir = False
-    
-    Dim strResult As String
-    strResult = ""
-    
-    On Error Resume Next
-    strResult = Dir(istrPath, vbDirectory)
-    On Error GoTo 0
-    
-    If strResult <> "" Then fncCheckDir = True
-End Function
-
 Public Sub Terminate()
     gstrSendToPath = ""
     gstrServerName = ""

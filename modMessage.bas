@@ -1,7 +1,6 @@
 Option Explicit
 
 Public Function Show(ByVal istrMessageID As String, Optional ByVal msgDetail As String = "") As Boolean
-
     Show = False
     
     Dim msgTypeID As String
@@ -39,17 +38,6 @@ Public Function GetMessage(ByVal istrMessageID As String, Optional ByVal istrRep
     GetMessage = ""
     
     Select Case istrMessageID
-        Case "I001"
-            GetMessage = "All done."
-            Exit Function
-        Case "I002"
-            GetMessage = TITLE_FILEDATANAME & " was not generated." & vbCrLf & "Because undefined " & TITLE_SECTION & " is written. "
-        Case "I003"""
-            GetMessage = TITLE_FILEDATANAME & " was not generated." & vbCrLf & "Because undefined " & TITLE_CURRENTSTATUS & " is written. "
-        Case "W001"
-            GetMessage = "Below files are not moved, because these files are saved in 3DEX."
-        Case "W002"
-            GetMessage = "Please select a row."
         Case "W003"
             GetMessage = "The drawing linked to 3D is already numbered."
         Case "E001"
@@ -107,17 +95,17 @@ Public Function GetMessage(ByVal istrMessageID As String, Optional ByVal istrRep
         Case "E030"
             GetMessage = "Saving could not be performed because the file name is duplicated."
         Case "E031"
-            GetMessage = "There is no " & TITLE_DESIGNNO & " on the drawing link."
+            GetMessage = "There is no Design_No on the drawing link."
         Case "E032"
             GetMessage = "Prohibited characters are included. Please execute [LOAD MODEL] and confirm."
         Case "E033"
-            GetMessage = "A blank " & TITLE_MODELIDDRAWID & " is found."
+            GetMessage = "A blank ModelID/DrawingID is found."
         Case "E034"
-            GetMessage = "A blank " & TITLE_DESIGNNO & " is found."
+            GetMessage = "A blank " & "Design_No" & " is found."
         Case "E035"
             GetMessage = "Failed to get information from Numbering DB."
         Case "E036"
-            GetMessage = "Below " & TITLE_MODELIDDRAWID & " was not found on old numbering DB."
+            GetMessage = "Below " & "ModelID/DrawingID" & " was not found on old numbering DB."
         Case "E037"
             GetMessage = "3DEX cache directory is not found." & vbCrLf & "Please check below cell."
         Case "E038"
@@ -133,9 +121,9 @@ Public Function GetMessage(ByVal istrMessageID As String, Optional ByVal istrRep
         Case "E043"
             GetMessage = "More than two Selection is listed 1 on the DefineDevelopment sheet." & vbCrLf & "Please list Selection 1 only once."
         Case "E046"
-            GetMessage = "Blank " & TITLE_FILEDATANAME & " is found." & vbCrLf & "Please execute SET PROPERTY first."
+            GetMessage = "Blank File_Data_Name is found." & vbCrLf & "Please execute SET PROPERTY first."
         Case "E047"
-            GetMessage = "A blank " & TITLE_CURRENTSTATUS & " is found."
+            GetMessage = "A blank Current_Status is found."
         Case "E048"
             GetMessage = "There is no file to be saved."
         Case "E049"
@@ -146,13 +134,10 @@ Public Function GetMessage(ByVal istrMessageID As String, Optional ByVal istrRep
             GetMessage = "Unknown error has occured."
         Case "Q001"
             GetMessage = "Attributes are written in number assignment Excel. Do you want to overwrite?"
-            Exit Function
         Case "Q002"
             GetMessage = "Are you sure you want to delete attribute information?"
-            Exit Function
         Case "Q003"
             GetMessage = "Prohibited characters are included. Do you want to replace the string?"
-            Exit Function
     End Select
 
     GetMessage = istrMessageID & " : " & GetMessage

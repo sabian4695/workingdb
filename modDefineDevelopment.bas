@@ -97,8 +97,8 @@ Public Function fncGetSectionFromOfficeCode(ByVal istrCode As String) As String
     Dim i As Long
     For i = 1 To lngCnt
         If gcurOfficeCode(i) = istrCode Then
-            If gcurSection(i) = VALUE_FCSEPWR Then
-                fncGetSectionFromOfficeCode = VALUE_FCS
+            If gcurSection(i) = "FCS/e-Pwr" Then
+                fncGetSectionFromOfficeCode = "FCS"
             Else
                 fncGetSectionFromOfficeCode = gcurSection(i)
             End If
@@ -111,8 +111,8 @@ Public Function fncGetOfficeCodeFromSection(ByVal istrSection As String) As Stri
     fncGetOfficeCodeFromSection = ""
 
     Dim strSection As String
-    If istrSection = VALUE_FCS Then
-        strSection = VALUE_FCSEPWR
+    If istrSection = "FCS" Then
+        strSection = "FCS/e-Pwr"
     Else
         strSection = istrSection
     End If

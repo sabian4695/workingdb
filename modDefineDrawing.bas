@@ -65,9 +65,9 @@ Public Function fncCheck1() As Boolean
     Dim i As Integer
     For i = 1 To lngCnt
     
-        If gcurExcelTitle(i) = TITLE_FILEDATANAME Then
+        If gcurExcelTitle(i) = "File_Data_Name" Then
             blnIsFileName = True
-        ElseIf gcurExcelTitle(i) = TITLE_FILEDATATYPE Then
+        ElseIf gcurExcelTitle(i) = "File_Data_Type" Then
             blnIsFileType = True
         End If
         
