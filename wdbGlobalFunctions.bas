@@ -3,6 +3,10 @@ Option Explicit
 
 Public bClone As Boolean
 
+Function gramsToLbs(gramsValue) As Double
+gramsToLbs = gramsValue * 0.00220462
+End Function
+
 Function applyToAllForms()
 Dim obj As AccessObject, dbs As Object
 Set dbs = Application.CurrentProject

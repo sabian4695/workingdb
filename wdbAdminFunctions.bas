@@ -41,8 +41,8 @@ Private Declare PtrSafe Function SetWindowRgn Lib "user32" ( _
 
 'for rounding window corners
 Private Declare PtrSafe Function GetDC Lib "user32" (ByVal hWnd As LongPtr) As LongPtr
-Private Declare PtrSafe Function ReleaseDC Lib "user32" (ByVal hWnd As LongPtr, ByVal hDC As LongPtr) As Long
-Private Declare PtrSafe Function GetDeviceCaps Lib "gdi32" (ByVal hDC As LongPtr, ByVal nIndex As Long) As Long
+Private Declare PtrSafe Function ReleaseDC Lib "user32" (ByVal hWnd As LongPtr, ByVal hdc As LongPtr) As Long
+Private Declare PtrSafe Function GetDeviceCaps Lib "gdi32" (ByVal hdc As LongPtr, ByVal nIndex As Long) As Long
 
 'to move windows by clicking
 Public Declare PtrSafe Function SendMessage Lib "user32" Alias "SendMessageA" (ByVal hWnd As LongPtr, _
@@ -102,15 +102,15 @@ End Sub
                                   
 Public Function UISetRoundRect(ByVal UIForm As Form) As Boolean
     Dim intRight As Integer, intHeight As Integer
-    Dim hRgn As LongPtr, hDC As LongPtr
+    Dim hRgn As LongPtr, hdc As LongPtr
     
-    hDC = GetDC(0)
+    hdc = GetDC(0)
     
     With UIForm
-        intRight = (.WindowWidth / 1440) * GetDeviceCaps(hDC, 88)
-        intHeight = (.WindowHeight / 1440) * GetDeviceCaps(hDC, 90) + 1
+        intRight = (.WindowWidth / 1440) * GetDeviceCaps(hdc, 88)
+        intHeight = (.WindowHeight / 1440) * GetDeviceCaps(hdc, 90) + 1
         
-        ReleaseDC 0, hDC
+        ReleaseDC 0, hdc
         
         hRgn = CreateRoundRectRgn(0, 0, intRight, intHeight, 25, 25)
         SetWindowRgn .hWnd, hRgn, True

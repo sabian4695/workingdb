@@ -11,7 +11,7 @@ checkAIFfields = False
 '---Setup Variables---
 Dim db As Database
 Set db = CurrentDb()
-Dim rsPI As Recordset, rsPack As Recordset, rsPackC As Recordset, rsComp As Recordset, rsAI As Recordset
+Dim rsPI As Recordset, rsPack As Recordset, rsPackC As Recordset, rsComp As Recordset, rsAI As Recordset, rsU As Recordset
 Dim rsPE As Recordset, rsPMI As Recordset
 
 Dim errorArray As Collection
@@ -22,6 +22,7 @@ If findDept(partNum, "Project", True) = "" Then errorArray.Add "Project Engineer
 '---Grab General Data---
 Set rsPI = db.OpenRecordset("SELECT * from tblPartInfo WHERE partNumber = '" & partNum & "'")
 Set rsPack = db.OpenRecordset("SELECT * from tblPartPackagingInfo WHERE partInfoId = " & rsPI!recordId & " AND packType = 1")
+Set rsU = db.OpenRecordset("SELECT * from tblUnits WHERE recordId = " & rsPI!unitId)
 
 'check part info stuff - always reqruied
 If Nz(rsPI!dataStatus) = "" Then errorArray.Add "Data Status"
@@ -126,6 +127,9 @@ If rsPack.RecordCount = 0 Then
 Else
     Do While Not rsPack.EOF
         If Nz(rsPack!packType) = "" Then errorArray.Add "Packaging Type" 'required for transfer
+        If rsU!Org = "CUU" Then
+            If Nz(rsPack!boxesPerSkid) = "" Then errorArray.Add "Boxes Per Skid" 'if CUU org, then need to check this for transfer for MEX FREIGHT cost calc
+        End If
 
         Set rsPackC = db.OpenRecordset("SELECT * from tblPartPackagingComponents WHERE packagingInfoId = " & rsPack!recordId)
         If rsPackC.RecordCount = 0 And rsPI!dataStatus = 2 Then errorArray.Add "Packaging Components" 'required for transfer
@@ -172,6 +176,7 @@ rsPackC.Close: Set rsPackC = Nothing
 rsComp.Close: Set rsComp = Nothing
 rsAI.Close: Set rsAI = Nothing
 rsPMI.Close: Set rsPMI = Nothing
+rsU.Close: Set rsU = Nothing
 Exit Function
 
 err_handler:
@@ -199,7 +204,7 @@ Set rsPE = CurrentDb().OpenRecordset("SELECT * from tblPermissions where Dept = 
                                     "(SELECT person FROM tblPartTeam WHERE partNumber = '" & partNum & "')")
 
 mexFr = "0"
-If rsU!Org = "CUU" Then
+If rsU!Org = "CUU" And rsPI!dataStatus = 2 Then
     cartQty = DLookup("componentQuantity", "tblPartPackagingComponents", "packagingInfoId = " & rsPack!recordId & " AND componentType = 1")
     mexFr = 83.7 / (cartQty * rsPack!boxesPerSkid)
 End If
@@ -251,7 +256,7 @@ aifInsert "Royalty", rsPI!sellingPrice * 0.03, firstColBold:=True
 aifInsert "Outsource Cost", outsourceCost, firstColBold:=True
 
 '---Molding / Assembly Specific Information---
-Dim insLev As String, mpLev As String, anneal As String, laborType As String, pph As String, weight100Pc As String
+Dim insLev As String, mpLev As String, anneal As String, laborType As String, pph As String, weight100Pc As String, orgCalc
 Select Case rsPI!partType
     Case 1, 4 'molded / new color
         aifInsert "MOLDING INFORMATION", "", , , , True
@@ -280,21 +285,22 @@ Select Case rsPI!partType
         End If
         If rsPMI!regrind Then
             mat0 = 0: mat1 = 0
-            orgID = DLookup("ID", "tblOrgs", "Org = '" & Nz(rsU!Org, rsPI!developingLocation) & "'")
+            orgCalc = Replace(Nz(rsU!Org, rsPI!developingLocation), "CUU", "MEX")
+            orgID = DLookup("ID", "tblOrgs", "Org = '" & orgCalc & "'")
             If Nz(rsPMI!materialNumber) <> "" Then
-                mat0 = rsPMI!pieceWeight * 0.00220462 * 0.06 * DLookup("ITEM_COST", "APPS_CST_ITEM_COST_TYPE_V", "COST_TYPE = 'Frozen' AND ITEM_NUMBER = '" & Nz(rsPMI!materialNumber) & "' AND ORGANIZATION_ID = " & orgID)
+                mat0 = gramsToLbs(rsPMI!pieceWeight) * 0.06 * DLookup("ITEM_COST", "APPS_CST_ITEM_COST_TYPE_V", "COST_TYPE = 'Frozen' AND ITEM_NUMBER = '" & Nz(rsPMI!materialNumber) & "' AND ORGANIZATION_ID = " & orgID)
             End If
             If Nz(rsPMI!materialNumber1) <> "" Then
-                mat1 = rsPMI!matNum1PieceWeight * 0.00220462 * 0.06 * DLookup("ITEM_COST", "APPS_CST_ITEM_COST_TYPE_V", "COST_TYPE = 'Frozen' AND ITEM_NUMBER = '" & Nz(rsPMI!materialNumber1) & "' AND ORGANIZATION_ID = " & orgID)
+                mat1 = gramsToLbs(rsPMI!matNum1PieceWeight) * 0.06 * DLookup("ITEM_COST", "APPS_CST_ITEM_COST_TYPE_V", "COST_TYPE = 'Frozen' AND ITEM_NUMBER = '" & Nz(rsPMI!materialNumber1) & "' AND ORGANIZATION_ID = " & orgID)
             End If
             aifInsert "Regrind Cost", mat0 + mat1, firstColBold:=True 'multiple piece weight
         Else
             aifInsert "Regrind Cost", "0", firstColBold:=True
         End If
         aifInsert "Material Number 1", Nz(rsPMI!materialNumber), firstColBold:=True
-        aifInsert "Piece Weight (g)", Nz(rsPMI!pieceWeight), firstColBold:=True 'double check if this is weight for just this material, or overall
+        aifInsert "Piece Weight (lb)", gramsToLbs(Nz(rsPMI!pieceWeight)), firstColBold:=True 'double check if this is weight for just this material, or overall
         aifInsert "Material Number 2", Nz(rsPMI!materialNumber1), firstColBold:=True
-        aifInsert "Material 2 Piece Weight (g)", Nz(rsPMI!matNum1PieceWeight), firstColBold:=True
+        aifInsert "Material 2 Piece Weight (lb)", gramsToLbs(Nz(rsPMI!matNum1PieceWeight)), firstColBold:=True
         rsPMI.Close
         Set rsPMI = Nothing
     Case 2, 5 'Assembled / subassembly
@@ -322,7 +328,7 @@ Select Case rsPI!partType
     Case 3 'Purchased
 End Select
 
-aifInsert "100 Piece Weight", weight100Pc, firstColBold:=True
+aifInsert "100 Piece Weight (lb)", gramsToLbs(weight100Pc), firstColBold:=True
 aifInsert "Pieces Per Hour", pph, firstColBold:=True
 aifInsert "Labor Type", laborType, firstColBold:=True
 aifInsert "Inspection Lvl", insLev, firstColBold:=True
