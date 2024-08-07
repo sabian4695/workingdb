@@ -543,9 +543,10 @@ Dim rsAnalytics As Recordset, ranThisWeek As Boolean
 Set rsAnalytics = db.OpenRecordset("SELECT max(dateUsed) as anaDate from tblAnalytics WHERE module = 'firstTimeRun'")
 If Format(rsAnalytics!anaDate, "mm/dd/yyyy") = Format(Date, "mm/dd/yyyy") Then Exit Sub 'if max date is today, then this has already ran.
 
-Call grabSummaryInfo
+'Call grabSummaryInfo
 Call checkProgramEvents
 Call scanSteps("all", "firstTimeRun")
+Call openPath("\\data\mdbdata\WorkingDB\build\Commands\Misc_Commands\refreshAndSummary.vbs")
 
 db.Execute "INSERT INTO tblAnalytics (module,form,userName,dateUsed) VALUES ('firstTimeRun','Form_frmSplash','" & Environ("username") & "','" & Now() & "')"
 
