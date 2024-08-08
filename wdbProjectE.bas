@@ -194,7 +194,7 @@ Set db = CurrentDb()
 Dim rsPI As Recordset, rsPack As Recordset, rsPackC As Recordset, rsComp As Recordset, rsAI As Recordset
 Dim rsPE As Recordset, rsOI As Recordset, rsU As Recordset, rsPMI As Recordset
 Dim outsourceCost As String
-Dim mexFr As String, cartQty, mat0 As Double, mat1 As Double, resourceCSV() As String, ITEM, resID As Long, orgID As Long
+Dim mexFr As String, cartQty, mat0 As Double, mat1 As Double, resourceCSV() As String, item, resID As Long, orgID As Long
 
 '---Grab General Data---
 Set rsPI = db.OpenRecordset("SELECT * from tblPartInfo WHERE partNumber = '" & partNum & "'")
@@ -211,7 +211,7 @@ End If
 
 outsourceCost = "0"
 If Nz(rsPI!outsourceInfoId) <> "" Then
-    Set rsOI = db.OpenRecordset("SELECT * from tblOutsourceInfo WHERE recordId = " & rsPI!outsourceInfoId)
+    Set rsOI = db.OpenRecordset("SELECT * from tblPartOutsourceInfo WHERE recordId = " & rsPI!outsourceInfoId)
     outsourceCost = rsOI!outsourceCost
     rsOI.Close: Set rsOI = Nothing
 End If
@@ -316,10 +316,10 @@ Select Case rsPI!partType
         resID = 1
         If InStr(rsAI!resource, ",") Then
             resourceCSV = Split(rsAI!resource, ",")
-            For Each ITEM In resourceCSV
-                aifInsert "Resource " & resID, CStr(ITEM), firstColBold:=True
+            For Each item In resourceCSV
+                aifInsert "Resource " & resID, CStr(item), firstColBold:=True
                 resID = resID + 1
-            Next ITEM
+            Next item
         End If
         
         aifInsert "Machine Line", Nz(rsAI!machineLine), firstColBold:=True
@@ -1049,12 +1049,12 @@ Do While Not rsSteps.EOF
     
     If InStr(rsStepActions!compareData, ",") > 0 Then 'check for multiple values - always seen as an OR command, not AND
         'make an array of the values and check if any match
-        Dim checkIf() As String, ITEM
+        Dim checkIf() As String, item
         checkIf = Split(rsStepActions!compareData, ",")
-        For Each ITEM In checkIf
-            matches = CStr(Nz(rsLookItUp(rsStepActions!compareColumn), "")) = ITEM
+        For Each item In checkIf
+            matches = CStr(Nz(rsLookItUp(rsStepActions!compareColumn), "")) = item
             If matches Then meetsCriteria = True
-        Next ITEM
+        Next item
     Else
         matches = CStr(Nz(rsLookItUp(rsStepActions!compareColumn))) = Nz(rsStepActions!compareData)
         If matches Then meetsCriteria = True
@@ -1360,17 +1360,17 @@ On Error GoTo err_handler
 
 Dim tblHeading As String, tblFooter As String, strHTMLBody As String, extraFooter As String, detailTable As String
 
-Dim ITEM, i
+Dim item, i
 i = 0
 detailTable = ""
-For Each ITEM In arr()
+For Each item In arr()
     If i = UBound(arr) Then
-        detailTable = detailTable & "<tr style=""border-collapse: collapse;""><td style=""padding: .1em 2em 1em 2em;"">" & ITEM & "</td></tr>"
+        detailTable = detailTable & "<tr style=""border-collapse: collapse;""><td style=""padding: .1em 2em 1em 2em;"">" & item & "</td></tr>"
     Else
-        detailTable = detailTable & "<tr style=""border-collapse: collapse;""><td style=""padding: .1em 2em;"">" & ITEM & "</td></tr>"
+        detailTable = detailTable & "<tr style=""border-collapse: collapse;""><td style=""padding: .1em 2em;"">" & item & "</td></tr>"
     End If
     i = i + 1
-Next ITEM
+Next item
 
 tblHeading = "<table style=""width: 100%; margin: 0 auto; padding: 2em 3em; text-align: center; background-color: #fafafa;"">" & _
                             "<tbody>" & _

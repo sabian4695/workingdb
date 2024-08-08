@@ -475,13 +475,13 @@ If rsNotifications.RecordCount > 0 Then
     End If
 End If
 
-Dim strEmail, ITEM, sendToArr() As String
+Dim strEmail, item, sendToArr() As String
 If multiEmail Then
     sendToArr = Split(sendTo, ",")
     strEmail = ""
-    For Each ITEM In sendToArr
-        strEmail = strEmail & getEmail(CStr(ITEM)) & ";"
-    Next ITEM
+    For Each item In sendToArr
+        strEmail = strEmail & getEmail(CStr(item)) & ";"
+    Next item
     strEmail = Left(strEmail, Len(strEmail) - 1)
 Else
     strEmail = getEmail(sendTo)

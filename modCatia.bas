@@ -34,7 +34,7 @@ Public Function fncInit()
     Dim lngDrawCnt As Long, lngProdCnt As Long, i As Long, objDoc As Object
     For i = 1 To mobjCATIA.Windows.count
         On Error Resume Next
-        Set objDoc = mobjCATIA.Windows.ITEM(i).Parent
+        Set objDoc = mobjCATIA.Windows.item(i).Parent
         On Error GoTo 0
         If Not objDoc Is Nothing Then
             If TypeName(objDoc) = "DrawingDocument" Then
@@ -138,11 +138,11 @@ Private Function fncGetDrawingLink(ByRef iobjDrawDoc As Object) As String
     Dim i As Long
     For i = 1 To iobjDrawDoc.Sheets.count
         Dim objSheet As Object
-        Set objSheet = iobjDrawDoc.Sheets.ITEM(i)
+        Set objSheet = iobjDrawDoc.Sheets.item(i)
         Dim j As Long
         For j = 1 To objSheet.Views.count
             Dim objView As Object
-            Set objView = objSheet.Views.ITEM(j)
+            Set objView = objSheet.Views.item(j)
             On Error Resume Next
             Dim objLinkDoc As Object
             Set objLinkDoc = objView.GenerativeBehavior.Document
@@ -195,7 +195,7 @@ Private Function fncIsInTree(ByRef iobjProduct As Object, ByVal istrFullPath As 
     Dim i As Long
     For i = 1 To iobjProduct.Products.count
         Dim objChildProd As Object
-        Set objChildProd = iobjProduct.Products.ITEM(i)
+        Set objChildProd = iobjProduct.Products.item(i)
         If fncIsInTree(objChildProd, istrFullPath) = True Then
             fncIsInTree = True
             Exit Function
@@ -416,7 +416,7 @@ Private Function fncGetDrawingParam(ByRef iobjDrawDoc As Object, ByVal istrParam
     
     On Error Resume Next
     Set objParam = Nothing
-    Set objParam = objParams.ITEM(istrParamName)
+    Set objParam = objParams.item(istrParamName)
     On Error GoTo 0
     
     If Not objParam Is Nothing Then fncGetDrawingParam = objParam.Value
@@ -676,7 +676,7 @@ Private Function fncGetPropertyFromProduct(ByRef iobjProduct As Object, ByVal ii
     '/ Product
     Dim i As Long
     For i = 1 To iobjProduct.Products.count
-        If fncGetPropertyFromProduct(iobjProduct.Products.ITEM(i), iintLevel + 1, lngParentIndex, oobjCatiaData) = False Then Exit Function
+        If fncGetPropertyFromProduct(iobjProduct.Products.item(i), iintLevel + 1, lngParentIndex, oobjCatiaData) = False Then Exit Function
     Next i
     fncGetPropertyFromProduct = True
 End Function
@@ -836,7 +836,7 @@ Private Function fncGetUserRefProperty(ByRef iobjProduct As Object, _
     On Error Resume Next
     Dim objParam As Object
     Set objParam = Nothing
-    Set objParam = objProperties.ITEM(istrPropertyName)
+    Set objParam = objProperties.item(istrPropertyName)
     On Error GoTo 0
         
     If Not objParam Is Nothing Then fncGetUserRefProperty = objParam.Value
@@ -866,7 +866,7 @@ Private Function fncCountInstance(ByRef iobjProduct As Object) As Long
     For i = 1 To objProducts.count
         '/ Product
         Dim objChild As Object
-        Set objChild = objProducts.ITEM(i)
+        Set objChild = objProducts.item(i)
         Dim strChildPath As String
         If fncGetDocPath(objChild, strChildPath) = True Then
             If strFilePath = strChildPath Then fncCountInstance = fncCountInstance + 1
@@ -983,7 +983,7 @@ Private Function fncSetDrawingParam(ByRef iobjDrawDoc As Object, ByVal istrParam
     On Error Resume Next
     Dim objParam As Object
     Set objParam = Nothing
-    Set objParam = objParams.ITEM(istrParamName)
+    Set objParam = objParams.item(istrParamName)
     On Error GoTo 0
     
     Dim strTemp As String
@@ -1067,7 +1067,7 @@ Private Sub GetDrawText(ByRef iobjDrawDoc As Object, ByRef olstDrawText() As Obj
     Dim i As Long
     For i = 1 To objSheet.Views.count
         Dim objView As Object
-        Set objView = objSheet.Views.ITEM(i)
+        Set objView = objSheet.Views.item(i)
         Dim j As Long
         For j = 1 To objView.Texts.count
             On Error Resume Next
@@ -1075,7 +1075,7 @@ Private Sub GetDrawText(ByRef iobjDrawDoc As Object, ByRef olstDrawText() As Obj
             lngSize = UBound(olstDrawText)
             On Error GoTo 0
             ReDim Preserve olstDrawText(lngSize + 1)
-            Set olstDrawText(lngSize + 1) = objView.Texts.ITEM(j)
+            Set olstDrawText(lngSize + 1) = objView.Texts.item(j)
         Next j
     Next i
 End Sub
@@ -1185,7 +1185,7 @@ Private Function fncSetUserRefProperty(ByRef iobjProduct As Object, ByVal istrPr
     On Error Resume Next
     Dim objParam As Object
     Set objParam = Nothing
-    Set objParam = objProperties.ITEM(istrPropertyName)
+    Set objParam = objProperties.item(istrPropertyName)
     On Error GoTo 0
     
     Dim strTemp As String
@@ -1276,7 +1276,7 @@ Private Function fncDeleteParam(ByRef iobjDrawDoc As Object, _
     
     On Error Resume Next
     Dim objParam As Object
-    Set objParam = objParams.ITEM(istrParamName)
+    Set objParam = objParams.item(istrParamName)
     
     If Not objParam Is Nothing Then Call objParams.remove(istrParamName)
     On Error GoTo 0
@@ -1337,7 +1337,7 @@ Private Function fncDeleteUserRefProperty(ByRef iobjProduct As Object, _
     
     On Error Resume Next
     Dim objParam As Object
-    Set objParam = objProperties.ITEM(istrPropertyName)
+    Set objParam = objProperties.item(istrPropertyName)
     
     If Not objParam Is Nothing Then Call objProperties.remove(istrPropertyName)
     On Error GoTo 0

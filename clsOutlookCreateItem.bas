@@ -106,10 +106,10 @@ Public Function GetFolderFromPath(PathString As String) As Object 'Outlook.Folde
     If Left(PathString, 2) = "\\" Then PathString = Mid(PathString, 3)
     PathArray = Split(PathString, "\\")
     
-    Set xFolder = Me.OutlookApplication.Session.Folders.ITEM(PathArray(0))
+    Set xFolder = Me.OutlookApplication.Session.Folders.item(PathArray(0))
     
     For counter = 1 To UBound(PathArray)
-        Set xFolder = xFolder.Folders.ITEM(PathArray(counter))
+        Set xFolder = xFolder.Folders.item(PathArray(counter))
     Next
     
     Set GetFolderFromPath = xFolder
@@ -252,7 +252,7 @@ Public Function CreateMailItem(sendTo As Variant, Optional CC As Variant = "", _
         CurrentProperty = "OtherProperties"
         If IsArray(OtherProperties) Then
             For counter = LBound(OtherProperties, 1) To UBound(OtherProperties, 1)
-                Set ItemProp = .ItemProperties.ITEM(OtherProperties(counter, LBound(OtherProperties, 2)))
+                Set ItemProp = .ItemProperties.item(OtherProperties(counter, LBound(OtherProperties, 2)))
                 ItemProp.Value = OtherProperties(counter, UBound(OtherProperties, 2))
             Next
         End If
@@ -483,7 +483,7 @@ Function CreateAppointmentItem(StartAt As Date, Optional duration As Long = 30, 
         CurrentProperty = "OtherProperties"
         If IsArray(OtherProperties) Then
             For counter = LBound(OtherProperties, 1) To UBound(OtherProperties, 1)
-                Set ItemProp = .ItemProperties.ITEM(OtherProperties(counter, LBound(OtherProperties, 2)))
+                Set ItemProp = .ItemProperties.item(OtherProperties(counter, LBound(OtherProperties, 2)))
                 ItemProp.Value = OtherProperties(counter, UBound(OtherProperties, 2))
             Next
         End If
