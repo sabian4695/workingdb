@@ -216,6 +216,13 @@ Select Case errNum
     Case 3151
         MsgBox "You're not connected to Oracle. Just FYI, Oracle connection does not work outside of VMWare.", vbInformation, "Error Code: " & errNum
         Exit Sub
+    Case 429
+        If modName = "frmCatiaMacros" Then
+            MsgBox "Looks like Catia isn't open", vbInformation, "Error Code: " & errNum
+            Exit Sub
+        Else
+            MsgBox errDesc, vbInformation, "Error Code: " & errNum
+        End If
     Case Else
         MsgBox errDesc, vbInformation, "Error Code: " & errNum
 End Select

@@ -205,14 +205,15 @@ Set rsPE = CurrentDb().OpenRecordset("SELECT * from tblPermissions where Dept = 
 
 mexFr = "0"
 If rsU!Org = "CUU" And rsPI!dataStatus = 2 Then
-    cartQty = DLookup("componentQuantity", "tblPartPackagingComponents", "packagingInfoId = " & rsPack!recordId & " AND componentType = 1")
-    mexFr = 83.7 / (cartQty * rsPack!boxesPerSkid)
+    cartQty = Nz(DLookup("componentQuantity", "tblPartPackagingComponents", "packagingInfoId = " & rsPack!recordId & " AND componentType = 1"))
+    mexFr = (cartQty * rsPack!boxesPerSkid)
+    If mexFr <> 0 Then mexFr = 83.7 / (cartQty * rsPack!boxesPerSkid)
 End If
 
 outsourceCost = "0"
 If Nz(rsPI!outsourceInfoId) <> "" Then
     Set rsOI = db.OpenRecordset("SELECT * from tblPartOutsourceInfo WHERE recordId = " & rsPI!outsourceInfoId)
-    outsourceCost = rsOI!outsourceCost
+    outsourceCost = Nz(rsOI!outsourceCost)
     rsOI.Close: Set rsOI = Nothing
 End If
                                     
@@ -247,12 +248,12 @@ End If
 aifInsert "Mexico Rates", Nz(rsU!Org) = "CUU", firstColBold:=True
 aifInsert "Org", Nz(rsU!Org, rsPI!developingLocation), firstColBold:=True  'is this supposed to be UNIT based, or the developing ORG?
 aifInsert "Part Type", DLookup("partType", "tblDropDownsSP", "ID = " & rsPI!partType), firstColBold:=True
-aifInsert "Routing Finish", DLookup("finishLocator", "tblDropDownsSP", "ID = " & rsPI!finishLocator), firstColBold:=True
-aifInsert "Sub-Location", DLookup("finishSubInv", "tblDropDownsSP", "ID = " & rsPI!finishSubInv), firstColBold:=True
+aifInsert "Routing Finish", Nz(DLookup("finishLocator", "tblDropDownsSP", "ID = " & rsPI!finishLocator)), firstColBold:=True
+aifInsert "Sub-Location", Nz(DLookup("finishSubInv", "tblDropDownsSP", "ID = " & rsPI!finishSubInv)), firstColBold:=True
 aifInsert "Mexico Freight", mexFr, firstColBold:=True
 aifInsert "Quoted Cost", Nz(DLookup("quotedCost", "tblPartQuoteInfo", "recordId = " & rsPI!quoteInfoId), 0), firstColBold:=True
-aifInsert "Selling Price", rsPI!sellingPrice, firstColBold:=True
-aifInsert "Royalty", rsPI!sellingPrice * 0.03, firstColBold:=True
+aifInsert "Selling Price", Nz(rsPI!sellingPrice), firstColBold:=True
+aifInsert "Royalty", Nz(rsPI!sellingPrice) * 0.03, firstColBold:=True
 aifInsert "Outsource Cost", outsourceCost, firstColBold:=True
 
 '---Molding / Assembly Specific Information---
@@ -873,6 +874,7 @@ On Error GoTo err_handler
 
 Dim percent As Double, width As Long
 width = 11886
+percent = 0
 
 Dim rsSteps As Recordset
 Set rsSteps = CurrentDb().OpenRecordset("SELECT * from tblPartSteps WHERE partGateId = " & gateId)
@@ -880,13 +882,11 @@ Set rsSteps = CurrentDb().OpenRecordset("SELECT * from tblPartSteps WHERE partGa
 Dim totalSteps, closedSteps
 rsSteps.MoveLast
 totalSteps = rsSteps.RecordCount
+If totalSteps = 0 Then GoTo setBar
 
 rsSteps.filter = "status = 'Closed'"
 Set rsSteps = rsSteps.OpenRecordset
-If rsSteps.RecordCount = 0 Then
-    percent = 0
-    GoTo setBar
-End If
+If rsSteps.RecordCount = 0 Then GoTo setBar
 rsSteps.MoveFirst
 rsSteps.MoveLast
 closedSteps = rsSteps.RecordCount
@@ -1078,7 +1078,7 @@ performAction:
             rsSteps!status = "Closed"
             rsSteps.Update
             
-            If (DCount("recordId", "tblPartSteps", "[closeDate] is null AND partGateId = " & rsSteps!partGateId) = 0) Then
+            If (DCount("recordId", "tblPartSteps", "[closeDate] is null AND partGateId = " & rsSteps!partGateId) = 0) Then 'if it's the last step in the gate, close the gate!
                 Dim rsGate As Recordset
                 Set rsGate = db.OpenRecordset("SELECT * FROM tblPartGates WHERE recordId = " & rsSteps!partGateId)
                 Call registerPartUpdates("tblPartGates", rsSteps!partGateId, "actualDate", rsGate!gateDate, currentDate, rsSteps!partNumber, rsGate!gateTitle, rsSteps!partProjectId, "stepAction")

@@ -503,10 +503,11 @@ Function privilege(pref) As Boolean
 End Function
 
 Function userData(data) As String
-    userData = DLookup("[" & data & "]", "[tblPermissions]", "[User] = '" & Environ("username") & "'")
+    userData = Nz(DLookup("[" & data & "]", "[tblPermissions]", "[User] = '" & Environ("username") & "'"))
 End Function
 
 Function restrict(userName As String, dept As String, Optional reqLevel As String = "", Optional orAbove As Boolean = False) As Boolean
+On Error GoTo err_handler
 Dim d As Boolean, l As Boolean, rsPerm As Recordset
 d = False
 l = False
@@ -516,6 +517,8 @@ Set rsPerm = CurrentDb.OpenRecordset("SELECT * FROM tblPermissions WHERE user = 
 'set No Access first, then allow as it is OK
 d = True
 l = True
+
+If Nz(rsPerm!dept) = "" Or Nz(rsPerm("level")) = "" Then GoTo setRestrict 'if person isnt fully set up, do not allow access
 
 If rsPerm!dept = dept Then d = False 'if correct department, set d to false
 
@@ -530,8 +533,12 @@ Select Case True 'figure out level
         If rsPerm("level") = "Engineer" Or rsPerm("level") = "Supervisor" Or rsPerm("level") = "Manager" Then l = False
 End Select
 
+setRestrict:
 restrict = d Or l
 
+Exit Function
+err_handler:
+    Call handleError("wdbGlobalFunctions", "restrict", Err.Description, Err.number)
 End Function
 
 Public Sub checkForFirstTimeRun()
