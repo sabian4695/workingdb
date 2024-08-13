@@ -506,6 +506,34 @@ Function userData(data) As String
     userData = Nz(DLookup("[" & data & "]", "[tblPermissions]", "[User] = '" & Environ("username") & "'"))
 End Function
 
+Public Function getTotalPackingListWeight(packId As Long) As Double
+On Error Resume Next
+getTotalPackingListWeight = 0
+
+Dim rs1 As Recordset
+Set rs1 = CurrentDb().OpenRecordset("SELECT sum(unitWeight*quantity) as total FROM tblPackListChild WHERE packListId = " & packId & " GROUP BY packListId")
+
+getTotalPackingListWeight = rs1!total
+
+rs1.Close
+Set rs1 = Nothing
+
+End Function
+
+Public Function getTotalPackingListCost(packId As Long) As Double
+On Error Resume Next
+getTotalPackingListCost = 0
+
+Dim rs1 As Recordset
+Set rs1 = CurrentDb().OpenRecordset("SELECT sum(unitCost*quantity) as total FROM tblPackListChild WHERE packListId = " & packId & " GROUP BY packListId")
+
+getTotalPackingListCost = rs1!total
+
+rs1.Close
+Set rs1 = Nothing
+
+End Function
+
 Function restrict(userName As String, dept As String, Optional reqLevel As String = "", Optional orAbove As Boolean = False) As Boolean
 On Error GoTo err_handler
 Dim d As Boolean, l As Boolean, rsPerm As Recordset

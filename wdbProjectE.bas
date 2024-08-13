@@ -192,7 +192,7 @@ exportAIF = False
 Dim db As Database
 Set db = CurrentDb()
 Dim rsPI As Recordset, rsPack As Recordset, rsPackC As Recordset, rsComp As Recordset, rsAI As Recordset
-Dim rsPE As Recordset, rsOI As Recordset, rsU As Recordset, rsPMI As Recordset
+Dim rsPE As Recordset, rsOI As Recordset, rsU As Recordset, rsPMI As Recordset, rsDevU As Recordset
 Dim outsourceCost As String
 Dim mexFr As String, cartQty, mat0 As Double, mat1 As Double, resourceCSV() As String, ITEM, resID As Long, orgID As Long
 
@@ -200,6 +200,7 @@ Dim mexFr As String, cartQty, mat0 As Double, mat1 As Double, resourceCSV() As S
 Set rsPI = db.OpenRecordset("SELECT * from tblPartInfo WHERE partNumber = '" & partNum & "'")
 Set rsPack = db.OpenRecordset("SELECT * from tblPartPackagingInfo WHERE partInfoId = " & rsPI!recordId)
 Set rsU = db.OpenRecordset("SELECT * from tblUnits WHERE recordId = " & rsPI!unitId)
+Set rsDevU = db.OpenRecordset("SELECT * from tblUnits WHERE recordId = " & rsPI!developingUnit)
 Set rsPE = CurrentDb().OpenRecordset("SELECT * from tblPermissions where Dept = 'Project' AND Level = 'Engineer' AND user IN " & _
                                     "(SELECT person FROM tblPartTeam WHERE partNumber = '" & partNum & "')")
 
@@ -240,7 +241,7 @@ aifInsert "Customer", DLookup("CUSTOMER_NAME", "APPS_XXCUS_CUSTOMERS", "CUSTOMER
 
 If rsPI!dataStatus = 2 Then
     aifInsert "MP Unit", rsU!unitName, firstColBold:=True
-    aifInsert "Dev Unit", rsPI!developingUnit, firstColBold:=True
+    aifInsert "Dev Unit", rsDevU!unitName, firstColBold:=True
 Else
     aifInsert "Unit", "U12", firstColBold:=True
 End If
@@ -250,11 +251,11 @@ aifInsert "Org", Nz(rsU!Org, rsPI!developingLocation), firstColBold:=True  'is t
 aifInsert "Part Type", DLookup("partType", "tblDropDownsSP", "ID = " & rsPI!partType), firstColBold:=True
 aifInsert "Routing Finish", Nz(DLookup("finishLocator", "tblDropDownsSP", "ID = " & rsPI!finishLocator)), firstColBold:=True
 aifInsert "Sub-Location", Nz(DLookup("finishSubInv", "tblDropDownsSP", "ID = " & rsPI!finishSubInv)), firstColBold:=True
-aifInsert "Mexico Freight", mexFr, firstColBold:=True
-aifInsert "Quoted Cost", Nz(DLookup("quotedCost", "tblPartQuoteInfo", "recordId = " & rsPI!quoteInfoId), 0), firstColBold:=True
-aifInsert "Selling Price", Nz(rsPI!sellingPrice), firstColBold:=True
-aifInsert "Royalty", Nz(rsPI!sellingPrice) * 0.03, firstColBold:=True
-aifInsert "Outsource Cost", outsourceCost, firstColBold:=True
+aifInsert "Mexico Freight", mexFr, firstColBold:=True, set5Dec:=True
+aifInsert "Quoted Cost", Nz(DLookup("quotedCost", "tblPartQuoteInfo", "recordId = " & rsPI!quoteInfoId), 0), firstColBold:=True, set5Dec:=True
+aifInsert "Selling Price", Nz(rsPI!sellingPrice), firstColBold:=True, set5Dec:=True
+aifInsert "Royalty", Nz(rsPI!sellingPrice) * 0.03, firstColBold:=True, set5Dec:=True
+aifInsert "Outsource Cost", outsourceCost, firstColBold:=True, set5Dec:=True
 
 '---Molding / Assembly Specific Information---
 Dim insLev As String, mpLev As String, anneal As String, laborType As String, pph As String, weight100Pc As String, orgCalc
@@ -280,9 +281,9 @@ Select Case rsPI!partType
         aifInsert "Insert Mold", rsPMI!insertMold, firstColBold:=True
         aifInsert "Family Mold", rsPMI!familyTool, firstColBold:=True
         If rsPMI!glass Then
-            aifInsert "Glass Cost", DLookup("pressRate", "tblDropDownsSP", "pressSize = '" & rsPMI!pressSize & "'") / rsPMI!piecesPerHour / 408 / 12 / 0.85, firstColBold:=True
+            aifInsert "Glass Cost", DLookup("pressRate", "tblDropDownsSP", "pressSize = '" & rsPMI!pressSize & "'") / rsPMI!piecesPerHour / 408 / 12 / 0.85, firstColBold:=True, set5Dec:=True
         Else
-            aifInsert "Glass Cost", "0", firstColBold:=True
+            aifInsert "Glass Cost", "0", firstColBold:=True, set5Dec:=True
         End If
         If rsPMI!regrind Then
             mat0 = 0: mat1 = 0
@@ -294,14 +295,14 @@ Select Case rsPI!partType
             If Nz(rsPMI!materialNumber1) <> "" Then
                 mat1 = gramsToLbs(rsPMI!matNum1PieceWeight) * 0.06 * DLookup("ITEM_COST", "APPS_CST_ITEM_COST_TYPE_V", "COST_TYPE = 'Frozen' AND ITEM_NUMBER = '" & Nz(rsPMI!materialNumber1) & "' AND ORGANIZATION_ID = " & orgID)
             End If
-            aifInsert "Regrind Cost", mat0 + mat1, firstColBold:=True 'multiple piece weight
+            aifInsert "Regrind Cost", mat0 + mat1, firstColBold:=True, set5Dec:=True 'multiple piece weight
         Else
-            aifInsert "Regrind Cost", "0", firstColBold:=True
+            aifInsert "Regrind Cost", "0", firstColBold:=True, set5Dec:=True
         End If
         aifInsert "Material Number 1", Nz(rsPMI!materialNumber), firstColBold:=True
-        aifInsert "Piece Weight (lb)", gramsToLbs(Nz(rsPMI!pieceWeight)), firstColBold:=True 'double check if this is weight for just this material, or overall
+        aifInsert "Piece Weight (lb)", gramsToLbs(Nz(rsPMI!pieceWeight)), firstColBold:=True, set5Dec:=True
         aifInsert "Material Number 2", Nz(rsPMI!materialNumber1), firstColBold:=True
-        aifInsert "Material 2 Piece Weight (lb)", gramsToLbs(Nz(rsPMI!matNum1PieceWeight)), firstColBold:=True
+        aifInsert "Material 2 Piece Weight (lb)", gramsToLbs(Nz(rsPMI!matNum1PieceWeight)), firstColBold:=True, set5Dec:=True
         rsPMI.Close
         Set rsPMI = Nothing
     Case 2, 5 'Assembled / subassembly
@@ -329,7 +330,7 @@ Select Case rsPI!partType
     Case 3 'Purchased
 End Select
 
-aifInsert "100 Piece Weight (lb)", gramsToLbs(weight100Pc), firstColBold:=True
+aifInsert "100 Piece Weight (lb)", gramsToLbs(weight100Pc), firstColBold:=True, set5Dec:=True
 aifInsert "Pieces Per Hour", pph, firstColBold:=True
 aifInsert "Labor Type", laborType, firstColBold:=True
 aifInsert "Inspection Lvl", insLev, firstColBold:=True
@@ -400,7 +401,7 @@ err_handler:
 End Function
 
 Function aifInsert(columnVal0 As String, columnVal1 As String, Optional columnVal2 As String = ".", Optional columnVal3 As String = ".", Optional columnVal4 As String = ".", _
-                                Optional heading As Boolean = False, Optional Title As Boolean = False, Optional firstColBold As Boolean = False)
+                                Optional heading As Boolean = False, Optional Title As Boolean = False, Optional firstColBold As Boolean = False, Optional set5Dec = False)
 
 WKS.Cells(inV, 1) = columnVal0
 WKS.Cells(inV, 2) = columnVal1
@@ -429,6 +430,7 @@ If firstColBold Then
     WKS.Range("A" & inV).Font.Bold = True
     WKS.Range("A" & inV).Interior.Color = RGB(242, 242, 242)
     WKS.Range("B" & inV & ":E" & inV).Merge
+    If set5Dec Then WKS.Range("B" & inV & ":E" & inV).NumberFormat = "0.00000"
 End If
 inV = inV + 1
 
@@ -770,6 +772,8 @@ projTempId = rsProject!projectTemplateId
 pNum = rsProject!partNumber
 childPnum = Nz(rsProject!childPartNumber, "")
 runningDate = rsProject!projectStartDate
+
+If Nz(pNum) = "" Then Exit Function 'escape possible part number null projects
 
 db.Execute "INSERT INTO tblPartTeam(partNumber,person) VALUES ('" & pNum & "','" & Environ("username") & "')", dbFailOnError 'assign project engineer
 Set rsGateTemplate = db.OpenRecordset("Select * FROM tblPartGateTemplate WHERE [projectTemplateId] = " & projTempId, dbOpenSnapshot)
