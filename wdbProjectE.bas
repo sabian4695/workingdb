@@ -290,10 +290,10 @@ Select Case rsPI!partType
             orgCalc = Replace(Nz(rsU!Org, rsPI!developingLocation), "CUU", "MEX")
             orgID = DLookup("ID", "tblOrgs", "Org = '" & orgCalc & "'")
             If Nz(rsPI!materialNumber) <> "" Then
-                mat0 = gramsToLbs(rsPMI!pieceWeight) * 0.06 * DLookup("ITEM_COST", "APPS_CST_ITEM_COST_TYPE_V", "COST_TYPE = 'Frozen' AND ITEM_NUMBER = '" & Nz(rsPI!materialNumber) & "' AND ORGANIZATION_ID = " & orgID)
+                mat0 = gramsToLbs(rsPI!pieceWeight) * 0.06 * DLookup("ITEM_COST", "APPS_CST_ITEM_COST_TYPE_V", "COST_TYPE = 'Frozen' AND ITEM_NUMBER = '" & Nz(rsPI!materialNumber) & "' AND ORGANIZATION_ID = " & orgID)
             End If
             If Nz(rsPI!materialNumber1) <> "" Then
-                mat1 = gramsToLbs(rsPMI!matNum1PieceWeight) * 0.06 * DLookup("ITEM_COST", "APPS_CST_ITEM_COST_TYPE_V", "COST_TYPE = 'Frozen' AND ITEM_NUMBER = '" & Nz(rsPI!materialNumber1) & "' AND ORGANIZATION_ID = " & orgID)
+                mat1 = gramsToLbs(rsPI!matNum1PieceWeight) * 0.06 * DLookup("ITEM_COST", "APPS_CST_ITEM_COST_TYPE_V", "COST_TYPE = 'Frozen' AND ITEM_NUMBER = '" & Nz(rsPI!materialNumber1) & "' AND ORGANIZATION_ID = " & orgID)
             End If
             aifInsert "Regrind Cost", mat0 + mat1, firstColBold:=True, set5Dec:=True 'multiple piece weight
         Else
