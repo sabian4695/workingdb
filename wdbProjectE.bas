@@ -56,17 +56,17 @@ If rsPI!partType = 1 Or rsPI!partType = 4 Then 'molded / new color
     If Nz(rsPMI!automated) = "" Then errorArray.Add "Tool Automation Type"
     If Nz(rsPMI!toolType) = "" Then errorArray.Add "Tool Level"
     If Nz(rsPMI!gateCutting) = "" Then errorArray.Add "Tool Gate Level"
-    If Nz(rsPMI!materialNumber) = "" Then errorArray.Add "Material Number"
-    If Nz(rsPMI!pieceWeight) = "" Then errorArray.Add "Piece Weight"
-    If Nz(rsPMI!materialNumber1) <> "" Then 'if there is a second material, must enter wieght for that material
-        If Nz(rsPMI!matNum1PieceWeight) = "" Then errorArray.Add "Second Material Piece Weight"
+    If Nz(rsPI!materialNumber) = "" Then errorArray.Add "Material Number"
+    If Nz(rsPI!pieceWeight) = "" Then errorArray.Add "Piece Weight"
+    If Nz(rsPI!materialNumber1) <> "" Then 'if there is a second material, must enter wieght for that material
+        If Nz(rsPI!matNum1PieceWeight) = "" Then errorArray.Add "Second Material Piece Weight"
     End If
     If Nz(rsPMI!toolNumber) = "" Then errorArray.Add "Tool Number"
     If Nz(rsPMI!pressSize) = "" Then errorArray.Add "Press Tonnage"
     If Nz(rsPMI!piecesPerHour) = "" Then errorArray.Add "Pieces Per Hour"
     
     If rsPI!dataStatus = 2 Then 'required for transfer
-        If Nz(rsPMI!itemWeight100Pc) = "" And rsPI!unitId = 1 Then errorArray.Add "100 Piece Weight" 'U01 only
+        If Nz(rsPI!itemWeight100Pc) = "" And rsPI!unitId = 1 Then errorArray.Add "100 Piece Weight" 'U01 only
         If Nz(rsPMI!assignedPress) = "" Then errorArray.Add "Assigned Press"
     End If
     
@@ -263,7 +263,7 @@ Select Case rsPI!partType
     Case 1, 4 'molded / new color
         aifInsert "MOLDING INFORMATION", "", , , , True
         Set rsPMI = db.OpenRecordset("SELECT * from tblPartMoldingInfo WHERE recordId = " & rsPI!moldInfoId)
-        weight100Pc = Nz(rsPMI!itemWeight100Pc, 0)
+        weight100Pc = Nz(rsPI!itemWeight100Pc, 0)
         insLev = Nz(rsPMI!inspection)
         mpLev = Nz(rsPMI!measurePack)
         anneal = Nz(rsPMI!annealing)
@@ -280,29 +280,29 @@ Select Case rsPI!partType
         aifInsert "Gate Lvl", rsPMI!gateCutting, firstColBold:=True
         aifInsert "Insert Mold", rsPMI!insertMold, firstColBold:=True
         aifInsert "Family Mold", rsPMI!familyTool, firstColBold:=True
-        If rsPMI!glass Then
+        If rsPI!glass Then
             aifInsert "Glass Cost", DLookup("pressRate", "tblDropDownsSP", "pressSize = '" & rsPMI!pressSize & "'") / rsPMI!piecesPerHour / 408 / 12 / 0.85, firstColBold:=True, set5Dec:=True
         Else
             aifInsert "Glass Cost", "0", firstColBold:=True, set5Dec:=True
         End If
-        If rsPMI!regrind Then
+        If rsPI!regrind Then
             mat0 = 0: mat1 = 0
             orgCalc = Replace(Nz(rsU!Org, rsPI!developingLocation), "CUU", "MEX")
             orgID = DLookup("ID", "tblOrgs", "Org = '" & orgCalc & "'")
-            If Nz(rsPMI!materialNumber) <> "" Then
-                mat0 = gramsToLbs(rsPMI!pieceWeight) * 0.06 * DLookup("ITEM_COST", "APPS_CST_ITEM_COST_TYPE_V", "COST_TYPE = 'Frozen' AND ITEM_NUMBER = '" & Nz(rsPMI!materialNumber) & "' AND ORGANIZATION_ID = " & orgID)
+            If Nz(rsPI!materialNumber) <> "" Then
+                mat0 = gramsToLbs(rsPMI!pieceWeight) * 0.06 * DLookup("ITEM_COST", "APPS_CST_ITEM_COST_TYPE_V", "COST_TYPE = 'Frozen' AND ITEM_NUMBER = '" & Nz(rsPI!materialNumber) & "' AND ORGANIZATION_ID = " & orgID)
             End If
-            If Nz(rsPMI!materialNumber1) <> "" Then
-                mat1 = gramsToLbs(rsPMI!matNum1PieceWeight) * 0.06 * DLookup("ITEM_COST", "APPS_CST_ITEM_COST_TYPE_V", "COST_TYPE = 'Frozen' AND ITEM_NUMBER = '" & Nz(rsPMI!materialNumber1) & "' AND ORGANIZATION_ID = " & orgID)
+            If Nz(rsPI!materialNumber1) <> "" Then
+                mat1 = gramsToLbs(rsPMI!matNum1PieceWeight) * 0.06 * DLookup("ITEM_COST", "APPS_CST_ITEM_COST_TYPE_V", "COST_TYPE = 'Frozen' AND ITEM_NUMBER = '" & Nz(rsPI!materialNumber1) & "' AND ORGANIZATION_ID = " & orgID)
             End If
             aifInsert "Regrind Cost", mat0 + mat1, firstColBold:=True, set5Dec:=True 'multiple piece weight
         Else
             aifInsert "Regrind Cost", "0", firstColBold:=True, set5Dec:=True
         End If
-        aifInsert "Material Number 1", Nz(rsPMI!materialNumber), firstColBold:=True
-        aifInsert "Piece Weight (lb)", gramsToLbs(Nz(rsPMI!pieceWeight)), firstColBold:=True, set5Dec:=True
-        aifInsert "Material Number 2", Nz(rsPMI!materialNumber1), firstColBold:=True
-        aifInsert "Material 2 Piece Weight (lb)", gramsToLbs(Nz(rsPMI!matNum1PieceWeight)), firstColBold:=True, set5Dec:=True
+        aifInsert "Material Number 1", Nz(rsPI!materialNumber), firstColBold:=True
+        aifInsert "Piece Weight (lb)", gramsToLbs(Nz(rsPI!pieceWeight)), firstColBold:=True, set5Dec:=True
+        aifInsert "Material Number 2", Nz(rsPI!materialNumber1), firstColBold:=True
+        aifInsert "Material 2 Piece Weight (lb)", gramsToLbs(Nz(rsPI!matNum1PieceWeight)), firstColBold:=True, set5Dec:=True
         rsPMI.Close
         Set rsPMI = Nothing
     Case 2, 5 'Assembled / subassembly
@@ -682,79 +682,6 @@ getCurrentStepDue = Nz(rs1!minDue, "")
 rs1.Close
 Set rs1 = Nothing
 
-End Function
-
-Public Function getDOH(partNum As String) As Long
-On Error GoTo err_handler
-
-Dim db As Database
-Dim rsSupplyDemand As Recordset, rsPartInfo As Recordset, rsOnHand As Recordset
-Set db = CurrentDb
-Set rsSupplyDemand = db.OpenRecordset("SELECT sum([QTY_DUE]) AS openOrders FROM APPS_XXCUS_SUPPLY_DEMAND_V WHERE ITEM='" & partNum & "'")
-Dim openOrders
-openOrders = rsSupplyDemand!openOrders
-
-Set rsPartInfo = db.OpenRecordset("SELECT monthlyVolume from tblPartInfo WHERE partNumber = '" & partNum & "'")
-
-Dim monthlyVolCalc, monthlyVol
-monthlyVol = rsPartInfo!monthlyVolume
-If IsNull(openOrders) Or monthlyVol > openOrders Then
-    monthlyVolCalc = monthlyVol / 22
-Else
-    monthlyVolCalc = openOrders / 22
-End If
-
-
-Set rsOnHand = db.OpenRecordset("SELECT sum(TRANSACTION_QUANTITY) as TransQty FROM APPS_MTL_ONHAND_QUANTITIES WHERE INVENTORY_ITEM_ID = " & idNAM(partNum, "NAM"))
-getDOH = Nz(rsOnHand!TransQty, 0) / monthlyVolCalc
-
-
-rsPartInfo.Close
-rsSupplyDemand.Close
-rsOnHand.Close
-Set rsPartInfo = Nothing
-Set rsSupplyDemand = Nothing
-Set rsOnHand = Nothing
-
-Exit Function
-err_handler:
-    Call handleError("wdbProjectE", "getDOH", Err.Description, Err.number)
-End Function
-
-Public Function openOrdersByDay(partNum As String, dayNum As Long) As Double
-On Error GoTo err_handler
-
-Dim filt As String
-
-Select Case dayNum
-    Case 1
-        filt = "REQUIREMENT_DATE>=Date() AND REQUIREMENT_DATE<=Date()+1"
-    Case 2
-        filt = "REQUIREMENT_DATE>Date()+1 AND REQUIREMENT_DATE<=Date()+2"
-    Case 3
-        filt = "REQUIREMENT_DATE>Date()+2 AND REQUIREMENT_DATE<=Date()+3"
-    Case 4
-        filt = "REQUIREMENT_DATE>Date()+3 AND REQUIREMENT_DATE<=Date()+4"
-    Case 5
-        filt = "REQUIREMENT_DATE>Date()+4 AND REQUIREMENT_DATE<=Date()+5"
-    Case 6
-        filt = "REQUIREMENT_DATE>Date()+6 AND REQUIREMENT_DATE<=Date()+11"
-    Case 0 'back orders
-        filt = "REQUIREMENT_DATE<Date()"
-End Select
-
-Dim db As Database
-Set db = CurrentDb
-Dim rsSupplyDemand As Recordset
-Set rsSupplyDemand = db.OpenRecordset("SELECT SUM([QTY_DUE]) AS QtyReq FROM APPS_XXCUS_SUPPLY_DEMAND_V WHERE ITEM = '" & partNum & "' AND " & filt, dbOpenSnapshot)
-openOrdersByDay = Nz(rsSupplyDemand!QtyReq, 0)
-
-rsSupplyDemand.Close
-Set rsSupplyDemand = Nothing
-
-Exit Function
-err_handler:
-    Call handleError("wdbProjectE", "openOrdersByDay", Err.Description, Err.number)
 End Function
 
 Public Function createPartProject(projId)

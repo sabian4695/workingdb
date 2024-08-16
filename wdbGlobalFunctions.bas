@@ -24,6 +24,33 @@ Next obj
 
 End Function
 
+Function fixData()
+
+Dim rs1 As Recordset, rs2 As Recordset
+Set rs1 = CurrentDb.OpenRecordset("SELECT * FROM tblPartInfo WHERE moldInfoId is not null")
+
+Do While Not rs1.EOF
+    Set rs2 = CurrentDb.OpenRecordset("SELECT * FROM tblPartMoldingInfo WHERE recordId = " & rs1!moldInfoId)
+    If rs2.RecordCount = 0 Then GoTo nextOne
+    
+    rs1.Edit
+    rs1!materialNumber = rs2!materialNumber
+    rs1!materialNumber1 = rs2!materialNumber1
+    rs1!pieceWeight = rs2!pieceWeight
+    rs1!matNum1PieceWeight = rs2!matNum1PieceWeight
+    rs1!letDown = rs2!letDown
+    rs1!shotWeight = rs2!shotWeight
+    rs1!itemWeight100Pc = rs2!itemWeight100Pc
+    rs1!regrind = rs2!regrind
+    rs1!glass = rs2!glass
+    rs1!textured = rs2!textured
+    rs1.Update
+nextOne:
+    rs1.MoveNext
+Loop
+
+End Function
+
 Public Function exportSQL(sqlString As String, FileName As String)
 
 On Error Resume Next
