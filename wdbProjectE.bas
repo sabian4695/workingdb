@@ -200,7 +200,7 @@ Dim mexFr As String, cartQty, mat0 As Double, mat1 As Double, resourceCSV() As S
 Set rsPI = db.OpenRecordset("SELECT * from tblPartInfo WHERE partNumber = '" & partNum & "'")
 Set rsPack = db.OpenRecordset("SELECT * from tblPartPackagingInfo WHERE partInfoId = " & rsPI!recordId)
 Set rsU = db.OpenRecordset("SELECT * from tblUnits WHERE recordId = " & rsPI!unitId)
-Set rsDevU = db.OpenRecordset("SELECT * from tblUnits WHERE recordId = " & rsPI!developingUnit)
+Set rsDevU = db.OpenRecordset("SELECT * from tblUnits WHERE recordId = " & Nz(rsPI!developingUnit, 0))
 Set rsPE = CurrentDb().OpenRecordset("SELECT * from tblPermissions where Dept = 'Project' AND Level = 'Engineer' AND user IN " & _
                                     "(SELECT person FROM tblPartTeam WHERE partNumber = '" & partNum & "')")
 
