@@ -184,7 +184,7 @@ err_handler:
     GoTo exitFunction
 End Function
 
-Public Function exportAIF(partNum As String) As Boolean
+Public Function exportAIF(partNum As String) As String
 On Error GoTo err_handler
 exportAIF = False
 
@@ -393,7 +393,7 @@ rsU.Close: Set rsU = Nothing
 rsPack.Close: Set rsPack = Nothing
 rsPackC.Close: Set rsPackC = Nothing
 
-exportAIF = True
+exportAIF = FileName
 
 Exit Function
 err_handler:
