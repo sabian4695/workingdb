@@ -4,6 +4,32 @@ Option Explicit
 Dim XL As Excel.Application, WB As Excel.Workbook, WKS As Excel.Worksheet
 Dim inV As Long
 
+Function openPartProject(partNum As String) As Boolean
+
+Form_DASHBOARD.partNumberSearch = partNum
+TempVars.Add "partNumber", partNum
+
+If DCount("recordId", "tblPartProject", "partNumber = '" & partNum & "'") > 0 Then GoTo openIt 'if there is a project for this, open it
+If DCount("recordId", "tblPartProjectPartNumbers", "childPartNumber = '" & partNum & "'") > 0 Then GoTo openIt 'if there is a related project for this, open it
+
+If Form_DASHBOARD.NAM <> partNum Then
+    MsgBox "Please search this part before opening the dash", vbInformation, "Sorry."
+    Exit Function
+End If
+
+If userData("org") = 5 Then GoTo openIt 'bypass Oracle restrictions for NCM users
+
+If Form_DASHBOARD.lblErrors.Visible = True And Form_DASHBOARD.lblErrors.Caption = "Part not found in Oracle" Then
+    MsgBox "This part number must show up in Oracle to open the dash", vbInformation, "Sorry."
+    Exit Function
+End If
+
+openIt:
+If (CurrentProject.AllForms("frmPartDashboard").IsLoaded = True) Then DoCmd.Close acForm, "frmPartDashboard"
+DoCmd.OpenForm "frmPartDashboard"
+
+End Function
+
 Public Function checkAIFfields(partNum As String) As Boolean
 On Error GoTo err_handler
 checkAIFfields = False
