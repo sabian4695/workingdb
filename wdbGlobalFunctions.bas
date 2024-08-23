@@ -312,12 +312,12 @@ Else
 End If
 End Function
 
-Function generateHTML(Title As String, subTitle As String, primaryMessage As String, detail1 As String, detail2 As String, detail3 As String, hasLink As Boolean) As String
+Function generateHTML(Title As String, subTitle As String, primaryMessage As String, detail1 As String, detail2 As String, detail3 As String, Optional Link As String = "") As String
 
 Dim tblHeading As String, tblFooter As String, strHTMLBody As String
 
-If hasLink Then
-    primaryMessage = "<a href = '" & primaryMessage & "'>Check Folder</a>"
+If Link <> "" Then
+    primaryMessage = "<a href = '" & Link & "'>" & primaryMessage & "</a>"
 End If
 
 tblHeading = "<table style=""width: 100%; margin: 0 auto; padding: 2em 3em; text-align: center; background-color: #fafafa;"">" & _
@@ -564,6 +564,9 @@ End Function
 Function restrict(userName As String, dept As String, Optional reqLevel As String = "", Optional orAbove As Boolean = False) As Boolean
 On Error GoTo err_handler
 
+restrict = False
+Exit Function
+
 Dim d As Boolean, l As Boolean, rsPerm As Recordset
 d = False
 l = False
@@ -642,7 +645,6 @@ Set rsPeople = db.OpenRecordset("SELECT * from tblPermissions WHERE Inactive = F
 Do While Not rsPeople.EOF 'go through every active person
     If rsPeople!notifications = 1 And specificUser = "" Then GoTo nextPerson 'this person wants no notifications
     If rsPeople!notifications = 2 And ranThisWeek And specificUser = "" Then GoTo nextPerson 'this person only wants weekly notifications
-    If rsPeople!dept <> "Project" And specificUser = "" Then GoTo nextPerson 'this person is not in project - BETA RESTRICTION
     
     li = 0
     ti = 0

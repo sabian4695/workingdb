@@ -374,7 +374,7 @@ Do While Not rsComp.EOF
         DLookup("Description", "APPS_MTL_SYSTEM_ITEMS", "SEGMENT1 = '" & rsComp!componentNumber & "'"), _
         rsComp!quantity, _
         DLookup("finishLocator", "tblDropDownsSP", "ID = " & rsComp!finishLocator), _
-        DLookup("finishSubInv", "tblDropDownsSP", "ID = " & rsComp!finishSubInv)
+        rsComp!finishSubInv
     rsComp.MoveNext
 Loop
 rsComp.Close
@@ -507,6 +507,33 @@ getAttachmentsCount = Nz(rs1!countIt, 0)
 
 rs1.Close
 Set rs1 = Nothing
+
+err_handler:
+End Function
+
+Public Function getAttachmentsCountReq(stepId As Long, docType As Long, projectId As Long) As Long
+On Error GoTo err_handler
+
+getAttachmentsCountReq = 0
+If Nz(docType) = "" Then Exit Function 'no document required
+
+Dim rsAttStd As Recordset
+Set rsAttStd = CurrentDb.OpenRecordset("SELECT uniqueFile FROM tblPartAttachmentStandards WHERE recordId = " & docType)
+
+If rsAttStd!uniqueFile Then
+    Dim rsRelated As Recordset
+    Set rsRelated = CurrentDb.OpenRecordset("SELECT count(recordId) as countIt FROM tblPartProjectPartNumbers WHERE projectId = " & projectId)
+    getAttachmentsCountReq = rsRelated!countIt + 1 'count of all related parts on this project + 1 for master
+    rsRelated.Close
+    Set rsRelated = Nothing
+Else
+    getAttachmentsCountReq = 1 'just one file for all the parts is OK
+End If
+
+rsAttStd.Close
+Set rsAttStd = Nothing
+
+Debug.Print getAttachmentsCountReq
 
 err_handler:
 End Function
@@ -1252,7 +1279,7 @@ subjectLine = "Tool Ship Authorization"
 If approvalsBool Then
     toolEmail = generateEmailWarray("Tool Ship Authorization", toolNumber & " has been approved to ship", "Ship Method: " & shipMethod, "Approvals: ", arr)
 Else
-    toolEmail = generateHTML("Tool Ship Authorization", toolNumber & " has been approved to ship", "Ship Method: " & shipMethod, "Approvals: none", "", "", False)
+    toolEmail = generateHTML("Tool Ship Authorization", toolNumber & " has been approved to ship", "Ship Method: " & shipMethod, "Approvals: none", "", "")
 End If
 
 Dim rs2 As Recordset, strTo As String
@@ -1286,7 +1313,7 @@ emailPartApprovalNotification = False
 
 Dim emailBody As String, subjectLine As String
 subjectLine = "Part Approval Notification"
-emailBody = generateHTML(subjectLine, partNumber & " has received customer approval", "Part Approved", "No extra details...", "", "", False)
+emailBody = generateHTML(subjectLine, partNumber & " has received customer approval", "Part Approved", "No extra details...", "", "")
 
 Dim rs2 As Recordset, strTo As String
 Set rs2 = CurrentDb.OpenRecordset("SELECT * FROM tblPartTeam WHERE partNumber = '" & partNumber & "'", dbOpenSnapshot)
@@ -1310,6 +1337,39 @@ emailPartApprovalNotification = True
 Exit Function
 err_handler:
     Call handleError("wdbProjectE", "emailPartApprovalNotification", Err.Description, Err.number)
+End Function
+
+Function emailApprovedCapitalPacket(stepId As Long, partNumber As String, capitalPacketNum As String) As Boolean
+On Error GoTo err_handler
+
+emailApprovedCapitalPacket = False
+
+'find attachment link
+Dim attachLink As String
+attachLink = DLookup("directLink", "tblPartAttachmentsSP", "partStepId = " & stepId)
+
+Dim emailBody As String, subjectLine As String
+subjectLine = partNumber & " Capital Packet Approval"
+emailBody = generateHTML(subjectLine, capitalPacketNum & " Capital Packet for " & partNumber & " is now Approved", "Capital Packet", "No extra details...", "", "", attachLink)
+
+Dim rs2 As Recordset, strTo As String
+Set rs2 = CurrentDb.OpenRecordset("SELECT * FROM tblPartTeam WHERE partNumber = '" & partNumber & "'", dbOpenSnapshot)
+strTo = ""
+
+Do While Not rs2.EOF
+    If rs2!person <> Environ("username") Then strTo = strTo & rs2!person & ","
+    rs2.MoveNext
+Loop
+
+strTo = Left(strTo, Len(strTo) - 1)
+
+Call sendNotification(strTo, 9, 2, partNumber & " Capital Packet Approval", emailBody, "Part Project", CLng(partNumber), True)
+
+emailApprovedCapitalPacket = True
+
+Exit Function
+err_handler:
+    Call handleError("wdbProjectE", "emailApprovedCapitalPacket", Err.Description, Err.number)
 End Function
 
 Function generateEmailWarray(Title As String, subTitle As String, primaryMessage As String, detailTitle As String, arr() As Variant) As String
