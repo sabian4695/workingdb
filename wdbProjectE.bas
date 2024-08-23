@@ -976,7 +976,7 @@ Function scanSteps(partNum As String, routineName As String, Optional identifier
 On Error GoTo err_handler
 
 scanSteps = False
-'this scans to see if there is a step action that needs to be deleted per its own requirements
+'this scans to see if there is a step that needs to be deleted or closed per its step action requirements
 
 Dim rsSteps As Recordset, rsStepActions As Recordset, dFilt As String, eFilt As String, db As Database
 Set db = CurrentDb()
