@@ -564,9 +564,6 @@ End Function
 Function restrict(userName As String, dept As String, Optional reqLevel As String = "", Optional orAbove As Boolean = False) As Boolean
 On Error GoTo err_handler
 
-restrict = False
-Exit Function
-
 Dim d As Boolean, l As Boolean, rsPerm As Recordset
 d = False
 l = False
