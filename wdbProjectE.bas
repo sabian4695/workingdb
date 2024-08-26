@@ -5,6 +5,7 @@ Dim XL As Excel.Application, WB As Excel.Workbook, WKS As Excel.Worksheet
 Dim inV As Long
 
 Function openPartProject(partNum As String) As Boolean
+On Error GoTo err_handler
 
 Form_DASHBOARD.partNumberSearch = partNum
 TempVars.Add "partNumber", partNum
@@ -28,6 +29,9 @@ openIt:
 If (CurrentProject.AllForms("frmPartDashboard").IsLoaded = True) Then DoCmd.Close acForm, "frmPartDashboard"
 DoCmd.OpenForm "frmPartDashboard"
 
+Exit Function
+err_handler:
+    Call handleError("wdbProjectE", "openPartProject", Err.Description, Err.number)
 End Function
 
 Public Function checkAIFfields(partNum As String) As Boolean
@@ -428,6 +432,7 @@ End Function
 
 Function aifInsert(columnVal0 As String, columnVal1 As String, Optional columnVal2 As String = ".", Optional columnVal3 As String = ".", Optional columnVal4 As String = ".", _
                                 Optional heading As Boolean = False, Optional Title As Boolean = False, Optional firstColBold As Boolean = False, Optional set5Dec = False)
+On Error GoTo err_handler
 
 WKS.Cells(inV, 1) = columnVal0
 WKS.Cells(inV, 2) = columnVal1
@@ -460,9 +465,13 @@ If firstColBold Then
 End If
 inV = inV + 1
 
+Exit Function
+err_handler:
+    Call handleError("wdbProjectE", "aifInsert", Err.Description, Err.number)
 End Function
 
 Function loadPlannerECO(partNumber As String) As String
+On Error Resume Next
 loadPlannerECO = ""
 
 Dim revID
@@ -480,6 +489,7 @@ Set rs1 = Nothing
 End Function
 
 Function loadTransferECO(partNumber As String) As String
+On Error Resume Next
 loadTransferECO = ""
 
 Dim revID
@@ -533,12 +543,11 @@ End If
 rsAttStd.Close
 Set rsAttStd = Nothing
 
-Debug.Print getAttachmentsCountReq
-
 err_handler:
 End Function
 
 Function trialScheduleEmail(Title As String, data() As Variant, columns, rows) As String
+On Error GoTo err_handler
 
 Dim tblHeading As String, tblArraySection As String, strHTMLBody As String
 
@@ -586,6 +595,9 @@ strHTMLBody = "" & _
 
 trialScheduleEmail = strHTMLBody
 
+Exit Function
+err_handler:
+    Call handleError("wdbProjectE", "trialScheduleEmail", Err.Description, Err.number)
 End Function
 
 Public Function grabHistoryRef(dataValue As Variant, columnName As String) As String
@@ -612,7 +624,7 @@ err_handler:
 End Function
 
 Public Function completelyDeletePartProjectAndInfo()
-
+On Error GoTo err_handler
 '-----THIS SUB IS NOT YET USABLE
 
 Dim db As Database, partInfoId, partNum
@@ -671,7 +683,9 @@ db.Execute "delete * from tblPartInfo where partNumber = '" & partNum & "'"
 MsgBox "All done.", vbInformation, "It is finished."
 
 'Call registerWdbUpdates("tblPartProjects", partNum, "Part Project", partNum, "Deleted", "frmPartTrackingSettings")
-
+Exit Function
+err_handler:
+    Call handleError("wdbProjectE", "completelyDeletePartProjectAndInfo", Err.Description, Err.number)
 End Function
 
 Public Function getApprovalsComplete(stepId As Long, partNumber As String) As Long

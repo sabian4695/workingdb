@@ -4,7 +4,13 @@ Option Explicit
 Public bClone As Boolean
 
 Function gramsToLbs(gramsValue) As Double
+On Error GoTo err_handler
+
 gramsToLbs = gramsValue * 0.00220462
+
+Exit Function
+err_handler:
+    Call handleError("wdbGlobalFunctions", "gramsToLbs", Err.Description, Err.number)
 End Function
 
 Function applyToAllForms()
@@ -24,33 +30,6 @@ Next obj
 
 End Function
 
-Function fixData()
-
-Dim rs1 As Recordset, rs2 As Recordset
-Set rs1 = CurrentDb.OpenRecordset("SELECT * FROM tblPartInfo WHERE moldInfoId is not null")
-
-Do While Not rs1.EOF
-    Set rs2 = CurrentDb.OpenRecordset("SELECT * FROM tblPartMoldingInfo WHERE recordId = " & rs1!moldInfoId)
-    If rs2.RecordCount = 0 Then GoTo nextOne
-    
-    rs1.Edit
-    rs1!materialNumber = rs2!materialNumber
-    rs1!materialNumber1 = rs2!materialNumber1
-    rs1!pieceWeight = rs2!pieceWeight
-    rs1!matNum1PieceWeight = rs2!matNum1PieceWeight
-    rs1!letDown = rs2!letDown
-    rs1!shotWeight = rs2!shotWeight
-    rs1!itemWeight100Pc = rs2!itemWeight100Pc
-    rs1!regrind = rs2!regrind
-    rs1!glass = rs2!glass
-    rs1!textured = rs2!textured
-    rs1.Update
-nextOne:
-    rs1.MoveNext
-Loop
-
-End Function
-
 Public Function exportSQL(sqlString As String, FileName As String)
 
 On Error Resume Next
@@ -67,16 +46,21 @@ CurrentDb.QueryDefs.Delete "myExportQueryDef"
 
 Exit Function
 err_handler:
-    Call handleError("wdbGlobalFunctions", "labelUpdate", Err.Description, Err.number)
+    Call handleError("wdbGlobalFunctions", "exportSQL", Err.Description, Err.number)
 End Function
 
 Public Function nowString() As String
+On Error GoTo err_handler
 
 nowString = Format(Now(), "yyyymmddTHHmmss")
 
+Exit Function
+err_handler:
+    Call handleError("wdbGlobalFunctions", "nowString", Err.Description, Err.number)
 End Function
 
 Public Function snackBox(sType As String, sTitle As String, sMessage As String, refForm As String, Optional centerBool As Boolean = False, Optional autoClose As Boolean = True)
+On Error GoTo err_handler
 
 TempVars.Add "snackType", sType
 TempVars.Add "snackTitle", sTitle
@@ -95,15 +79,24 @@ End If
 
 DoCmd.OpenForm "frmSnack"
 
+Exit Function
+err_handler:
+    Call handleError("wdbGlobalFunctions", "snackBox", Err.Description, Err.number)
 End Function
 
 Public Function setSplashLoading(label As String)
+On Error GoTo err_handler
+
 If (CurrentProject.Path <> "H:\dev") And (CurrentProject.Path <> "\\homes\data\" & Environ("username")) Then
     TempVars.Add "loadAmount", TempVars!loadAmount + 1
     Form_frmSplash.lnLoading.width = (TempVars!loadAmount / 13) * TempVars!loadWd
     Form_frmSplash.lblLoading.Caption = label
     Form_frmSplash.Repaint
 End If
+
+Exit Function
+err_handler:
+    Call handleError("wdbGlobalFunctions", "setSplashLoading", Err.Description, Err.number)
 End Function
 
 Public Function labelUpdate(oldLabel As String)
@@ -251,12 +244,16 @@ err_handler:
 End Function
 
 Function getFullName() As String
+On Error GoTo err_handler
 
 Dim rs1 As Recordset
 Set rs1 = CurrentDb().OpenRecordset("SELECT firstName, lastName FROM tblPermissions WHERE User = '" & Environ("username") & "'", dbOpenSnapshot)
 getFullName = rs1!firstName & " " & rs1!lastName
 rs1.Close: Set rs1 = Nothing
 
+Exit Function
+err_handler:
+    Call handleError("wdbGlobalFunctions", "getFullName", Err.Description, Err.number)
 End Function
 
 Function notificationsCount()
@@ -282,6 +279,7 @@ Set rsNoti = Nothing
 End Function
 
 Function loadECOtype(changeNotice As String) As String
+On Error GoTo err_handler
 
 Dim rs1 As Recordset
 Set rs1 = CurrentDb().OpenRecordset("SELECT [CHANGE_ORDER_TYPE_ID] from ENG_ENG_ENGINEERING_CHANGES where [CHANGE_NOTICE] = '" & changeNotice & "'", dbOpenSnapshot)
@@ -290,14 +288,26 @@ loadECOtype = DLookup("[ECO_Type]", "[tblOracleDropDowns]", "[ECO_Type_ID]=" & r
 
 rs1.Close
 Set rs1 = Nothing
+
+Exit Function
+err_handler:
+    Call handleError("wdbGlobalFunctions", "loadECOtype", Err.Description, Err.number)
 End Function
 
 Function randomNumber(low As Long, high As Long) As Long
+On Error GoTo err_handler
+
 Randomize
 randomNumber = Int((high - low + 1) * Rnd() + low)
+
+Exit Function
+err_handler:
+    Call handleError("wdbGlobalFunctions", "randomNumber", Err.Description, Err.number)
 End Function
 
 Function getAPI(url, header1, header2)
+On Error GoTo err_handler
+
 Dim reader As New XMLHTTP60
     reader.open "GET", url, False
     reader.setRequestHeader header1, header2
@@ -310,9 +320,14 @@ If reader.status = 200 Then
 Else
     MsgBox reader.status
 End If
+
+Exit Function
+err_handler:
+    Call handleError("wdbGlobalFunctions", "getAPI", Err.Description, Err.number)
 End Function
 
 Function generateHTML(Title As String, subTitle As String, primaryMessage As String, detail1 As String, detail2 As String, detail3 As String, Optional Link As String = "") As String
+On Error GoTo err_handler
 
 Dim tblHeading As String, tblFooter As String, strHTMLBody As String
 
@@ -355,9 +370,13 @@ strHTMLBody = "" & _
 
 generateHTML = strHTMLBody
 
+Exit Function
+err_handler:
+    Call handleError("wdbGlobalFunctions", "generateHTML", Err.Description, Err.number)
 End Function
 
 Function dailySummary(Title As String, subTitle As String, lates() As String, todays() As String, nexts() As String, lateCount As Long, todayCount As Long, nextCount As Long) As String
+On Error GoTo err_handler
 
 Dim tblHeading As String, tblStepOverview As String, strHTMLBody As String
 
@@ -438,46 +457,19 @@ strHTMLBody = "" & _
 
 dailySummary = strHTMLBody
 
+Exit Function
+err_handler:
+    Call handleError("wdbGlobalFunctions", "dailySummary", Err.Description, Err.number)
 End Function
 
-Public Sub registerCPCUpdates(table As String, ID As Variant, column As String, oldVal As Variant, newVal As Variant, Optional tag0 As String, Optional tag1 As String)
-Dim sqlColumns As String, sqlValues As String
-
-If (VarType(oldVal) = vbDate) Then
-    oldVal = Format(oldVal, "mm/dd/yyyy")
-End If
-
-If (VarType(newVal) = vbDate) Then
-    newVal = Format(newVal, "mm/dd/yyyy")
-End If
-
-If (IsNull(oldVal)) Then
-    oldVal = ""
-End If
-
-If (IsNull(newVal)) Then
-    newVal = ""
-End If
-
-sqlColumns = "(tableName,tableRecordId,updatedBy,updatedDate,columnName,previousData,newData,dataTag0"
-                    
-sqlValues = " values ('" & table & "', '" & ID & "', '" & Environ("username") & "', '" & Now() & "', '" & column & "', '" & StrQuoteReplace(CStr(oldVal)) & "', '" & StrQuoteReplace(CStr(newVal)) & "','" & tag0 & "'"
-
-If (IsNull(tag1)) Then
-    sqlColumns = sqlColumns & ")"
-    sqlValues = sqlValues & ");"
-Else
-    sqlColumns = sqlColumns & ",dataTag1)"
-    sqlValues = sqlValues & ",'" & tag1 & "');"
-End If
-
-
-CurrentDb().Execute "INSERT INTO tblCPC_UpdateTracking" & sqlColumns & sqlValues
-
-End Sub
-
 Function emailContentGen(subject As String, Title As String, subTitle As String, primaryMessage As String, detail1 As String, detail2 As String, detail3 As String) As String
+On Error GoTo err_handler
+
 emailContentGen = subject & "," & Title & "," & subTitle & "," & primaryMessage & "," & detail1 & "," & detail2 & "," & detail3
+
+Exit Function
+err_handler:
+    Call handleError("wdbGlobalFunctions", "emailContentGen", Err.Description, Err.number)
 End Function
 
 Function sendNotification(sendTo As String, notType As Integer, notPriority As Integer, desc As String, emailContent As String, Optional appName As String = "", Optional appId As Long, Optional multiEmail As Boolean = False) As Boolean
@@ -522,15 +514,27 @@ CurrentDb().Execute "INSERT INTO tblNotificationsSP(recipientUser,recipientEmail
 Exit Function
 err_handler:
 sendNotification = False
-MsgBox Err.Description, vbCritical, "Notification Error"
+    Call handleError("wdbGlobalFunctions", "sendNotification", Err.Description, Err.number)
 End Function
 
 Function privilege(pref) As Boolean
-    privilege = DLookup("[" & pref & "]", "[tblPermissions]", "[User] = '" & Environ("username") & "'")
+On Error GoTo err_handler
+
+privilege = DLookup("[" & pref & "]", "[tblPermissions]", "[User] = '" & Environ("username") & "'")
+    
+Exit Function
+err_handler:
+    Call handleError("wdbGlobalFunctions", "privilege", Err.Description, Err.number)
 End Function
 
 Function userData(data) As String
-    userData = Nz(DLookup("[" & data & "]", "[tblPermissions]", "[User] = '" & Environ("username") & "'"))
+On Error GoTo err_handler
+
+userData = Nz(DLookup("[" & data & "]", "[tblPermissions]", "[User] = '" & Environ("username") & "'"))
+
+Exit Function
+err_handler:
+    Call handleError("wdbGlobalFunctions", "replaceDriveLetters", Err.Description, Err.number)
 End Function
 
 Public Function getTotalPackingListWeight(packId As Long) As Double
@@ -598,24 +602,39 @@ err_handler:
 End Function
 
 Public Sub checkForFirstTimeRun()
+On Error GoTo err_handler
 
 Dim db As Database
 Set db = CurrentDb()
-Dim rsAnalytics As Recordset, ranThisWeek As Boolean
+Dim rsAnalytics As Recordset, rsRefreshReports As Recordset, rsSummaryEmail As Recordset
 
 Set rsAnalytics = db.OpenRecordset("SELECT max(dateUsed) as anaDate from tblAnalytics WHERE module = 'firstTimeRun'")
-If Format(rsAnalytics!anaDate, "mm/dd/yyyy") = Format(Date, "mm/dd/yyyy") Then Exit Sub 'if max date is today, then this has already ran.
+If Not Format(rsAnalytics!anaDate, "mm/dd/yyyy") = Format(Date, "mm/dd/yyyy") Then
+    'if max date is today, then this has already ran.
+    Call checkProgramEvents
+    Call scanSteps("all", "firstTimeRun")
+    db.Execute "INSERT INTO tblAnalytics (module,form,userName,dateUsed) VALUES ('firstTimeRun','Form_frmSplash','" & Environ("username") & "','" & Now() & "')"
+End If
 
-'Call grabSummaryInfo
-Call checkProgramEvents
-Call scanSteps("all", "firstTimeRun")
-Call openPath("\\data\mdbdata\WorkingDB\build\Commands\Misc_Commands\refreshAndSummary.vbs")
+Set rsRefreshReports = db.OpenRecordset("SELECT max(dateUsed) as anaDate from tblAnalytics WHERE module = 'refreshReports'")
+If Not Format(rsRefreshReports!anaDate, "mm/dd/yyyy") = Format(Date, "mm/dd/yyyy") Then Call openPath("\\data\mdbdata\WorkingDB\build\Commands\Misc_Commands\refreshReports.vbs")
 
-db.Execute "INSERT INTO tblAnalytics (module,form,userName,dateUsed) VALUES ('firstTimeRun','Form_frmSplash','" & Environ("username") & "','" & Now() & "')"
+Set rsSummaryEmail = db.OpenRecordset("SELECT max(dateUsed) as anaDate from tblAnalytics WHERE module = 'summaryEmail'")
+If Not Format(rsSummaryEmail!anaDate, "mm/dd/yyyy") = Format(Date, "mm/dd/yyyy") Then Call openPath("\\data\mdbdata\WorkingDB\build\Commands\Misc_Commands\summaryEmail.vbs")
 
+On Error Resume Next
+rsAnalytics.Close: Set rsAnalytics = Nothing
+rsRefreshReports.Close: Set rsRefreshReports = Nothing
+rsSummaryEmail.Close: Set rsSummaryEmail = Nothing
+
+Exit Sub
+err_handler:
+    Call handleError("wdbGlobalFunctions", "checkForFirstTimeRun", Err.Description, Err.number)
 End Sub
 
 Function grabSummaryInfo(Optional specificUser As String = "") As Boolean
+On Error GoTo err_handler
+
 grabSummaryInfo = False
 
 Dim db As Database
@@ -751,9 +770,13 @@ Loop
 
 grabSummaryInfo = True
 
+Exit Function
+err_handler:
+    Call handleError("wdbGlobalFunctions", "grabSummaryInfo", Err.Description, Err.number)
 End Function
 
 Function checkProgramEvents() As Boolean
+On Error GoTo err_handler
 
 Dim db As Database
 Set db = CurrentDb()
@@ -832,9 +855,13 @@ Set rsEvents = Nothing
 rsPeople.Close
 Set rsPeople = Nothing
 
+Exit Function
+err_handler:
+    Call handleError("wdbGlobalFunctions", "checkProgramEvents", Err.Description, Err.number)
 End Function
 
 Function getEmail(userName As String) As String
+On Error GoTo err_handler
 
 On Error GoTo tryOracle
 Dim rsPermissions As Recordset
@@ -848,6 +875,9 @@ Dim rsEmployee As Recordset
 Set rsEmployee = CurrentDb().OpenRecordset("SELECT FIRST_NAME, LAST_NAME, EMAIL_ADDRESS FROM APPS_XXCUS_USER_EMPLOYEES_V WHERE USER_NAME = '" & StrConv(userName, vbUpperCase) & "'")
 getEmail = Nz(rsEmployee!EMAIL_ADDRESS, "")
 
+Exit Function
+err_handler:
+    Call handleError("wdbGlobalFunctions", "getEmail", Err.Description, Err.number)
 End Function
 
 Function splitString(a, b, c) As String
@@ -858,15 +888,9 @@ errorCatch:
     splitString = ""
 End Function
 
-Function getYear(projectNumber As String)
-    If Len(projectNumber) = 7 Then
-        getYear = Left(Year(Now), 2) & Mid(projectNumber, 2, 2)
-    Else
-        getYear = Left(Year(Now), 2) & Mid(projectNumber, 3, 2)
-    End If
-End Function
-
 Function labelCycle(checkLabel As String, nameLabel As String, Optional controlSourceVal As String = "") As String()
+On Error GoTo err_handler
+
     Dim returnVal(0 To 1) As String, sortLabel As String
     If controlSourceVal = "" Then
         sortLabel = nameLabel
@@ -885,9 +909,14 @@ Function labelCycle(checkLabel As String, nameLabel As String, Optional controlS
             returnVal(1) = sortLabel & " ASC"
     End Select
     labelCycle = returnVal
+    
+Exit Function
+err_handler:
+    Call handleError("wdbGlobalFunctions", "labelCycle", Err.Description, Err.number)
 End Function
 
 Function idNAM(inputVal As Variant, typeVal As Variant) As Variant
+On Error Resume Next 'just skip in case Oracle Errors
 Dim rs1 As Recordset
 idNAM = ""
 
@@ -911,10 +940,13 @@ Set rs1 = Nothing
 End Function
 
 Function getDescriptionFromId(inventId As Long) As String
+On Error GoTo err_handler
+
 Dim rs1 As Recordset
 
 getDescriptionFromId = ""
 If IsNull(inventId) Then Exit Function
+On Error Resume Next
 
 Set rs1 = CurrentDb.OpenRecordset("SELECT DESCRIPTION FROM APPS_MTL_SYSTEM_ITEMS WHERE INVENTORY_ITEM_ID = " & inventId, dbOpenSnapshot)
 If rs1.RecordCount = 0 Then GoTo exitFunction
@@ -923,13 +955,24 @@ getDescriptionFromId = rs1("DESCRIPTION")
 exitFunction:
 rs1.Close
 Set rs1 = Nothing
+
+Exit Function
+err_handler:
+    Call handleError("wdbGlobalFunctions", "getDescriptionFromId", Err.Description, Err.number)
 End Function
 
 Public Function StrQuoteReplace(strValue)
-  StrQuoteReplace = Replace(strValue, "'", "''")
+On Error GoTo err_handler
+
+StrQuoteReplace = Replace(strValue, "'", "''")
+
+Exit Function
+err_handler:
+    Call handleError("wdbGlobalFunctions", "StrQuoteReplace", Err.Description, Err.number)
 End Function
 
 Public Function wdbEmail(ByVal strTo As String, ByVal strCC As String, ByVal strSubject As String, body As String) As Boolean
+On Error GoTo err_handler
 wdbEmail = True
 Dim SendItems As New clsOutlookCreateItem
 Set SendItems = New clsOutlookCreateItem
@@ -945,5 +988,5 @@ SendItems.CreateMailItem sendTo:=strTo, _
 Exit Function
 err_handler:
 wdbEmail = False
-MsgBox "something went wrong, sorry! Please let Jacob Brown know.", vbCritical, "Uh oh."
+    Call handleError("wdbGlobalFunctions", "wdbEmail", Err.Description, Err.number)
 End Function

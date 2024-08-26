@@ -11,25 +11,30 @@ CreateObject("Shell.Application").open CVar(Path)
 
 Exit Sub
 err_handler:
-    Call handleError("modGlobal", "openPath", Err.Description, Err.number)
+    Call handleError("wdbDirectoryFunctions", "openPath", Err.Description, Err.number)
 End Sub
 
 Function replaceDriveLetters(linkInput) As String
+On Error GoTo err_handler
 
 replaceDriveLetters = Replace(linkInput, "N:\", "\\ncm-fs2\data\Department\")
 replaceDriveLetters = Replace(linkInput, "T:\", "\\design\data\")
 replaceDriveLetters = Replace(linkInput, "S:\", "\\nas01\allshare\")
 
+Exit Function
+err_handler:
+    Call handleError("wdbDirectoryFunctions", "replaceDriveLetters", Err.Description, Err.number)
 End Function
 
 Function addLastSlash(linkString As String) As String
 On Error GoTo err_handler
+
 addLastSlash = linkString
 If Right(addLastSlash, 1) <> "\" Then addLastSlash = addLastSlash & "\"
 
 Exit Function
 err_handler:
-    Call handleError("modGlobal", "addLastSlash", Err.Description, Err.number)
+    Call handleError("wdbDirectoryFunctions", "addLastSlash", Err.Description, Err.number)
 End Function
 
 Function createShortcut(lnkLocation As String, targetLocation As String, shortcutName As String)
@@ -43,7 +48,7 @@ End With
 
 Exit Function
 err_handler:
-    Call handleError("modGlobal", "createShortcut", Err.Description, Err.number)
+    Call handleError("wdbDirectoryFunctions", "createShortcut", Err.Description, Err.number)
 End Function
 
 Public Sub checkMkDir(mainFolder, partNum, Optional variableVal)
@@ -76,30 +81,51 @@ If Len(partNum) = 5 Or (partNum Like "D*" And Len(partNum) = 6) Then
 Else
     Call openPath(mainFolder)
 End If
+
 Exit Sub
 err_handler:
-    Call handleError("basGlobal", "checkMkDir", Err.Description, Err.number)
+    Call handleError("wdbDirectoryFunctions", "checkMkDir", Err.Description, Err.number)
 End Sub
 
 Function mainFolder(sName As String) As String
+On Error GoTo err_handler
+
 mainFolder = DLookup("[Link]", "tblLinks", "[btnName] = '" & sName & "'")
+
+Exit Function
+err_handler:
+    Call handleError("wdbDirectoryFunctions", "mainFolder", Err.Description, Err.number)
 End Function
 
 Function FolderExists(sFile As Variant) As Boolean
+On Error GoTo err_handler
+
 FolderExists = False
 If IsNull(sFile) Then Exit Function
 If Dir(sFile, vbDirectory) <> "" Then FolderExists = True
+
+Exit Function
+err_handler:
+    Call handleError("wdbDirectoryFunctions", "FolderExists", Err.Description, Err.number)
 End Function
 
 Public Function zeros(partNum, Amount As Variant)
+On Error GoTo err_handler
+
     If (Amount = 2) Then
         zeros = Left(partNum, 3) & "00\"
     ElseIf (Amount = 3) Then
         zeros = Left(partNum, 2) & "000\"
     End If
+    
+Exit Function
+err_handler:
+    Call handleError("wdbDirectoryFunctions", "zeros", Err.Description, Err.number)
 End Function
 
 Function openDocumentHistoryFolder(partNum)
+On Error GoTo err_handler
+
 Dim thousZeros, hundZeros
 Dim mainPath, FolName, strFilePath, prtFilePath, dPath As String
 
@@ -137,9 +163,15 @@ Else
         Call openPath(mainPath)
     End If
 End If
+
+Exit Function
+err_handler:
+    Call handleError("wdbDirectoryFunctions", "openDocumentHistoryFolder", Err.Description, Err.number)
 End Function
 
 Function openModelV5Folder(partNumOriginal)
+On Error GoTo err_handler
+
 Dim partNum, thousZeros, hundZeros, FolName, mainfolderpath, strFilePath, prtpath, dPath
 
 partNum = partNumOriginal & "_"
@@ -183,4 +215,8 @@ tryagain:
         Call openPath(mainfolderpath)
     End If
 End If
+
+Exit Function
+err_handler:
+    Call handleError("wdbDirectoryFunctions", "openModelV5Folder", Err.Description, Err.number)
 End Function

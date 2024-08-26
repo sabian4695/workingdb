@@ -65,19 +65,31 @@ End Type
 Dim AppX As Long, AppY As Long, AppTop As Long, AppLeft As Long, WinRECT As RECT, APointAPI As POINTAPI
 
 Public Sub ChangeCursorTo(Optional ByVal lngCursor As Long = 32512&)
+On Error GoTo err_handler
+
     SetCursor LoadCursor(0&, lngCursor)
+
+Exit Sub
+err_handler:
+    Call handleError("wdbAdminFunctions", "ChangeCursorTo", Err.Description, Err.number)
 End Sub
 
 Public Function ResizeFormWindow(frm As Form, direction As RESIZEDIRECTION)
+On Error GoTo err_handler
 
     ChangeCursorTo (32645&)
     With frm
         ReleaseCapture
         SendMessage .hWnd, &HA1, 15, 0
     End With
+    
+Exit Function
+err_handler:
+    Call handleError("wdbAdminFunctions", "ResizeFormWindow", Err.Description, Err.number)
 End Function
 
 Sub AppWindowSelect()
+On Error GoTo err_handler
     'select application window
     GetWindowRect Application.hWndAccessApp, WinRECT
     AppTop = WinRECT.y1
@@ -85,22 +97,38 @@ Sub AppWindowSelect()
     GetCursorPos APointAPI
     AppX = APointAPI.X
     AppY = APointAPI.Y
+
+Exit Sub
+err_handler:
+    Call handleError("wdbAdminFunctions", "AppWindowSelect", Err.Description, Err.number)
 End Sub
 
 Sub AppWindowMove()
+On Error GoTo err_handler
     'drag application window
     GetCursorPos APointAPI
     SetWindowPos Application.hWndAccessApp, 0, AppLeft - (AppX - APointAPI.X), AppTop - (AppY - APointAPI.Y), _
         0, 0, &H4 + &H1
 
+Exit Sub
+err_handler:
+    Call handleError("wdbAdminFunctions", "AppWindowMove", Err.Description, Err.number)
 End Sub
 
 Sub moveForm(frm As Form)
+On Error GoTo err_handler
+
     ReleaseCapture
     SendMessage frm.hWnd, &HA1, &H2, 0
+
+Exit Sub
+err_handler:
+    Call handleError("wdbAdminFunctions", "moveForm", Err.Description, Err.number)
 End Sub
                                   
 Public Function UISetRoundRect(ByVal UIForm As Form) As Boolean
+On Error GoTo err_handler
+
     Dim intRight As Integer, intHeight As Integer
     Dim hRgn As LongPtr, hdc As LongPtr
     
@@ -115,7 +143,10 @@ Public Function UISetRoundRect(ByVal UIForm As Form) As Boolean
         hRgn = CreateRoundRectRgn(0, 0, intRight, intHeight, 25, 25)
         SetWindowRgn .hWnd, hRgn, True
     End With
-    
+
+Exit Function
+err_handler:
+    Call handleError("wdbAdminFunctions", "UISetRoundRect", Err.Description, Err.number)
 End Function
 
 Function logClick(modName As String, formName As String, Optional dataTag0 = "", Optional dataTag1 = "")
@@ -240,21 +271,21 @@ CurrentDb().Execute strSQL
 End Sub
 
 Function grabVersion() As String
+On Error GoTo err_handler
+
 Dim rs1 As Recordset
 Set rs1 = CurrentDb().OpenRecordset("SELECT Release FROM tblDBinfo WHERE [ID] = 1", dbOpenSnapshot)
 grabVersion = rs1!release
 rs1.Close: Set rs1 = Nothing
-End Function
 
-Function wait(mult)
-Dim i, j
-For j = 1 To mult
-    For i = 1 To 10000
-    Next
-Next
+Exit Function
+err_handler:
+    Call handleError("wdbAdminFunctions", "grabVersion", Err.Description, Err.number)
 End Function
 
 Function SixHatHideWindow(nCmdShow As Long)
+On Error GoTo err_handler
+
     Dim loX As Long
     Dim loForm As Form
     On Error Resume Next
@@ -277,9 +308,14 @@ Function SixHatHideWindow(nCmdShow As Long)
         loX = apiShowWindow(hWndAccessApp, nCmdShow)
     End If
     SixHatHideWindow = (loX <> 0)
+
+Exit Function
+err_handler:
+    Call handleError("wdbAdminFunctions", "SixHatHideWindow", Err.Description, Err.number)
 End Function
 
 Sub SizeAccess(ByVal dx As Long, ByVal dy As Long)
+On Error GoTo err_handler
 'Set size of Access and center on Desktop
 
 Const SW_RESTORE As Long = 9
@@ -306,4 +342,7 @@ r.y1 + ((r.y2 - r.y1) - dy) \ 2, _
 dx, dy, True
 End If
 
+Exit Sub
+err_handler:
+    Call handleError("wdbAdminFunctions", "SizeAccess", Err.Description, Err.number)
 End Sub

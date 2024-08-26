@@ -2,6 +2,8 @@ Option Compare Database
 Option Explicit
 
 Function createDnumber() As String
+On Error GoTo err_handler
+
 Dim rs1 As Recordset
 Dim strInsert
 Set rs1 = CurrentDb().OpenRecordset("tblDnumbers", dbOpenSnapshot)
@@ -26,6 +28,10 @@ createDnumber = "D" & dNum
 
 rs1.Close
 Set rs1 = Nothing
+
+Exit Function
+err_handler:
+    Call handleError("wdbDesignE", "createDnumber", Err.Description, Err.number)
 End Function
 
 Sub SetNavButtons(ByRef frmSomeForm As Form)
@@ -61,6 +67,8 @@ GoTo SetNavButtons_Exit
 End Sub
 
 Public Sub registerDRSUpdates(table As String, ID As Variant, column As String, oldVal As Variant, newVal As Variant, Optional tag0 As String, Optional tag1 As String)
+On Error GoTo err_handler
+
 Dim sqlColumns As String, sqlValues As String
 
 If (VarType(oldVal) = vbDate) Then
@@ -94,6 +102,9 @@ End If
 
 CurrentDb().Execute "INSERT INTO tblDRSUpdateTracking" & sqlColumns & sqlValues
 
+Exit Sub
+err_handler:
+    Call handleError("wdbDesignE", "registerDRSUpdates", Err.Description, Err.number)
 End Sub
 
 Function DRShistoryGrabReference(columnName As String, inputVal As Variant) As String
@@ -164,6 +175,8 @@ exitFunc:
 End Function
 
 Function progressPercent(controlNum As Long)
+On Error GoTo err_handler
+
 Dim total
 Dim checked
 
@@ -171,4 +184,8 @@ total = DCount("[Task_ID]", "[tblTaskTracker]", "[Control_Number] = " & controlN
 checked = DCount("[Task_ID]", "[tblTaskTracker]", "[Control_Number] = " & controlNum & "AND [cbClosed] = TRUE")
 
 progressPercent = checked / total
+
+Exit Function
+err_handler:
+    Call handleError("wdbDesignE", "progressPercent", Err.Description, Err.number)
 End Function
