@@ -215,7 +215,7 @@ err_handler:
 End Function
 
 Public Function exportAIF(partNum As String) As String
-On Error GoTo err_handler
+'On Error GoTo err_handler
 exportAIF = False
 
 '---Setup Variables---
@@ -377,8 +377,8 @@ Do While Not rsComp.EOF
     aifInsert rsComp!componentNumber, _
         DLookup("Description", "APPS_MTL_SYSTEM_ITEMS", "SEGMENT1 = '" & rsComp!componentNumber & "'"), _
         rsComp!quantity, _
-        DLookup("finishLocator", "tblDropDownsSP", "ID = " & rsComp!finishLocator), _
-        rsComp!finishSubInv
+        rsComp!finishLocator, _
+        DLookup("finishSubInv", "tblDropDownsSP", "ID = " & rsComp!finishSubInv)
     rsComp.MoveNext
 Loop
 rsComp.Close

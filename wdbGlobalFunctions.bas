@@ -3,6 +3,26 @@ Option Explicit
 
 Public bClone As Boolean
 
+Function fnBackBtn(frmName As String)
+On Error GoTo err_handler
+
+DoCmd.Close acForm, frmName
+
+Exit Function
+err_handler:
+    Call handleError(frmName, "fnBackBtn", Err.Description, Err.number)
+End Function
+
+Function fnHomeBtn(frmName As String)
+On Error GoTo err_handler
+
+Form_DASHBOARD.SetFocus
+
+Exit Function
+err_handler:
+    Call handleError(frmName, "fnHomeBtn", Err.Description, Err.number)
+End Function
+
 Function gramsToLbs(gramsValue) As Double
 On Error GoTo err_handler
 
