@@ -1,8 +1,7 @@
 Option Compare Database
 Option Explicit
 
-Declare PtrSafe Function ShellExecute Lib "shell32.dll" Alias "ShellExecuteA" (ByVal hWnd As Long, ByVal lpOperation As String, ByVal lpFile As String, ByVal lpParameters As String, _
-    ByVal lpDirectory As String, ByVal lpnShowCmd As Long) As Long
+Declare PtrSafe Function ShellExecute Lib "shell32.dll" Alias "ShellExecuteA" (ByVal hWnd As Long, ByVal lpOperation As String, ByVal lpFile As String, ByVal lpParameters As String, ByVal lpDirectory As String, ByVal lpnShowCmd As Long) As Long
 
 Public Sub openPath(Path)
 On Error GoTo err_handler
@@ -11,7 +10,7 @@ CreateObject("Shell.Application").open CVar(Path)
 
 Exit Sub
 err_handler:
-    Call handleError("wdbDirectoryFunctions", "openPath", Err.Description, Err.number)
+    Call handleError("wdbDirectoryFunctions", "openPath", Err.DESCRIPTION, Err.number)
 End Sub
 
 Function replaceDriveLetters(linkInput) As String
@@ -23,7 +22,7 @@ replaceDriveLetters = Replace(linkInput, "S:\", "\\nas01\allshare\")
 
 Exit Function
 err_handler:
-    Call handleError("wdbDirectoryFunctions", "replaceDriveLetters", Err.Description, Err.number)
+    Call handleError("wdbDirectoryFunctions", "replaceDriveLetters", Err.DESCRIPTION, Err.number)
 End Function
 
 Function addLastSlash(linkString As String) As String
@@ -34,7 +33,7 @@ If Right(addLastSlash, 1) <> "\" Then addLastSlash = addLastSlash & "\"
 
 Exit Function
 err_handler:
-    Call handleError("wdbDirectoryFunctions", "addLastSlash", Err.Description, Err.number)
+    Call handleError("wdbDirectoryFunctions", "addLastSlash", Err.DESCRIPTION, Err.number)
 End Function
 
 Function createShortcut(lnkLocation As String, targetLocation As String, shortcutName As String)
@@ -42,13 +41,13 @@ On Error GoTo err_handler
 
 With CreateObject("WScript.Shell").createShortcut(lnkLocation & ".lnk")
     .TargetPath = targetLocation
-    .Description = shortcutName
+    .DESCRIPTION = shortcutName
     .save
 End With
 
 Exit Function
 err_handler:
-    Call handleError("wdbDirectoryFunctions", "createShortcut", Err.Description, Err.number)
+    Call handleError("wdbDirectoryFunctions", "createShortcut", Err.DESCRIPTION, Err.number)
 End Function
 
 Public Sub checkMkDir(mainFolder, partNum, Optional variableVal)
@@ -84,7 +83,7 @@ End If
 
 Exit Sub
 err_handler:
-    Call handleError("wdbDirectoryFunctions", "checkMkDir", Err.Description, Err.number)
+    Call handleError("wdbDirectoryFunctions", "checkMkDir", Err.DESCRIPTION, Err.number)
 End Sub
 
 Function mainFolder(sName As String) As String
@@ -94,7 +93,7 @@ mainFolder = DLookup("[Link]", "tblLinks", "[btnName] = '" & sName & "'")
 
 Exit Function
 err_handler:
-    Call handleError("wdbDirectoryFunctions", "mainFolder", Err.Description, Err.number)
+    Call handleError("wdbDirectoryFunctions", "mainFolder", Err.DESCRIPTION, Err.number)
 End Function
 
 Function FolderExists(sFile As Variant) As Boolean
@@ -106,7 +105,7 @@ If Dir(sFile, vbDirectory) <> "" Then FolderExists = True
 
 Exit Function
 err_handler:
-    Call handleError("wdbDirectoryFunctions", "FolderExists", Err.Description, Err.number)
+    Call handleError("wdbDirectoryFunctions", "FolderExists", Err.DESCRIPTION, Err.number)
 End Function
 
 Public Function zeros(partNum, Amount As Variant)
@@ -120,7 +119,7 @@ On Error GoTo err_handler
     
 Exit Function
 err_handler:
-    Call handleError("wdbDirectoryFunctions", "zeros", Err.Description, Err.number)
+    Call handleError("wdbDirectoryFunctions", "zeros", Err.DESCRIPTION, Err.number)
 End Function
 
 Function openDocumentHistoryFolder(partNum)
@@ -166,7 +165,7 @@ End If
 
 Exit Function
 err_handler:
-    Call handleError("wdbDirectoryFunctions", "openDocumentHistoryFolder", Err.Description, Err.number)
+    Call handleError("wdbDirectoryFunctions", "openDocumentHistoryFolder", Err.DESCRIPTION, Err.number)
 End Function
 
 Function openModelV5Folder(partNumOriginal)
@@ -218,5 +217,5 @@ End If
 
 Exit Function
 err_handler:
-    Call handleError("wdbDirectoryFunctions", "openModelV5Folder", Err.Description, Err.number)
+    Call handleError("wdbDirectoryFunctions", "openModelV5Folder", Err.DESCRIPTION, Err.number)
 End Function

@@ -31,7 +31,7 @@ DoCmd.OpenForm "frmPartDashboard"
 
 Exit Function
 err_handler:
-    Call handleError("wdbProjectE", "openPartProject", Err.Description, Err.number)
+    Call handleError("wdbProjectE", "openPartProject", Err.DESCRIPTION, Err.number)
 End Function
 
 Public Function checkAIFfields(partNum As String) As Boolean
@@ -210,7 +210,7 @@ rsU.Close: Set rsU = Nothing
 Exit Function
 
 err_handler:
-    Call handleError("wdbProjectE", "checkAIFfields", Err.Description, Err.number)
+    Call handleError("wdbProjectE", "checkAIFfields", Err.DESCRIPTION, Err.number)
     GoTo exitFunction
 End Function
 
@@ -375,10 +375,10 @@ If rsComp.RecordCount > 0 Then
 End If
 Do While Not rsComp.EOF
     aifInsert rsComp!componentNumber, _
-        DLookup("Description", "APPS_MTL_SYSTEM_ITEMS", "SEGMENT1 = '" & rsComp!componentNumber & "'"), _
+        findDescription(rsComp!componentNumber), _
         rsComp!quantity, _
         rsComp!finishLocator, _
-        DLookup("finishSubInv", "tblDropDownsSP", "ID = " & rsComp!finishSubInv)
+        Nz(DLookup("finishSubInv", "tblDropDownsSP", "ID = " & rsComp!finishSubInv))
     rsComp.MoveNext
 Loop
 rsComp.Close
@@ -427,7 +427,7 @@ exportAIF = FileName
 
 Exit Function
 err_handler:
-    Call handleError("wdbProjectE", "exportAIF", Err.Description, Err.number)
+    Call handleError("wdbProjectE", "exportAIF", Err.DESCRIPTION, Err.number)
 End Function
 
 Function aifInsert(columnVal0 As String, columnVal1 As String, Optional columnVal2 As String = ".", Optional columnVal3 As String = ".", Optional columnVal4 As String = ".", _
@@ -467,7 +467,7 @@ inV = inV + 1
 
 Exit Function
 err_handler:
-    Call handleError("wdbProjectE", "aifInsert", Err.Description, Err.number)
+    Call handleError("wdbProjectE", "aifInsert", Err.DESCRIPTION, Err.number)
 End Function
 
 Function loadPlannerECO(partNumber As String) As String
@@ -597,7 +597,7 @@ trialScheduleEmail = strHTMLBody
 
 Exit Function
 err_handler:
-    Call handleError("wdbProjectE", "trialScheduleEmail", Err.Description, Err.number)
+    Call handleError("wdbProjectE", "trialScheduleEmail", Err.DESCRIPTION, Err.number)
 End Function
 
 Public Function grabHistoryRef(dataValue As Variant, columnName As String) As String
@@ -685,7 +685,7 @@ MsgBox "All done.", vbInformation, "It is finished."
 'Call registerWdbUpdates("tblPartProjects", partNum, "Part Project", partNum, "Deleted", "frmPartTrackingSettings")
 Exit Function
 err_handler:
-    Call handleError("wdbProjectE", "completelyDeletePartProjectAndInfo", Err.Description, Err.number)
+    Call handleError("wdbProjectE", "completelyDeletePartProjectAndInfo", Err.DESCRIPTION, Err.number)
 End Function
 
 Public Function getApprovalsComplete(stepId As Long, partNumber As String) As Long
@@ -817,7 +817,7 @@ Set rsStepTemplate = Nothing
 
 Exit Function
 err_handler:
-    Call handleError("wdbProjectE", "createPartProject", Err.Description, Err.number)
+    Call handleError("wdbProjectE", "createPartProject", Err.DESCRIPTION, Err.number)
 End Function
 
 Public Function grabTitle(User) As String
@@ -864,7 +864,7 @@ Call setBarColorPercent(percent, "progressBarPROJECT", width)
 
 Exit Function
 err_handler:
-    Call handleError("wdbProjectE", "setProgressBarPROJECT", Err.Description, Err.number)
+    Call handleError("wdbProjectE", "setProgressBarPROJECT", Err.DESCRIPTION, Err.number)
 End Function
 
 Public Function setProgressBarSTEPS(gateId As Long)
@@ -895,7 +895,7 @@ Call setBarColorPercent(percent, "progressBarSTEPS", width)
 
 Exit Function
 err_handler:
-    Call handleError("wdbProjectE", "setProgressBarSTEPS", Err.Description, Err.number)
+    Call handleError("wdbProjectE", "setProgressBarSTEPS", Err.DESCRIPTION, Err.number)
 End Function
 
 Function setBarColorPercent(percent As Double, controlName As String, barWidth As Long)
@@ -924,7 +924,7 @@ Form_frmPartDashboard.Controls(controlName).BorderColor = pColor
 
 Exit Function
 err_handler:
-    Call handleError("wdbProjectE", "setBarColorPercent", Err.Description, Err.number)
+    Call handleError("wdbProjectE", "setBarColorPercent", Err.DESCRIPTION, Err.number)
 End Function
 
 Function notifyPE(partNum As String, notiType As String, stepTitle As String, Optional sendAlways As Boolean = False, Optional stepAction As Boolean = False) As Boolean
@@ -962,7 +962,7 @@ notifyPE = True
 
 Exit Function
 err_handler:
-    Call handleError("wdbProjectE", "notifyPE", Err.Description, Err.number)
+    Call handleError("wdbProjectE", "notifyPE", Err.DESCRIPTION, Err.number)
 End Function
 
 Function findDept(partNumber As String, dept As String, Optional returnMe As Boolean = False) As String
@@ -983,7 +983,7 @@ If findDept <> "" Then findDept = Left(findDept, Len(findDept) - 1)
 
 Exit Function
 err_handler:
-    Call handleError("wdbProjectE", "findDept", Err.Description, Err.number)
+    Call handleError("wdbProjectE", "findDept", Err.DESCRIPTION, Err.number)
 End Function
 
 Function scanSteps(partNum As String, routineName As String, Optional identifier As Variant = "notFound") As Boolean
@@ -1116,7 +1116,7 @@ scanSteps = True
 
 Exit Function
 err_handler:
-    Call handleError("wdbProjectE", "scanSteps", Err.Description, Err.number)
+    Call handleError("wdbProjectE", "scanSteps", Err.DESCRIPTION, Err.number)
 End Function
 
 Function iHaveOpenApproval(stepId As Long)
@@ -1137,7 +1137,7 @@ Set rsApprovals = Nothing
 
 Exit Function
 err_handler:
-    Call handleError("wdbProjectE", "iHaveOpenApproval", Err.Description, Err.number)
+    Call handleError("wdbProjectE", "iHaveOpenApproval", Err.DESCRIPTION, Err.number)
 End Function
 
 Function iAmApprover(approvalId As Long) As Boolean
@@ -1158,7 +1158,7 @@ Set rsApprovals = Nothing
 
 Exit Function
 err_handler:
-    Call handleError("wdbProjectE", "iAmApprover", Err.Description, Err.number)
+    Call handleError("wdbProjectE", "iAmApprover", Err.DESCRIPTION, Err.number)
 End Function
 
 Function issueCount(partNum As String) As Long
@@ -1168,7 +1168,7 @@ issueCount = DCount("recordId", "tblPartIssues", "partNumber = '" & partNum & "'
 
 Exit Function
 err_handler:
-    Call handleError("wdbProjectE", "issueCount", Err.Description, Err.number)
+    Call handleError("wdbProjectE", "issueCount", Err.DESCRIPTION, Err.number)
 End Function
 
 Function emailPartInfo(partNum As String, noteTxt As String) As Boolean
@@ -1213,7 +1213,7 @@ emailPartInfo = True
 
 Exit Function
 err_handler:
-    Call handleError("wdbProjectE", "emailPartInfo", Err.Description, Err.number)
+    Call handleError("wdbProjectE", "emailPartInfo", Err.DESCRIPTION, Err.number)
 End Function
 
 Public Function registerPartUpdates(table As String, ID As Variant, column As String, _
@@ -1257,7 +1257,7 @@ Set rs1 = Nothing
 
 Exit Function
 err_handler:
-    Call handleError("wdbProjectE", "registerPartUpdates", Err.Description, Err.number)
+    Call handleError("wdbProjectE", "registerPartUpdates", Err.DESCRIPTION, Err.number)
 End Function
 
 Function toolShipAuthorizationEmail(toolNumber As String, stepId As Long, shipMethod As String, partNumber As String) As Boolean
@@ -1317,7 +1317,7 @@ toolShipAuthorizationEmail = True
 
 Exit Function
 err_handler:
-    Call handleError("wdbProjectE", "toolShipAuthorizationEmail", Err.Description, Err.number)
+    Call handleError("wdbProjectE", "toolShipAuthorizationEmail", Err.DESCRIPTION, Err.number)
 End Function
 
 Function emailPartApprovalNotification(stepId As Long, partNumber As String) As Boolean
@@ -1350,7 +1350,7 @@ emailPartApprovalNotification = True
 
 Exit Function
 err_handler:
-    Call handleError("wdbProjectE", "emailPartApprovalNotification", Err.Description, Err.number)
+    Call handleError("wdbProjectE", "emailPartApprovalNotification", Err.DESCRIPTION, Err.number)
 End Function
 
 Function emailApprovedCapitalPacket(stepId As Long, partNumber As String, capitalPacketNum As String) As Boolean
@@ -1383,7 +1383,7 @@ emailApprovedCapitalPacket = True
 
 Exit Function
 err_handler:
-    Call handleError("wdbProjectE", "emailApprovedCapitalPacket", Err.Description, Err.number)
+    Call handleError("wdbProjectE", "emailApprovedCapitalPacket", Err.DESCRIPTION, Err.number)
 End Function
 
 Function generateEmailWarray(Title As String, subTitle As String, primaryMessage As String, detailTitle As String, arr() As Variant) As String
@@ -1441,5 +1441,5 @@ generateEmailWarray = strHTMLBody
 
 Exit Function
 err_handler:
-    Call handleError("wdbProjectE", "generateEmailWarray", Err.Description, Err.number)
+    Call handleError("wdbProjectE", "generateEmailWarray", Err.DESCRIPTION, Err.number)
 End Function

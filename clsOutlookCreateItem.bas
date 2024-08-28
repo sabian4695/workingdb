@@ -220,7 +220,7 @@ Public Function CreateMailItem(sendTo As Variant, Optional CC As Variant = "", _
         .DeleteAfterSubmit = DeleteAfterSubmit
         
 '-- added in Outlook 2007.  By checking the Outlook version we avoid a potential error
-        If Val(olApp.Version) >= 12 Then
+        If val(olApp.Version) >= 12 Then
             CurrentProperty = "FlagRequest"
             If FlagRequest <> "" Then .FlagRequest = FlagRequest
         End If

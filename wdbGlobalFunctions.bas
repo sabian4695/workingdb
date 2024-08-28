@@ -3,24 +3,40 @@ Option Explicit
 
 Public bClone As Boolean
 
-Function fnBackBtn(frmName As String)
+Function findDescription(partNumber As String) As String
 On Error GoTo err_handler
 
-DoCmd.Close acForm, frmName
+findDescription = ""
+
+'first, check Oracle
+'second, check Part Information
+'third, check SIFs
+
+Dim db As Database
+Dim rs1 As Recordset
+Set db = CurrentDb
+Set rs1 = db.OpenRecordset("SELECT SEGMENT1, DESCRIPTION FROM APPS_MTL_SYSTEM_ITEMS WHERE SEGMENT1 = '" & partNumber & "'", dbOpenSnapshot)
+If rs1.RecordCount = 0 Then 'not in main Oracle table, now look through SIFs
+    If DCount("[ROW_ID]", "APPS_Q_SIF_NEW_ASSEMBLED_PART_V", "[NIFCO_PART_NUMBER] = '" & partNumber & "'") > 0 Then 'is it in assy table?
+        Set rs1 = db.OpenRecordset("SELECT SIFNUM, PART_DESCRIPTION FROM APPS_Q_SIF_NEW_ASSEMBLED_PART_V WHERE NIFCO_PART_NUMBER = '" & partNumber & "'", dbOpenSnapshot)
+        rs1.MoveLast
+        findDescription = rs1!Part_Description
+    ElseIf DCount("[ROW_ID]", "APPS_Q_SIF_NEW_MOLDED_PART_V ", "[NIFCO_PART_NUMBER] = '" & partNumber & "'") > 0 Then 'is it in molded table?
+        Set rs1 = db.OpenRecordset("SELECT SIFNUM, PART_DESCRIPTION FROM APPS_Q_SIF_NEW_MOLDED_PART_V WHERE NIFCO_PART_NUMBER = '" & partNumber & "'", dbOpenSnapshot)
+        rs1.MoveLast
+        findDescription = rs1!Part_Description
+    End If
+    Exit Function
+End If
+
+findDescription = rs1("DESCRIPTION")
+
+rs1.Close
+Set rs1 = Nothing
 
 Exit Function
 err_handler:
-    Call handleError(frmName, "fnBackBtn", Err.Description, Err.number)
-End Function
-
-Function fnHomeBtn(frmName As String)
-On Error GoTo err_handler
-
-Form_DASHBOARD.SetFocus
-
-Exit Function
-err_handler:
-    Call handleError(frmName, "fnHomeBtn", Err.Description, Err.number)
+    Call handleError("wdbGlobalFunctions", "findDescription", Err.DESCRIPTION, Err.number)
 End Function
 
 Function gramsToLbs(gramsValue) As Double
@@ -30,7 +46,7 @@ gramsToLbs = gramsValue * 0.00220462
 
 Exit Function
 err_handler:
-    Call handleError("wdbGlobalFunctions", "gramsToLbs", Err.Description, Err.number)
+    Call handleError("wdbGlobalFunctions", "gramsToLbs", Err.DESCRIPTION, Err.number)
 End Function
 
 Function applyToAllForms()
@@ -40,11 +56,9 @@ Set dbs = Application.CurrentProject
 For Each obj In dbs.AllForms
     If Left(obj.name, 1) = "f" Then
         DoCmd.OpenForm obj.name, acDesign
-'        If forms(obj.name).Modal Then
-'            On Error Resume Next
-'            forms(obj.name).Controls("lblTitleBar").LeftMargin = 144
-'        End If
-'        DoCmd.Close acForm, obj.name, acSaveYes
+        'forms(obj.name).btnHome
+        On Error Resume Next
+        DoCmd.Close acForm, obj.name, acSaveYes
     End If
 Next obj
 
@@ -66,7 +80,7 @@ CurrentDb.QueryDefs.Delete "myExportQueryDef"
 
 Exit Function
 err_handler:
-    Call handleError("wdbGlobalFunctions", "exportSQL", Err.Description, Err.number)
+    Call handleError("wdbGlobalFunctions", "exportSQL", Err.DESCRIPTION, Err.number)
 End Function
 
 Public Function nowString() As String
@@ -76,7 +90,7 @@ nowString = Format(Now(), "yyyymmddTHHmmss")
 
 Exit Function
 err_handler:
-    Call handleError("wdbGlobalFunctions", "nowString", Err.Description, Err.number)
+    Call handleError("wdbGlobalFunctions", "nowString", Err.DESCRIPTION, Err.number)
 End Function
 
 Public Function snackBox(sType As String, sTitle As String, sMessage As String, refForm As String, Optional centerBool As Boolean = False, Optional autoClose As Boolean = True)
@@ -101,7 +115,7 @@ DoCmd.OpenForm "frmSnack"
 
 Exit Function
 err_handler:
-    Call handleError("wdbGlobalFunctions", "snackBox", Err.Description, Err.number)
+    Call handleError("wdbGlobalFunctions", "snackBox", Err.DESCRIPTION, Err.number)
 End Function
 
 Public Function setSplashLoading(label As String)
@@ -116,7 +130,7 @@ End If
 
 Exit Function
 err_handler:
-    Call handleError("wdbGlobalFunctions", "setSplashLoading", Err.Description, Err.number)
+    Call handleError("wdbGlobalFunctions", "setSplashLoading", Err.DESCRIPTION, Err.number)
 End Function
 
 Public Function labelUpdate(oldLabel As String)
@@ -133,7 +147,7 @@ End Select
 
 Exit Function
 err_handler:
-    Call handleError("wdbGlobalFunctions", "labelUpdate", Err.Description, Err.number)
+    Call handleError("wdbGlobalFunctions", "labelUpdate", Err.DESCRIPTION, Err.number)
 End Function
 
 Public Function labelDirection(label As String)
@@ -145,7 +159,7 @@ Else
 End If
 Exit Function
 err_handler:
-    Call handleError("wdbGlobalFunctions", "labelDirection", Err.Description, Err.number)
+    Call handleError("wdbGlobalFunctions", "labelDirection", Err.DESCRIPTION, Err.number)
 End Function
 
 Public Function registerWdbUpdates(table As String, ID As Variant, column As String, oldVal As Variant, newVal As Variant, Optional tag0 As String = "", Optional tag1 As Variant = "")
@@ -182,7 +196,7 @@ Set rs1 = Nothing
 
 Exit Function
 err_handler:
-    Call handleError("wdbGlobalFunctions", "registerWdbUpdates", Err.Description, Err.number)
+    Call handleError("wdbGlobalFunctions", "registerWdbUpdates", Err.DESCRIPTION, Err.number)
 End Function
 
 Public Function registerSalesUpdates(table As String, ID As Variant, column As String, oldVal As Variant, newVal As Variant, Optional tag0 As String = "", Optional tag1 As Variant = "")
@@ -216,7 +230,7 @@ Set rs1 = Nothing
 
 Exit Function
 err_handler:
-    Call handleError("wdbGlobalFunctions", "registerSalesUpdates", Err.Description, Err.number)
+    Call handleError("wdbGlobalFunctions", "registerSalesUpdates", Err.DESCRIPTION, Err.number)
 End Function
 
 Public Function addWorkdays(dateInput As Date, daysToAdd As Long) As Date
@@ -244,7 +258,7 @@ addWorkdays = testDate
 
 Exit Function
 err_handler:
-    Call handleError("wdbGlobalFunctions", "addWorkdays", Err.Description, Err.number)
+    Call handleError("wdbGlobalFunctions", "addWorkdays", Err.DESCRIPTION, Err.number)
 End Function
 
 Public Function countWorkdays(oldDate As Date, newDate As Date) As Long
@@ -260,7 +274,7 @@ countWorkdays = total - sunday - saturday - holidays
 
 Exit Function
 err_handler:
-    Call handleError("wdbGlobalFunctions", "countWorkdays", Err.Description, Err.number)
+    Call handleError("wdbGlobalFunctions", "countWorkdays", Err.DESCRIPTION, Err.number)
 End Function
 
 Function getFullName() As String
@@ -273,7 +287,7 @@ rs1.Close: Set rs1 = Nothing
 
 Exit Function
 err_handler:
-    Call handleError("wdbGlobalFunctions", "getFullName", Err.Description, Err.number)
+    Call handleError("wdbGlobalFunctions", "getFullName", Err.DESCRIPTION, Err.number)
 End Function
 
 Function notificationsCount()
@@ -311,7 +325,7 @@ Set rs1 = Nothing
 
 Exit Function
 err_handler:
-    Call handleError("wdbGlobalFunctions", "loadECOtype", Err.Description, Err.number)
+    Call handleError("wdbGlobalFunctions", "loadECOtype", Err.DESCRIPTION, Err.number)
 End Function
 
 Function randomNumber(low As Long, high As Long) As Long
@@ -322,7 +336,7 @@ randomNumber = Int((high - low + 1) * Rnd() + low)
 
 Exit Function
 err_handler:
-    Call handleError("wdbGlobalFunctions", "randomNumber", Err.Description, Err.number)
+    Call handleError("wdbGlobalFunctions", "randomNumber", Err.DESCRIPTION, Err.number)
 End Function
 
 Function getAPI(url, header1, header2)
@@ -343,7 +357,7 @@ End If
 
 Exit Function
 err_handler:
-    Call handleError("wdbGlobalFunctions", "getAPI", Err.Description, Err.number)
+    Call handleError("wdbGlobalFunctions", "getAPI", Err.DESCRIPTION, Err.number)
 End Function
 
 Function generateHTML(Title As String, subTitle As String, primaryMessage As String, detail1 As String, detail2 As String, detail3 As String, Optional Link As String = "") As String
@@ -392,7 +406,7 @@ generateHTML = strHTMLBody
 
 Exit Function
 err_handler:
-    Call handleError("wdbGlobalFunctions", "generateHTML", Err.Description, Err.number)
+    Call handleError("wdbGlobalFunctions", "generateHTML", Err.DESCRIPTION, Err.number)
 End Function
 
 Function dailySummary(Title As String, subTitle As String, lates() As String, todays() As String, nexts() As String, lateCount As Long, todayCount As Long, nextCount As Long) As String
@@ -479,7 +493,7 @@ dailySummary = strHTMLBody
 
 Exit Function
 err_handler:
-    Call handleError("wdbGlobalFunctions", "dailySummary", Err.Description, Err.number)
+    Call handleError("wdbGlobalFunctions", "dailySummary", Err.DESCRIPTION, Err.number)
 End Function
 
 Function emailContentGen(subject As String, Title As String, subTitle As String, primaryMessage As String, detail1 As String, detail2 As String, detail3 As String) As String
@@ -489,7 +503,7 @@ emailContentGen = subject & "," & Title & "," & subTitle & "," & primaryMessage 
 
 Exit Function
 err_handler:
-    Call handleError("wdbGlobalFunctions", "emailContentGen", Err.Description, Err.number)
+    Call handleError("wdbGlobalFunctions", "emailContentGen", Err.DESCRIPTION, Err.number)
 End Function
 
 Function sendNotification(sendTo As String, notType As Integer, notPriority As Integer, desc As String, emailContent As String, Optional appName As String = "", Optional appId As Long, Optional multiEmail As Boolean = False) As Boolean
@@ -534,7 +548,7 @@ CurrentDb().Execute "INSERT INTO tblNotificationsSP(recipientUser,recipientEmail
 Exit Function
 err_handler:
 sendNotification = False
-    Call handleError("wdbGlobalFunctions", "sendNotification", Err.Description, Err.number)
+    Call handleError("wdbGlobalFunctions", "sendNotification", Err.DESCRIPTION, Err.number)
 End Function
 
 Function privilege(pref) As Boolean
@@ -544,7 +558,7 @@ privilege = DLookup("[" & pref & "]", "[tblPermissions]", "[User] = '" & Environ
     
 Exit Function
 err_handler:
-    Call handleError("wdbGlobalFunctions", "privilege", Err.Description, Err.number)
+    Call handleError("wdbGlobalFunctions", "privilege", Err.DESCRIPTION, Err.number)
 End Function
 
 Function userData(data) As String
@@ -554,7 +568,7 @@ userData = Nz(DLookup("[" & data & "]", "[tblPermissions]", "[User] = '" & Envir
 
 Exit Function
 err_handler:
-    Call handleError("wdbGlobalFunctions", "replaceDriveLetters", Err.Description, Err.number)
+    Call handleError("wdbGlobalFunctions", "replaceDriveLetters", Err.DESCRIPTION, Err.number)
 End Function
 
 Public Function getTotalPackingListWeight(packId As Long) As Double
@@ -588,6 +602,9 @@ End Function
 Function restrict(userName As String, dept As String, Optional reqLevel As String = "", Optional orAbove As Boolean = False) As Boolean
 On Error GoTo err_handler
 
+restrict = False
+Exit Function
+
 Dim d As Boolean, l As Boolean, rsPerm As Recordset
 d = False
 l = False
@@ -618,7 +635,7 @@ restrict = d Or l
 
 Exit Function
 err_handler:
-    Call handleError("wdbGlobalFunctions", "restrict", Err.Description, Err.number)
+    Call handleError("wdbGlobalFunctions", "restrict", Err.DESCRIPTION, Err.number)
 End Function
 
 Public Sub checkForFirstTimeRun()
@@ -649,7 +666,7 @@ rsSummaryEmail.Close: Set rsSummaryEmail = Nothing
 
 Exit Sub
 err_handler:
-    Call handleError("wdbGlobalFunctions", "checkForFirstTimeRun", Err.Description, Err.number)
+    Call handleError("wdbGlobalFunctions", "checkForFirstTimeRun", Err.DESCRIPTION, Err.number)
 End Sub
 
 Function grabSummaryInfo(Optional specificUser As String = "") As Boolean
@@ -792,7 +809,7 @@ grabSummaryInfo = True
 
 Exit Function
 err_handler:
-    Call handleError("wdbGlobalFunctions", "grabSummaryInfo", Err.Description, Err.number)
+    Call handleError("wdbGlobalFunctions", "grabSummaryInfo", Err.DESCRIPTION, Err.number)
 End Function
 
 Function checkProgramEvents() As Boolean
@@ -877,7 +894,7 @@ Set rsPeople = Nothing
 
 Exit Function
 err_handler:
-    Call handleError("wdbGlobalFunctions", "checkProgramEvents", Err.Description, Err.number)
+    Call handleError("wdbGlobalFunctions", "checkProgramEvents", Err.DESCRIPTION, Err.number)
 End Function
 
 Function getEmail(userName As String) As String
@@ -897,7 +914,7 @@ getEmail = Nz(rsEmployee!EMAIL_ADDRESS, "")
 
 Exit Function
 err_handler:
-    Call handleError("wdbGlobalFunctions", "getEmail", Err.Description, Err.number)
+    Call handleError("wdbGlobalFunctions", "getEmail", Err.DESCRIPTION, Err.number)
 End Function
 
 Function splitString(a, b, c) As String
@@ -932,7 +949,7 @@ On Error GoTo err_handler
     
 Exit Function
 err_handler:
-    Call handleError("wdbGlobalFunctions", "labelCycle", Err.Description, Err.number)
+    Call handleError("wdbGlobalFunctions", "labelCycle", Err.DESCRIPTION, Err.number)
 End Function
 
 Function idNAM(inputVal As Variant, typeVal As Variant) As Variant
@@ -978,7 +995,7 @@ Set rs1 = Nothing
 
 Exit Function
 err_handler:
-    Call handleError("wdbGlobalFunctions", "getDescriptionFromId", Err.Description, Err.number)
+    Call handleError("wdbGlobalFunctions", "getDescriptionFromId", Err.DESCRIPTION, Err.number)
 End Function
 
 Public Function StrQuoteReplace(strValue)
@@ -988,7 +1005,7 @@ StrQuoteReplace = Replace(strValue, "'", "''")
 
 Exit Function
 err_handler:
-    Call handleError("wdbGlobalFunctions", "StrQuoteReplace", Err.Description, Err.number)
+    Call handleError("wdbGlobalFunctions", "StrQuoteReplace", Err.DESCRIPTION, Err.number)
 End Function
 
 Public Function wdbEmail(ByVal strTo As String, ByVal strCC As String, ByVal strSubject As String, body As String) As Boolean
@@ -1008,5 +1025,5 @@ SendItems.CreateMailItem sendTo:=strTo, _
 Exit Function
 err_handler:
 wdbEmail = False
-    Call handleError("wdbGlobalFunctions", "wdbEmail", Err.Description, Err.number)
+    Call handleError("wdbGlobalFunctions", "wdbEmail", Err.DESCRIPTION, Err.number)
 End Function

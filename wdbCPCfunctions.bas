@@ -22,7 +22,7 @@ openPath (FilePath)
 
 Exit Function
 err_handler:
-    Call handleError("wdbCPCfunctions", "openCPCprojectFolder", Err.Description, Err.number)
+    Call handleError("wdbCPCfunctions", "openCPCprojectFolder", Err.DESCRIPTION, Err.number)
 End Function
 
 Public Sub registerCPCUpdates(table As String, ID As Variant, column As String, oldVal As Variant, newVal As Variant, Optional tag0 As String, Optional tag1 As String)
@@ -63,7 +63,7 @@ CurrentDb().Execute "INSERT INTO tblCPC_UpdateTracking" & sqlColumns & sqlValues
 
 Exit Sub
 err_handler:
-    Call handleError("wdbCPCfunctions", "registerCPCUpdates", Err.Description, Err.number)
+    Call handleError("wdbCPCfunctions", "registerCPCUpdates", Err.DESCRIPTION, Err.number)
 End Sub
 
 Function getYear(projectNumber As String)
@@ -77,5 +77,5 @@ On Error GoTo err_handler
     
 Exit Function
 err_handler:
-    Call handleError("wdbCPCfunctions", "getYear", Err.Description, Err.number)
+    Call handleError("wdbCPCfunctions", "getYear", Err.DESCRIPTION, Err.number)
 End Function
