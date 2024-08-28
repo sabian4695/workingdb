@@ -71,10 +71,10 @@ err_handler:
     Call handleError("wdbAdminFunctions", "moveForm", Err.DESCRIPTION, Err.number)
 End Sub
 
-Function logClick(modName As String, formName As String, Optional dataTag0 = "", Optional dataTag1 = "")
+Function logClick(modName As String, formName As String, Optional dataTag0 = "")
 On Error Resume Next
 
-If (CurrentProject.Path = "H:\dev") Then Exit Function
+'If (CurrentProject.Path = "H:\dev") Then Exit Function
 If DLookup("paramVal", "tblDBinfoBE", "parameter = '" & "recordAnalytics'") = False Then Exit Function
 
 Dim rs1 As Recordset
@@ -87,7 +87,7 @@ With rs1
         !userName = Environ("username")
         !dateUsed = Now()
         !dataTag0 = StrQuoteReplace(dataTag0)
-        !dataTag1 = StrQuoteReplace(dataTag1)
+        !dataTag1 = TempVars!wdbVersion
     .Update
 End With
 
