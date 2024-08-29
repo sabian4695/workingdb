@@ -8,9 +8,7 @@ On Error GoTo err_handler
 
 findDescription = ""
 
-'first, check Oracle
-'second, check Part Information
-'third, check SIFs
+'first, check Oracle, then check SIFs
 
 Dim db As Database
 Dim rs1 As Recordset
@@ -55,17 +53,20 @@ Set dbs = Application.CurrentProject
 ' Search for open AccessObject objects in AllForms collection.
 For Each obj In dbs.AllForms
     If Left(obj.name, 1) = "f" Then
+        If obj.name = "frmSearchHistory" Then GoTo nextOne
         DoCmd.OpenForm obj.name, acDesign
-        'forms(obj.name).btnHome
-        On Error Resume Next
+        
+        If forms(obj.name).DefaultView = 1 Then
+            forms(obj.name).BorderStyle = 2
+        End If
         DoCmd.Close acForm, obj.name, acSaveYes
     End If
+nextOne:
 Next obj
 
 End Function
 
 Public Function exportSQL(sqlString As String, FileName As String)
-
 On Error Resume Next
 CurrentDb.QueryDefs.Delete "myExportQueryDef"
 On Error GoTo err_handler
@@ -601,9 +602,6 @@ End Function
 
 Function restrict(userName As String, dept As String, Optional reqLevel As String = "", Optional orAbove As Boolean = False) As Boolean
 On Error GoTo err_handler
-
-restrict = False
-Exit Function
 
 Dim d As Boolean, l As Boolean, rsPerm As Recordset
 d = False
