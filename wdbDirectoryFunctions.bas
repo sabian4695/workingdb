@@ -105,6 +105,7 @@ If Dir(sFile, vbDirectory) <> "" Then FolderExists = True
 
 Exit Function
 err_handler:
+    If Err.number = 52 Then Exit Function
     Call handleError("wdbDirectoryFunctions", "FolderExists", Err.DESCRIPTION, Err.number)
 End Function
 
