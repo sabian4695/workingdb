@@ -186,8 +186,8 @@ modName = StrQuoteReplace(modName)
 errDesc = StrQuoteReplace(errDesc)
 errNum = StrQuoteReplace(errNum)
 
-strSQL = "INSERT INTO tblErrorLog(User,Form,Active_Control,Error_Date,Error_Description,Error_Number) VALUES ('" & _
- Environ("username") & "','" & modName & "','" & activeCon & "',#" & Now & "#,'" & errDesc & "'," & errNum & ")"
+strSQL = "INSERT INTO tblErrorLog(User,Form,Active_Control,Error_Date,Error_Description,Error_Number,databaseVersion) VALUES ('" & _
+ Environ("username") & "','" & modName & "','" & activeCon & "',#" & Now & "#,'" & errDesc & "'," & errNum & ",'" & TempVars!wdbVersion & "')"
 
 CurrentDb().Execute strSQL
 End Sub

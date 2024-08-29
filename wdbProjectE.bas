@@ -180,8 +180,11 @@ Else
 End If
 
 If rsPI!unitId = 3 And rsPI!dataStatus = 2 Then 'if U06 - these are required for transfer
-    If Nz(rsPI!outsourceInfoId) = "" Then errorArray.Add "Outsource Info"
-    If Nz(DLookup("outsourceCost", "tblPartOutsourceInfo", "recordId = " & rsPI!outsourceInfoId)) = "" Then errorArray.Add "Outsource Cost"
+    If Nz(rsPI!outsourceInfoId) = "" Then
+        errorArray.Add "Outsource Info"
+    Else
+        If Nz(DLookup("outsourceCost", "tblPartOutsourceInfo", "recordId = " & rsPI!outsourceInfoId)) = "" Then errorArray.Add "Outsource Cost"
+    End If
 End If
 
 If errorArray.count > 0 Then GoTo sendMsg
@@ -215,7 +218,7 @@ err_handler:
 End Function
 
 Public Function exportAIF(partNum As String) As String
-'On Error GoTo err_handler
+On Error GoTo err_handler
 exportAIF = False
 
 '---Setup Variables---

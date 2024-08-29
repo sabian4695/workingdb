@@ -603,6 +603,13 @@ End Function
 Function restrict(userName As String, dept As String, Optional reqLevel As String = "", Optional orAbove As Boolean = False) As Boolean
 On Error GoTo err_handler
 
+If (CurrentProject.Path = "H:\dev") Then
+    If userData("Developer") Then
+        restrict = False
+        Exit Function
+    End If
+End If
+
 Dim d As Boolean, l As Boolean, rsPerm As Recordset
 d = False
 l = False
