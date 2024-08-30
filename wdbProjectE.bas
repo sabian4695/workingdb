@@ -274,7 +274,7 @@ aifInsert "Customer", DLookup("CUSTOMER_NAME", "APPS_XXCUS_CUSTOMERS", "CUSTOMER
 
 If rsPI!dataStatus = 2 Then
     aifInsert "MP Unit", rsU!unitName, firstColBold:=True
-    aifInsert "Dev Unit", rsDevU!unitName, firstColBold:=True
+    aifInsert "In-House Unit", rsDevU!unitName, firstColBold:=True
 Else
     aifInsert "Unit", "U12", firstColBold:=True
 End If
