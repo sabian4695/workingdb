@@ -74,7 +74,6 @@ End Sub
 Function logClick(modName As String, formName As String, Optional dataTag0 = "")
 On Error Resume Next
 
-'If (CurrentProject.Path = "H:\dev") Then Exit Function
 If DLookup("paramVal", "tblDBinfoBE", "parameter = '" & "recordAnalytics'") = False Then Exit Function
 
 Dim rs1 As Recordset

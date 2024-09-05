@@ -291,7 +291,7 @@ aifInsert "Royalty", Nz(rsPI!sellingPrice) * 0.03, firstColBold:=True, set5Dec:=
 aifInsert "Outsource Cost", outsourceCost, firstColBold:=True, set5Dec:=True
 
 '---Molding / Assembly Specific Information---
-Dim insLev As String, mpLev As String, anneal As String, laborType As String, pph As String, weight100Pc As String, orgCalc
+Dim insLev As String, mpLev As String, anneal As String, laborType As String, pph As String, weight100Pc As String, orgCalc, pressSizeFin As String
 Select Case rsPI!partType
     Case 1, 4 'molded / new color
         aifInsert "MOLDING INFORMATION", "", , , , True
@@ -307,7 +307,14 @@ Select Case rsPI!partType
         End If
         pph = Nz(rsPMI!piecesPerHour)
         aifInsert "Tool Number", rsPMI!toolNumber, firstColBold:=True
-        aifInsert "Press Tonnage", Nz(rsPMI!pressSize), firstColBold:=True
+        
+        If rsPI!developingLocation <> "SLB" And Nz(rsPMI!pressSize) <> "" Then 'if org = SLB, use exact tonnage. Otherwise, use range
+            pressSizeFin = DLookup("pressSize", "tblDropDownsSP", "pressSizeAll = '" & rsPMI!pressSize & "'")
+        Else
+            pressSizeFin = Nz(rsPMI!pressSize)
+        End If
+        
+        aifInsert "Press Tonnage", pressSizeFin, firstColBold:=True
         aifInsert "Home Press", Nz(rsPMI!assignedPress), firstColBold:=True
         aifInsert "Tooling Lvl", rsPMI!toolType, firstColBold:=True
         aifInsert "Gate Lvl", rsPMI!gateCutting, firstColBold:=True
