@@ -34,6 +34,34 @@ End Type
 
 Dim AppX As Long, AppY As Long, AppTop As Long, AppLeft As Long, WinRECT As RECT, APointAPI As POINTAPI
 
+Function readyForPublish() As Boolean
+On Error GoTo err_handler
+
+readyForPublish = False
+
+'First, try to compile
+Dim compileMe As Object
+Set compileMe = Application.VBE.CommandBars.FindControl(type:=msoControlButton, ID:=578)
+
+If compileMe.Enabled Then compileMe.Execute
+
+'--Can you even do this?--
+Dim errorMsg As String: errorMsg = ""
+If (Application.IsCompiled = False) Then errorMsg = "Please compile codebase"
+If Not ((Environ("username") <> "brownj") Or (Environ("username") <> "georgemi")) Then errorMsg = "You must be an owner to do that"
+
+If errorMsg <> "" Then
+    MsgBox errorMsg, vbCritical, "Access Denied"
+    Exit Function
+End If
+
+readyForPublish = True
+
+Exit Function
+err_handler:
+    Call handleError("wdbAdminFunctions", "readyForPublish", Err.DESCRIPTION, Err.number)
+End Function
+
 Sub AppWindowSelect()
 On Error GoTo err_handler
     'select application window
