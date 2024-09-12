@@ -737,9 +737,9 @@ Do While Not rsPeople.EOF 'go through every active person
     If rsPeople!dept = "Design" Then
         Set rsOpenWOs = db.OpenRecordset("SELECT Part_Number, Control_Number, User, Nz([Adjusted_Due_Date],[due_date]) AS Due, tblDropDowns.DRStype AS requestType " & _
                                                                         "FROM (dbo_tblDRS INNER JOIN tblDropDowns ON dbo_tblDRS.Request_Type = tblDropDowns.ID) LEFT JOIN tblPermissions ON dbo_tblDRS.Assignee = tblPermissions.ID " & _
-                                                                        "WHERE (Nz([Adjusted_Due_Date],[due_date])<Date()+7) AND Approval_Status=2 AND Completed_Date Is Null AND User = '" & rsPeople!User & "'")
+                                                                        "WHERE (Nz([Adjusted_Due_Date],[due_date])<=Date()+7) AND Approval_Status=2 AND Completed_Date Is Null AND User = '" & rsPeople!User & "'")
         Do While (Not rsOpenWOs.EOF And Not ni > 15)
-            Select Case rsOpenWOs!Due
+            Select Case CDate(rsOpenWOs!Due)
                     Case Date 'due today
                         If ti > 15 Then
                             ti = ti + 1
@@ -772,8 +772,8 @@ nextWO:
         Set rsOpenWOs = Nothing
     End If
 
-    Set rsOpenSteps = db.OpenRecordset("SELECT * from tblPartSteps " & _
-                                "WHERE responsible = '" & rsPeople!dept & "' AND status <> 'Closed' AND partNumber IN (SELECT partNumber FROM tblPartTeam WHERE person = '" & rsPeople!User & "') AND dueDate <= Date()+7")
+    Set rsOpenSteps = db.OpenRecordset("SELECT * from qryStepApprovalTracker " & _
+                                "WHERE person = '" & rsPeople!User & "' AND dueDate <= Date()+7")
     
     Do While (Not rsOpenSteps.EOF And Not (ti > 15 And li > 15 And ni > 15))
         Select Case rsOpenSteps!dueDate
@@ -783,7 +783,7 @@ nextWO:
                     GoTo nextStep
                 End If
                 ReDim Preserve todaySteps(ti)
-                todaySteps(ti) = rsOpenSteps!partNumber & "," & rsOpenSteps!stepType & ",Today"
+                todaySteps(ti) = rsOpenSteps!partNumber & "," & rsOpenSteps!Action & ",Today"
                 ti = ti + 1
             Case Is < Date 'over due
                 If li > 15 Then
@@ -791,7 +791,7 @@ nextWO:
                     GoTo nextStep
                 End If
                 ReDim Preserve lateSteps(li)
-                lateSteps(li) = rsOpenSteps!partNumber & "," & rsOpenSteps!stepType & "," & Format(rsOpenSteps!dueDate, "mm/dd/yyyy")
+                lateSteps(li) = rsOpenSteps!partNumber & "," & rsOpenSteps!Action & "," & Format(rsOpenSteps!dueDate, "mm/dd/yyyy")
                 li = li + 1
             Case Is <= (Date + 7) 'due in next week
                 If ni > 15 Then
@@ -799,7 +799,7 @@ nextWO:
                     GoTo nextStep
                 End If
                 ReDim Preserve nextSteps(ni)
-                nextSteps(ni) = rsOpenSteps!partNumber & "," & rsOpenSteps!stepType & "," & Format(rsOpenSteps!dueDate, "mm/dd/yyyy")
+                nextSteps(ni) = rsOpenSteps!partNumber & "," & rsOpenSteps!Action & "," & Format(rsOpenSteps!dueDate, "mm/dd/yyyy")
                 ni = ni + 1
         End Select
 nextStep:
