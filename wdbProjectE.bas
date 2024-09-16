@@ -47,7 +47,7 @@ Dim rsPE As Recordset, rsPMI As Recordset
 Dim errorArray As Collection
 Set errorArray = New Collection
 
-If findDept(partNum, "Project", True) = "" Then errorArray.Add "Project Engineer"
+If findDept(partNum, TempVars!projectOwner, True) = "" Then errorArray.Add "Project Engineer"
 
 '---Grab General Data---
 Set rsPI = db.OpenRecordset("SELECT * from tblPartInfo WHERE partNumber = '" & partNum & "'")
