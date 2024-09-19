@@ -47,18 +47,26 @@ Dim rsPE As Recordset, rsPMI As Recordset
 Dim errorArray As Collection
 Set errorArray = New Collection
 
-If findDept(partNum, TempVars!projectOwner, True) = "" Then errorArray.Add "Project Engineer"
+If findDept(partNum, "Project", True) = "" Then errorArray.Add "Project Engineer"
 
 '---Grab General Data---
 Set rsPI = db.OpenRecordset("SELECT * from tblPartInfo WHERE partNumber = '" & partNum & "'")
 Set rsPack = db.OpenRecordset("SELECT * from tblPartPackagingInfo WHERE partInfoId = " & rsPI!recordId & " AND packType = 1")
 Set rsU = db.OpenRecordset("SELECT * from tblUnits WHERE recordId = " & rsPI!unitId)
 
-'check part info stuff - always reqruied
+
 If Nz(rsPI!dataStatus) = "" Then errorArray.Add "Data Status"
+
+''check catalog stuff
+'If Nz(rsPI!partClassCode) = "" Then errorArray.Add "Part Class Code"
+'If Nz(rsPI!subClassCode) = "" Then errorArray.Add "Sub Class Code"
+'If Nz(rsPI!businessCode) = "" Then errorArray.Add "Business Code"
+'If Nz(rsPI!focusAreaCode) = "" Then errorArray.Add "Focus Area Code"
+
 If Nz(rsPI!customerId) = "" Then errorArray.Add "Customer"
 If Nz(rsPI!developingLocation) = "" Then errorArray.Add "Developing Org"
 
+'check part info stuff - always reqruied
 If rsPI!dataStatus = 2 Then
     If Nz(rsPI!unitId) = "" Then errorArray.Add "MP Unit"
     If Nz(rsPI!developingUnit) = "" Then errorArray.Add "Dev Unit"
@@ -268,6 +276,22 @@ aifInsert "ACCOUNTING INFORMATION FORM", "", , "Exported: ", Date
 aifInsert "PRIMARY INFORMATION", "", , , , True
 aifInsert "Part Number", partNum, firstColBold:=True
 aifInsert "Data Status", DLookup("partDataStatus", "tblDropDownsSP", "ID = " & rsPI!dataStatus), firstColBold:=True
+
+'Dim classCodes(3) As String, classCodeFin As String
+'classCodes(0) = DLookup("partClassCode", "tblPartClassification", "recordId = " & rsPI!partClassCode)
+'classCodes(1) = DLookup("subClassCode", "tblPartClassification", "recordId = " & rsPI!subClassCode)
+'classCodes(2) = DLookup("businessCode", "tblPartClassification", "recordId = " & rsPI!businesssCode)
+'classCodes(3) = DLookup("focusAreaCode", "tblPartClassification", "recordId = " & rsPI!focusAreaCode)
+'
+'classCodeFin = ""
+'Dim itema
+'For Each itema In classCodes
+'    classCodeFin = classCodeFin & "." & itema
+'Next itema
+'classCodeFin = Right(classCodeFin, Len(classCodeFin) - 1)
+'
+'aifInsert "Nifco BW Item Reporting", classCodeFin, firstColBold:=True
+
 aifInsert "Planner", rsPE!firstName & " " & rsPE!lastName, firstColBold:=True
 aifInsert "Mark Code", Nz(rsPI!partMarkCode), firstColBold:=True
 aifInsert "Customer", DLookup("CUSTOMER_NAME", "APPS_XXCUS_CUSTOMERS", "CUSTOMER_ID = " & rsPI!customerId), firstColBold:=True
@@ -387,8 +411,8 @@ Do While Not rsComp.EOF
     aifInsert rsComp!componentNumber, _
         findDescription(rsComp!componentNumber), _
         rsComp!quantity, _
-        rsComp!finishLocator, _
-        Nz(DLookup("finishSubInv", "tblDropDownsSP", "ID = " & rsComp!finishSubInv))
+        Nz(rsComp!finishLocator), _
+        Nz(DLookup("finishSubInv", "tblDropDownsSP", "ID = " & Nz(rsComp!finishSubInv, 0)))
     rsComp.MoveNext
 Loop
 rsComp.Close

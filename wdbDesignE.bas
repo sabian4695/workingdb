@@ -87,6 +87,9 @@ If (IsNull(newVal)) Then
     newVal = ""
 End If
 
+If Len(oldVal) > 255 Then oldVal = Left(oldVal, 255)
+If Len(newVal) > 255 Then newVal = Left(newVal, 255)
+
 sqlColumns = "(tableName,tableRecordId,updatedBy,updatedDate,columnName,previousData,newData,dataTag0"
                     
 sqlValues = " values ('" & table & "', '" & ID & "', '" & Environ("username") & "', '" & Now() & "', '" & column & "', '" & StrQuoteReplace(CStr(oldVal)) & "', '" & StrQuoteReplace(CStr(newVal)) & "','" & tag0 & "'"

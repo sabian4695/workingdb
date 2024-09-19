@@ -3,27 +3,23 @@ Option Explicit
 
 Public bClone As Boolean
 
-'Function fixThis()
-'
-'Dim db As Database
-'Set db = CurrentDb
-'
-'Dim rs1 As Recordset
-'Set rs1 = db.OpenRecordset("tblPartMoldingInfo")
-'
-'Do While Not rs1.EOF
-'    If rs1!pressSize = "111-130" Then
-'        rs1.Edit
-'        rs1!pressSize = "130"
-'        rs1.Update
-'    End If
-'    rs1.MoveNext
-'Loop
-'
-'rs1.Close
-'Set rs1 = Nothing
-'
-'End Function
+Function fixThis()
+
+Dim db As Database
+Set db = CurrentDb
+
+Dim rs1 As Recordset
+Set rs1 = db.OpenRecordset("tblDRStrackerExtras")
+
+Do While Not rs1.EOF
+    If Len(rs1!Notes) > 255 Then Debug.Print Len(rs1!Notes) & " | " & rs1!Control_Number
+    rs1.MoveNext
+Loop
+
+rs1.Close
+Set rs1 = Nothing
+
+End Function
 
 Function findDescription(partNumber As String) As String
 On Error GoTo err_handler
