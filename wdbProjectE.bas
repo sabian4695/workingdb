@@ -218,6 +218,7 @@ rsComp.Close: Set rsComp = Nothing
 rsAI.Close: Set rsAI = Nothing
 rsPMI.Close: Set rsPMI = Nothing
 rsU.Close: Set rsU = Nothing
+Set db = Nothing
 Exit Function
 
 err_handler:
@@ -456,6 +457,7 @@ rsPI.Close: Set rsPI = Nothing
 rsU.Close: Set rsU = Nothing
 rsPack.Close: Set rsPack = Nothing
 rsPackC.Close: Set rsPackC = Nothing
+Set db = Nothing
 
 exportAIF = FileName
 
@@ -713,6 +715,7 @@ Set rsMeetings = Nothing
 
 '-----Part Info
 db.Execute "delete * from tblPartInfo where partNumber = '" & partNum & "'"
+Set db = Nothing
 
 MsgBox "All done.", vbInformation, "It is finished."
 
@@ -848,6 +851,7 @@ rsGateTemplate.Close
 Set rsGateTemplate = Nothing
 rsStepTemplate.Close
 Set rsStepTemplate = Nothing
+Set db = Nothing
 
 Exit Function
 err_handler:
@@ -1072,6 +1076,13 @@ Do While Not rsSteps.EOF
             rsECOrev.Close
             Set rsECOrev = Nothing
             GoTo performAction 'transfer ECO found!
+        Case "Cost Documents" 'Checking SP site for documents
+            If Nz(rsSteps!partNumber) = "" Then GoTo nextOne
+            Dim rsCostDocs As Recordset
+            Set rsCostDocs = db.OpenRecordset("SELECT * FROM [" & rsStepActions!compareColumn & "] WHERE " & _
+                "[Part Number] = '" & rsSteps!partNumber & "' AND [" & rsStepActions!compareColumn & "] = '" & rsStepActions!compareData & "' AND [Document Type] = 'Custom Item Cost Sheet'")
+            If rsCostDocs.RecordCount = 0 Then GoTo nextOne
+            GoTo performAction 'Custom Item Cost Sheet Found!
     End Select
     
     Set rsLookItUp = db.OpenRecordset("SELECT " & rsStepActions!compareColumn & " FROM " & rsStepActions!compareTable & " WHERE " & matchingCol & " = " & identifier)
@@ -1145,6 +1156,10 @@ rsStepActions.Close
 Set rsStepActions = Nothing
 rsSteps.Close
 Set rsSteps = Nothing
+rsCostDocs.Close
+Set rsCostDocs = Nothing
+
+Set db = Nothing
 
 scanSteps = True
 
@@ -1385,6 +1400,59 @@ emailPartApprovalNotification = True
 Exit Function
 err_handler:
     Call handleError("wdbProjectE", "emailPartApprovalNotification", Err.DESCRIPTION, Err.number)
+End Function
+
+Function emailAIF(stepId As Long, partNumber As String, aifType As String, projId As Long) As Boolean
+On Error GoTo err_handler
+
+emailAIF = False
+
+Dim db As Database
+Set db = CurrentDb()
+
+Dim rsAssParts As Recordset
+Set rsAssParts = db.OpenRecordset("SELECT * FROM tblPartProjectPartNumbers WHERE projectId = " & projId)
+
+If emailAIFsend(stepId, partNumber, "Kickoff") = False Then Exit Function 'do primary part number first
+
+If rsAssParts.RecordCount > 0 Then
+    Do While Not rsAssParts.EOF
+        If emailAIFsend(stepId, rsAssParts!childPartNumber, "Kickoff") = False Then Exit Function 'do each associated part number
+        rsAssParts.MoveNext
+    Loop
+End If
+
+Set db = Nothing
+
+emailAIF = True
+
+Exit Function
+err_handler:
+    Call handleError("wdbProjectE", "emailAIF", Err.DESCRIPTION, Err.number)
+End Function
+
+Function emailAIFsend(stepId As Long, partNumber As String, aifType As String)
+On Error GoTo err_handler
+
+emailAIFsend = False
+
+'find attachment link
+Dim attachLink As String
+attachLink = DLookup("directLink", "tblPartAttachmentsSP", "partStepId = " & stepId & " AND partNumber = '" & partNumber & "'")
+
+Dim emailBody As String, subjectLine As String, strTo As String
+subjectLine = partNumber & " " & aifType & " AIF"
+emailBody = generateHTML(subjectLine, aifType & " AIF " & partNumber & " is now ready", aifType & " AIF", "No extra details...", "", "", attachLink)
+
+strTo = "cost_team_mailbox@us.nifco.com"
+
+Call sendNotification(strTo, 2, 2, partNumber & " " & aifType & " AIF", emailBody, "Part Project", CLng(partNumber), customEmail:=True)
+
+emailAIFsend = True
+
+Exit Function
+err_handler:
+    Call handleError("wdbProjectE", "emailAIFsub", Err.DESCRIPTION, Err.number)
 End Function
 
 Function emailApprovedCapitalPacket(stepId As Long, partNumber As String, capitalPacketNum As String) As Boolean

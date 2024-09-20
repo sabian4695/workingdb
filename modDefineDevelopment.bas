@@ -36,6 +36,7 @@ Public Function fncRead() As Boolean
     Set rs1 = Nothing
 
     fncRead = True
+    Set db = Nothing
 End Function
 
 Public Function fncCheck() As String

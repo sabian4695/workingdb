@@ -525,14 +525,17 @@ err_handler:
     Call handleError("wdbGlobalFunctions", "emailContentGen", Err.DESCRIPTION, Err.number)
 End Function
 
-Function sendNotification(sendTo As String, notType As Integer, notPriority As Integer, desc As String, emailContent As String, Optional appName As String = "", Optional appId As Long, Optional multiEmail As Boolean = False) As Boolean
+Function sendNotification(sendTo As String, notType As Integer, notPriority As Integer, desc As String, emailContent As String, Optional appName As String = "", Optional appId As Long, Optional multiEmail As Boolean = False, Optional customEmail As Boolean = False) As Boolean
 sendNotification = True
 
 On Error GoTo err_handler
 
+Dim db As Database
+Set db = CurrentDb()
+
 'has this person been notified about this thing today already?
 Dim rsNotifications As Recordset
-Set rsNotifications = CurrentDb().OpenRecordset("SELECT * from tblNotificationsSP WHERE recipientUser = '" & sendTo & "' AND notificationDescription = '" & StrQuoteReplace(desc) & "' AND sentDate > #" & Date - 1 & "#")
+Set rsNotifications = db.OpenRecordset("SELECT * from tblNotificationsSP WHERE recipientUser = '" & sendTo & "' AND notificationDescription = '" & StrQuoteReplace(desc) & "' AND sentDate > #" & Date - 1 & "#")
 If rsNotifications.RecordCount > 0 Then
     If rsNotifications!notificationType = 1 Then
         Dim msgTxt As String
@@ -547,22 +550,33 @@ If rsNotifications.RecordCount > 0 Then
     End If
 End If
 
-Dim strEmail, ITEM, sendToArr() As String
-If multiEmail Then
-    sendToArr = Split(sendTo, ",")
-    strEmail = ""
-    For Each ITEM In sendToArr
-        strEmail = strEmail & getEmail(CStr(ITEM)) & ";"
-    Next ITEM
-    strEmail = Left(strEmail, Len(strEmail) - 1)
+Dim strEmail
+If customEmail = False Then
+    Dim ITEM, sendToArr() As String
+    If multiEmail Then
+        sendToArr = Split(sendTo, ",")
+        strEmail = ""
+        For Each ITEM In sendToArr
+            strEmail = strEmail & getEmail(CStr(ITEM)) & ";"
+        Next ITEM
+        strEmail = Left(strEmail, Len(strEmail) - 1)
+    Else
+        strEmail = getEmail(sendTo)
+    End If
 Else
-    strEmail = getEmail(sendTo)
+    strEmail = sendTo
+    sendTo = Split(sendTo, "@")(0)
 End If
 
 Dim strValues
 strValues = "'" & sendTo & "','" & strEmail & "','" & Environ("username") & "','" & getEmail(Environ("username")) & "','" & Now() & "'," & notType & "," & notPriority & ",'" & StrQuoteReplace(desc) & "','" & appName & "'," & appId & ",'" & StrQuoteReplace(emailContent) & "'"
 
-CurrentDb().Execute "INSERT INTO tblNotificationsSP(recipientUser,recipientEmail,senderUser,senderEmail,sentDate,notificationType,notificationPriority,notificationDescription,appName,appId,emailContent) VALUES(" & strValues & ");"
+db.Execute "INSERT INTO tblNotificationsSP(recipientUser,recipientEmail,senderUser,senderEmail,sentDate,notificationType,notificationPriority,notificationDescription,appName,appId,emailContent) VALUES(" & strValues & ");"
+
+On Error Resume Next
+rsNotifications.Close
+Set rsNotifications = Nothing
+Set db = Nothing
 
 Exit Function
 err_handler:
@@ -686,6 +700,7 @@ On Error Resume Next
 rsAnalytics.Close: Set rsAnalytics = Nothing
 rsRefreshReports.Close: Set rsRefreshReports = Nothing
 rsSummaryEmail.Close: Set rsSummaryEmail = Nothing
+Set db = Nothing
 
 Exit Sub
 err_handler:
@@ -827,7 +842,7 @@ nextStep:
 nextPerson:
     rsPeople.MoveNext
 Loop
-
+Set db = Nothing
 grabSummaryInfo = True
 
 Exit Function
@@ -914,6 +929,8 @@ Set rsEvents = Nothing
 
 rsPeople.Close
 Set rsPeople = Nothing
+
+Set db = Nothing
 
 Exit Function
 err_handler:

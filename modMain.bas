@@ -550,6 +550,7 @@ For Each fld In rs1.Fields
     End If
 Next
 Set fld = Nothing
+Set db = Nothing
     
     fncReadTitle = True
 End Function
@@ -672,7 +673,7 @@ Set fld = Nothing
             End If
         End If
     Next i
-    
+    Set db = Nothing
     fncWriteExcel = True
 End Function
 
@@ -764,6 +765,7 @@ Private Function fncWriteExcelForUpdate(ByRef iobjRecords As CATIAPropertyTable)
     
     rs1.Close
     Set rs1 = Nothing
+    Set db = Nothing
     Form_frmPLM.Dirty = False
     Form_sfrmPLM.Dirty = False
     fncWriteExcelForUpdate = True
@@ -895,6 +897,7 @@ Private Function fncGetProperty() As CATIAPropertyTable
     Next i
     rs1.Close
     Set rs1 = Nothing
+    Set db = Nothing
 End Function
 
 Public Function fncGetIndex(ByVal istrPropertyName As String) As Long
@@ -919,6 +922,7 @@ For Each fld In rs1.Fields
     i = i + 1
 Next
 Set fld = Nothing
+Set db = Nothing
 End Function
 
 Private Function fncIsBlankRecord(ByRef itypRecord As Record) As Boolean

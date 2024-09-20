@@ -55,6 +55,7 @@ Next i
 
 rs1.Close
 Set rs1 = Nothing
+Set db = Nothing
     
 fncRead = True
 End Function

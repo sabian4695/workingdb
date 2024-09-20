@@ -48,6 +48,7 @@ Public Function fncRead() As Boolean
 
     rs1.Close
     Set rs1 = Nothing
+    Set db = Nothing
     fncRead = True
 End Function
 
