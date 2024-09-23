@@ -51,7 +51,7 @@ If findDept(partNum, "Project", True) = "" Then errorArray.Add "Project Engineer
 
 '---Grab General Data---
 Set rsPI = db.OpenRecordset("SELECT * from tblPartInfo WHERE partNumber = '" & partNum & "'")
-Set rsPack = db.OpenRecordset("SELECT * from tblPartPackagingInfo WHERE partInfoId = " & rsPI!recordId & " AND packType = 1")
+Set rsPack = db.OpenRecordset("SELECT * from tblPartPackagingInfo WHERE partInfoId = " & rsPI!recordId & " AND (packType = 1 OR packType = 99)")
 Set rsU = db.OpenRecordset("SELECT * from tblUnits WHERE recordId = " & rsPI!unitId)
 
 
@@ -1080,7 +1080,7 @@ Do While Not rsSteps.EOF
         Case "Cost Documents" 'Checking SP site for documents
             If Nz(rsSteps!partNumber) = "" Then GoTo nextOne
             Dim rsCostDocs As Recordset
-            Set rsCostDocs = db.OpenRecordset("SELECT * FROM [" & rsStepActions!compareColumn & "] WHERE " & _
+            Set rsCostDocs = db.OpenRecordset("SELECT * FROM [" & rsStepActions!compareTable & "] WHERE " & _
                 "[Part Number] = '" & rsSteps!partNumber & "' AND [" & rsStepActions!compareColumn & "] = '" & rsStepActions!compareData & "' AND [Document Type] = 'Custom Item Cost Sheet'")
             If rsCostDocs.RecordCount = 0 Then GoTo nextOne
             GoTo performAction 'Custom Item Cost Sheet Found!
