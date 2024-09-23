@@ -9,10 +9,16 @@ Dim db As Database
 Set db = CurrentDb
 
 Dim rs1 As Recordset
-Set rs1 = db.OpenRecordset("tblDRStrackerExtras")
+Set rs1 = db.OpenRecordset("tblPartProject")
 
 Do While Not rs1.EOF
-    If Len(rs1!Notes) > 255 Then Debug.Print Len(rs1!Notes) & " | " & rs1!Control_Number
+    
+    If DCount("recordId", "tblPartSteps", "partProjectId = " & rs1!recordId) = DCount("recordId", "tblPartSteps", "partProjectId = " & rs1!recordId & " AND status = 'Closed'") Then
+        rs1.Edit
+        rs1!projectStatus = 4
+        rs1.Update
+    End If
+    
     rs1.MoveNext
 Loop
 

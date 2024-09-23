@@ -207,7 +207,7 @@ For Each element In errorArray
     errorTxtLines = errorTxtLines & vbNewLine & element
 Next element
 
-MsgBox "Please fix these items:" & vbNewLine & errorTxtLines, vbOKOnly, "Fix this to export"
+MsgBox "Please fix these items for " & partNum & ":" & vbNewLine & errorTxtLines, vbOKOnly, "Fix this to export"
 
 exitFunction:
 On Error Resume Next
@@ -879,70 +879,12 @@ On Error GoTo err_handler
 Dim percent As Double, width As Long
 width = 17820
 
-Dim rsSteps As Recordset
-Set rsSteps = CurrentDb().OpenRecordset("SELECT * from tblPartSteps WHERE partProjectId = " & Form_frmPartDashboard.recordId)
-
-Dim totalSteps, closedSteps
-rsSteps.MoveLast
-totalSteps = rsSteps.RecordCount
-
-rsSteps.filter = "status = 'Closed'"
-Set rsSteps = rsSteps.OpenRecordset
-If rsSteps.RecordCount = 0 Then
-    percent = 0
-    GoTo setBar
-End If
-rsSteps.MoveFirst
-rsSteps.MoveLast
-closedSteps = rsSteps.RecordCount
-percent = closedSteps / totalSteps
-
-setBar:
-Call setBarColorPercent(percent, "progressBarPROJECT", width)
-
-Exit Function
-err_handler:
-    Call handleError("wdbProjectE", "setProgressBarPROJECT", Err.DESCRIPTION, Err.number)
-End Function
-
-Public Function setProgressBarSTEPS(gateId As Long)
-On Error GoTo err_handler
-
-Dim percent As Double, width As Long
-width = 11886
-percent = 0
-
-Dim rsSteps As Recordset
-Set rsSteps = CurrentDb().OpenRecordset("SELECT * from tblPartSteps WHERE partGateId = " & gateId)
-
-Dim totalSteps, closedSteps
-rsSteps.MoveLast
-totalSteps = rsSteps.RecordCount
-If totalSteps = 0 Then GoTo setBar
-
-rsSteps.filter = "status = 'Closed'"
-Set rsSteps = rsSteps.OpenRecordset
-If rsSteps.RecordCount = 0 Then GoTo setBar
-rsSteps.MoveFirst
-rsSteps.MoveLast
-closedSteps = rsSteps.RecordCount
-percent = closedSteps / totalSteps
-
-setBar:
-Call setBarColorPercent(percent, "progressBarSTEPS", width)
-
-Exit Function
-err_handler:
-    Call handleError("wdbProjectE", "setProgressBarSTEPS", Err.DESCRIPTION, Err.number)
-End Function
-
-Function setBarColorPercent(percent As Double, controlName As String, barWidth As Long)
-On Error GoTo err_handler
+percent = grabProjectProgressPercent(Form_frmPartDashboard.recordId)
 
 If percent < 0.1 Then
-    Form_frmPartDashboard.Controls(controlName).width = 1
+    Form_frmPartDashboard.progressBarPROJECT.width = 1
 Else
-    Form_frmPartDashboard.Controls(controlName).width = percent * barWidth
+    Form_frmPartDashboard.progressBarPROJECT.width = percent * width
 End If
 
 Dim pColor
@@ -956,13 +898,72 @@ Select Case True
     Case percent >= 0.75
         pColor = RGB(100, 150, 100)
 End Select
-Form_frmPartDashboard.Controls(controlName).BackColor = pColor
-Form_frmPartDashboard.Controls(controlName & "_").BorderColor = pColor
-Form_frmPartDashboard.Controls(controlName).BorderColor = pColor
+Form_frmPartDashboard.progressBarPROJECT.BackColor = pColor
+Form_frmPartDashboard.progressBarPROJECT_.BorderColor = pColor
+Form_frmPartDashboard.progressBarPROJECT.BorderColor = pColor
+
+Form_frmPartDashboard.percComplete = Round(percent * 100, 0) & "%"
 
 Exit Function
 err_handler:
-    Call handleError("wdbProjectE", "setBarColorPercent", Err.DESCRIPTION, Err.number)
+    Call handleError("wdbProjectE", "setProgressBarPROJECT", Err.DESCRIPTION, Err.number)
+End Function
+
+Public Function grabProjectProgressPercent(projId As Long) As Double
+On Error GoTo err_handler
+
+Dim db As Database
+Set db = CurrentDb()
+Dim rsSteps As Recordset
+Set rsSteps = db.OpenRecordset("SELECT * from tblPartSteps WHERE partProjectId = " & projId)
+
+Dim totalSteps, closedSteps
+rsSteps.MoveLast
+totalSteps = rsSteps.RecordCount
+
+rsSteps.filter = "status = 'Closed'"
+Set rsSteps = rsSteps.OpenRecordset
+If rsSteps.RecordCount = 0 Then
+    grabProjectProgressPercent = 0
+    GoTo exitFunction
+End If
+rsSteps.MoveFirst
+rsSteps.MoveLast
+closedSteps = rsSteps.RecordCount
+grabProjectProgressPercent = closedSteps / totalSteps
+
+exitFunction:
+On Error Resume Next
+rsSteps.Close
+Set rsSteps = Nothing
+Set db = Nothing
+
+Exit Function
+err_handler:
+    Call handleError("wdbProjectE", "grabProjectProgressPercent", Err.DESCRIPTION, Err.number)
+End Function
+
+Public Function boxPercentConvert(percentIn As Double) As String
+On Error GoTo err_handler
+
+Select Case percentIn
+    Case 0
+        boxPercentConvert = ""
+    Case Is < 25
+        boxPercentConvert = "g"
+    Case Is < 50
+        boxPercentConvert = "gg"
+    Case Is < 75
+        boxPercentConvert = "ggg"
+    Case Is < 100
+        boxPercentConvert = "gggg"
+    Case Else
+        boxPercentConvert = "ggggg"
+End Select
+
+Exit Function
+err_handler:
+    Call handleError("wdbProjectE", "boxPercentConvert", Err.DESCRIPTION, Err.number)
 End Function
 
 Function notifyPE(partNum As String, notiType As String, stepTitle As String, Optional sendAlways As Boolean = False, Optional stepAction As Boolean = False) As Boolean
