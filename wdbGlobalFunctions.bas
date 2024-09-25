@@ -464,7 +464,7 @@ If lates(0) <> "" Then
     If lateCount > 15 Then varStr1 = seeMore
     tblStepOverview = tblStepOverview & "<table style=""width: 100%; margin: 0 auto; background: #2b2b2b; color: rgb(255,255,255);""><tr><th style=""padding: 1em; font-size: 20px; color: rgb(255,150,150); display: table-header-group;"" colspan=""3"">You have " & _
                                                                 lateCount & " item" & varStr & " overdue</th></tr><tbody>" & _
-                                                            "<tr style=""padding: .1em 2em;""><th style=""text-align: left"">Part Number</th><th style=""text-align: left"">Item</th><th style=""text-align: left"">Due</th></tr>" & lateTable & varStr1 & "</tbody></table>"
+                                                            "<tr style=""padding: .1em 2em;""><th style=""text-align: left"">Part#</th><th style=""text-align: left"">Item</th><th style=""text-align: left"">Due</th></tr>" & lateTable & varStr1 & "</tbody></table>"
 End If
 
 varStr = ""
@@ -480,7 +480,7 @@ If todays(0) <> "" Then
     If todayCount > 15 Then varStr1 = seeMore
     tblStepOverview = tblStepOverview & "<table style=""width: 100%; margin: 0 auto; background: #2b2b2b; color: rgb(255,255,255);""><tr><th style=""padding: 1em; font-size: 20px; color: rgb(235,200,200); display: table-header-group;"" colspan=""3"">You have " & _
                                                                 todayCount & " item" & varStr & " due today</th></tr><tbody>" & _
-                                                            "<tr style=""padding: .1em 2em;""><th style=""text-align: left"">Part Number</th><th style=""text-align: left"">Item</th><th style=""text-align: left"">Due</th></tr>" & todayTable & varStr1 & "</tbody></table>"
+                                                            "<tr style=""padding: .1em 2em;""><th style=""text-align: left"">Part#</th><th style=""text-align: left"">Item</th><th style=""text-align: left"">Due</th></tr>" & todayTable & varStr1 & "</tbody></table>"
 End If
 
 varStr = ""
@@ -496,7 +496,7 @@ If nexts(0) <> "" Then
     If nextCount > 15 Then varStr1 = seeMore
     tblStepOverview = tblStepOverview & "<table style=""width: 100%; margin: 0 auto; background: #2b2b2b; color: rgb(255,255,255);""><tr><th style=""padding: 1em; font-size: 20px; color: rgb(235,235,235); display: table-header-group;"" colspan=""3"">You have " & _
                                                                 nextCount & " item" & varStr & " due soon</th></tr><tbody>" & _
-                                                            "<tr style=""padding: .1em 2em;""><th style=""text-align: left"">Part Number</th><th style=""text-align: left"">Item</th><th style=""text-align: left"">Due</th></tr>" & nextTable & varStr1 & "</tbody></table>"
+                                                            "<tr style=""padding: .1em 2em;""><th style=""text-align: left"">Part#</th><th style=""text-align: left"">Item</th><th style=""text-align: left"">Due</th></tr>" & nextTable & varStr1 & "</tbody></table>"
 End If
 
 strHTMLBody = "" & _
@@ -754,7 +754,7 @@ Do While Not rsPeople.EOF 'go through every active person
     If rsPeople!dept = "Design" Then
         Set rsOpenWOs = db.OpenRecordset("SELECT Part_Number, Control_Number, User, Nz([Adjusted_Due_Date],[due_date]) AS Due, tblDropDowns.DRStype AS requestType " & _
                                                                         "FROM (dbo_tblDRS INNER JOIN tblDropDowns ON dbo_tblDRS.Request_Type = tblDropDowns.ID) LEFT JOIN tblPermissions ON dbo_tblDRS.Assignee = tblPermissions.ID " & _
-                                                                        "WHERE (Nz([Adjusted_Due_Date],[due_date])<=Date()+7) AND Approval_Status=2 AND Completed_Date Is Null AND User = '" & rsPeople!User & "'")
+                                                                        "WHERE (Nz([Adjusted_Due_Date],[due_date])<=Date()+7) AND Approval_Status=2 AND Completed_Date Is Null AND User = '" & rsPeople!User & "' ORDER BY Part_Number")
         Do While (Not rsOpenWOs.EOF And Not ni > 15)
             Select Case CDate(rsOpenWOs!Due)
                     Case Date 'due today

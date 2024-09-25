@@ -73,8 +73,8 @@ If rsPI!dataStatus = 2 Then
 End If
 
 If Nz(rsPI!partType) = "" Then errorArray.Add "Part Type"
-If Nz(rsPI!finishLocator) = "" Then errorArray.Add "Finish Locator"
-If Nz(rsPI!finishSubInv) = "" Then errorArray.Add "Finish Sub-Inventory"
+If Nz(rsPI!finishLocator) = "" Then errorArray.Add "Locator"
+If Nz(rsPI!finishSubInv) = "" Then errorArray.Add "Sub-Inventory"
 If Nz(rsPI!quoteInfoId) = "" Then errorArray.Add "Quote Information"
 If Nz(DLookup("quotedCost", "tblPartQuoteInfo", "recordId = " & rsPI!quoteInfoId)) = "" Then errorArray.Add "Quoted Cost"
 If Nz(rsPI!sellingPrice) = "" Then errorArray.Add "Selling Price" 'required always if FG
@@ -307,8 +307,8 @@ End If
 aifInsert "Mexico Rates", Nz(rsU!Org) = "CUU", firstColBold:=True
 aifInsert "Org", Nz(rsU!Org, rsPI!developingLocation), firstColBold:=True  'is this supposed to be UNIT based, or the developing ORG?
 aifInsert "Part Type", DLookup("partType", "tblDropDownsSP", "ID = " & rsPI!partType), firstColBold:=True
-aifInsert "Routing Finish", Nz(DLookup("finishLocator", "tblDropDownsSP", "ID = " & rsPI!finishLocator)), firstColBold:=True
-aifInsert "Sub-Location", Nz(DLookup("finishSubInv", "tblDropDownsSP", "ID = " & rsPI!finishSubInv)), firstColBold:=True
+aifInsert "Locator", Nz(DLookup("finishLocator", "tblDropDownsSP", "ID = " & rsPI!finishLocator)), firstColBold:=True
+aifInsert "Sub-Inventory", Nz(DLookup("finishSubInv", "tblDropDownsSP", "ID = " & rsPI!finishSubInv)), firstColBold:=True
 aifInsert "Mexico Freight", mexFr, firstColBold:=True, set5Dec:=True
 aifInsert "Quoted Cost", Nz(DLookup("quotedCost", "tblPartQuoteInfo", "recordId = " & rsPI!quoteInfoId), 0), firstColBold:=True, set5Dec:=True
 aifInsert "Selling Price", Nz(rsPI!sellingPrice), firstColBold:=True, set5Dec:=True
