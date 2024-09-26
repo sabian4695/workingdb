@@ -333,10 +333,13 @@ Select Case rsPI!partType
         pph = Nz(rsPMI!piecesPerHour)
         aifInsert "Tool Number", rsPMI!toolNumber, firstColBold:=True
         
+        Dim pressSizeID
         If rsPI!developingLocation <> "SLB" And Nz(rsPMI!pressSize) <> "" Then 'if org = SLB, use exact tonnage. Otherwise, use range
             pressSizeFin = DLookup("pressSize", "tblDropDownsSP", "pressSizeAll = '" & rsPMI!pressSize & "'")
+            pressSizeID = DLookup("ID", "tblDropDownsSP", "pressSizeAll = '" & rsPMI!pressSize & "'")
         Else
             pressSizeFin = Nz(rsPMI!pressSize)
+            pressSizeID = DLookup("ID", "tblDropDownsSP", "pressSize = '" & rsPMI!pressSize & "'")
         End If
         
         aifInsert "Press Tonnage", pressSizeFin, firstColBold:=True
@@ -346,7 +349,7 @@ Select Case rsPI!partType
         aifInsert "Insert Mold", rsPMI!insertMold, firstColBold:=True
         aifInsert "Family Mold", rsPMI!familyTool, firstColBold:=True
         If rsPI!glass Then
-            aifInsert "Glass Cost", DLookup("pressRate", "tblDropDownsSP", "pressSize = '" & rsPMI!pressSize & "'") / rsPMI!piecesPerHour / 408 / 12 / 0.85, firstColBold:=True, set5Dec:=True
+            aifInsert "Glass Cost", DLookup("pressRate", "tblDropDownsSP", "ID = " & pressSizeID) / rsPMI!piecesPerHour / 408 / 12 / 0.85, firstColBold:=True, set5Dec:=True
         Else
             aifInsert "Glass Cost", "0", firstColBold:=True, set5Dec:=True
         End If
