@@ -304,6 +304,12 @@ Else
     aifInsert "Unit", "U12", firstColBold:=True
 End If
 
+If rsU!DESCRIPTION = "Critical Parts" Then
+    aifInsert "Critical Part", "TRUE", firstColBold:=True
+Else
+    aifInsert "Critical Part", "FALSE", firstColBold:=True
+End If
+
 aifInsert "Mexico Rates", Nz(rsU!Org) = "CUU", firstColBold:=True
 aifInsert "Org", Nz(rsU!Org, rsPI!developingLocation), firstColBold:=True  'is this supposed to be UNIT based, or the developing ORG?
 aifInsert "Part Type", DLookup("partType", "tblDropDownsSP", "ID = " & rsPI!partType), firstColBold:=True
