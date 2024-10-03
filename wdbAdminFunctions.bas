@@ -59,7 +59,7 @@ readyForPublish = True
 
 Exit Function
 err_handler:
-    Call handleError("wdbAdminFunctions", "readyForPublish", Err.description, Err.number)
+    Call handleError("wdbAdminFunctions", "readyForPublish", Err.DESCRIPTION, Err.number)
 End Function
 
 Sub AppWindowSelect()
@@ -74,7 +74,7 @@ On Error GoTo err_handler
 
 Exit Sub
 err_handler:
-    Call handleError("wdbAdminFunctions", "AppWindowSelect", Err.description, Err.number)
+    Call handleError("wdbAdminFunctions", "AppWindowSelect", Err.DESCRIPTION, Err.number)
 End Sub
 
 Sub AppWindowMove()
@@ -85,7 +85,7 @@ On Error GoTo err_handler
         0, 0, &H4 + &H1
 Exit Sub
 err_handler:
-    Call handleError("wdbAdminFunctions", "AppWindowMove", Err.description, Err.number)
+    Call handleError("wdbAdminFunctions", "AppWindowMove", Err.DESCRIPTION, Err.number)
 End Sub
 
 Sub moveForm(frm As Form)
@@ -96,7 +96,7 @@ On Error GoTo err_handler
 
 Exit Sub
 err_handler:
-    Call handleError("wdbAdminFunctions", "moveForm", Err.description, Err.number)
+    Call handleError("wdbAdminFunctions", "moveForm", Err.DESCRIPTION, Err.number)
 End Sub
 
 Function logClick(modName As String, formName As String, Optional dataTag0 = "")
@@ -231,7 +231,7 @@ rs1.Close: Set rs1 = Nothing
 
 Exit Function
 err_handler:
-    Call handleError("wdbAdminFunctions", "grabVersion", Err.description, Err.number)
+    Call handleError("wdbAdminFunctions", "grabVersion", Err.DESCRIPTION, Err.number)
 End Function
 
 Function SixHatHideWindow(nCmdShow As Long)
@@ -262,7 +262,7 @@ On Error GoTo err_handler
 
 Exit Function
 err_handler:
-    Call handleError("wdbAdminFunctions", "SixHatHideWindow", Err.description, Err.number)
+    Call handleError("wdbAdminFunctions", "SixHatHideWindow", Err.DESCRIPTION, Err.number)
 End Function
 
 Sub SizeAccess(ByVal dx As Long, ByVal dy As Long)
@@ -295,5 +295,5 @@ End If
 
 Exit Sub
 err_handler:
-    Call handleError("wdbAdminFunctions", "SizeAccess", Err.description, Err.number)
+    Call handleError("wdbAdminFunctions", "SizeAccess", Err.DESCRIPTION, Err.number)
 End Sub

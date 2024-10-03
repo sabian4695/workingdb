@@ -31,7 +31,7 @@ Set rs1 = Nothing
 
 Exit Function
 err_handler:
-    Call handleError("wdbDesignE", "createDnumber", Err.description, Err.number)
+    Call handleError("wdbDesignE", "createDnumber", Err.DESCRIPTION, Err.number)
 End Function
 
 Sub SetNavButtons(ByRef frmSomeForm As Form)
@@ -61,7 +61,7 @@ SetNavButtons_Exit:
 On Error Resume Next
 Exit Sub
 SetNavButtons_Error:
-MsgBox "Error " & Err.number & " (" & Err.description & _
+MsgBox "Error " & Err.number & " (" & Err.DESCRIPTION & _
 ") in procedure SetNavButtons of Module modFormOperations"
 GoTo SetNavButtons_Exit
 End Sub
@@ -107,7 +107,7 @@ CurrentDb().Execute "INSERT INTO tblDRSUpdateTracking" & sqlColumns & sqlValues
 
 Exit Sub
 err_handler:
-    Call handleError("wdbDesignE", "registerDRSUpdates", Err.description, Err.number)
+    Call handleError("wdbDesignE", "registerDRSUpdates", Err.DESCRIPTION, Err.number)
 End Sub
 
 Function DRShistoryGrabReference(columnName As String, inputVal As Variant) As String
@@ -190,5 +190,5 @@ progressPercent = checked / total
 
 Exit Function
 err_handler:
-    Call handleError("wdbDesignE", "progressPercent", Err.description, Err.number)
+    Call handleError("wdbDesignE", "progressPercent", Err.DESCRIPTION, Err.number)
 End Function
