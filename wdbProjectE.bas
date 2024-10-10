@@ -834,13 +834,12 @@ Dim db As DAO.Database
 Set db = CurrentDb()
 Dim rsProject As Recordset, rsStepTemplate As Recordset, rsApprovalsTemplate As Recordset, rsGateTemplate As Recordset
 Dim strInsert As String, strInsert1 As String
-Dim projTempId As Long, pNum As String, childPnum As String, runningDate As Date
+Dim projTempId As Long, pNum As String, runningDate As Date
 
 Set rsProject = db.OpenRecordset("SELECT * from tblPartProject WHERE recordId = " & projId)
 
 projTempId = rsProject!projectTemplateId
 pNum = rsProject!partNumber
-childPnum = Nz(rsProject!childPartNumber, "")
 runningDate = rsProject!projectStartDate
 
 If Nz(pNum) = "" Then Exit Function 'escape possible part number null projects

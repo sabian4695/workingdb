@@ -1097,7 +1097,7 @@ End Function
 Public Function StrQuoteReplace(strValue)
 On Error GoTo err_handler
 
-StrQuoteReplace = Replace(strValue, "'", "''")
+StrQuoteReplace = Replace(Nz(strValue, ""), "'", "''")
 
 Exit Function
 err_handler:
