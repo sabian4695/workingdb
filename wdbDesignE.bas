@@ -4,9 +4,11 @@ Option Explicit
 Function createDnumber() As String
 On Error GoTo err_handler
 
+Dim db As Database
+Set db = CurrentDb()
 Dim rs1 As Recordset
 Dim strInsert
-Set rs1 = CurrentDb().OpenRecordset("tblDnumbers", dbOpenSnapshot)
+Set rs1 = db.OpenRecordset("tblDnumbers", dbOpenSnapshot)
 
 Dim dNum
 
@@ -22,12 +24,13 @@ rs1.MoveLast
 dNum = rs1!dNumber + 1
 
 strInsert = "INSERT INTO tblDnumbers(dNumber,createdBy,createdDate) VALUES (" & dNum & ",'" & Environ("username") & "','" & Now() & "')"
-CurrentDb().Execute strInsert, dbFailOnError
+db.Execute strInsert, dbFailOnError
 
 createDnumber = "D" & dNum
 
 rs1.Close
 Set rs1 = Nothing
+Set db = Nothing
 
 Exit Function
 err_handler:
@@ -102,8 +105,10 @@ Else
     sqlValues = sqlValues & ",'" & tag1 & "');"
 End If
 
-
-CurrentDb().Execute "INSERT INTO tblDRSUpdateTracking" & sqlColumns & sqlValues
+Dim db As Database
+Set db = CurrentDb()
+db.Execute "INSERT INTO tblDRSUpdateTracking" & sqlColumns & sqlValues
+Set db = Nothing
 
 Exit Sub
 err_handler:

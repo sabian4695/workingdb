@@ -104,8 +104,10 @@ On Error Resume Next
 
 If DLookup("paramVal", "tblDBinfoBE", "parameter = '" & "recordAnalytics'") = False Then Exit Function
 
+Dim db As Database
+Set db = CurrentDb()
 Dim rs1 As Recordset
-Set rs1 = CurrentDb().OpenRecordset("tblAnalytics")
+Set rs1 = db.OpenRecordset("tblAnalytics")
 
 With rs1
     .addNew
@@ -120,6 +122,7 @@ End With
 
 rs1.Close
 Set rs1 = Nothing
+Set db = Nothing
 
 End Function
 
@@ -218,16 +221,22 @@ errNum = StrQuoteReplace(errNum)
 strSQL = "INSERT INTO tblErrorLog(User,Form,Active_Control,Error_Date,Error_Description,Error_Number,databaseVersion) VALUES ('" & _
  Environ("username") & "','" & modName & "','" & activeCon & "',#" & Now & "#,'" & errDesc & "'," & errNum & ",'" & TempVars!wdbVersion & "')"
 
-CurrentDb().Execute strSQL
+Dim db As Database
+Set db = CurrentDb()
+db.Execute strSQL
+Set db = Nothing
 End Sub
 
 Function grabVersion() As String
 On Error GoTo err_handler
 
+Dim db As Database
+Set db = CurrentDb()
 Dim rs1 As Recordset
-Set rs1 = CurrentDb().OpenRecordset("SELECT Release FROM tblDBinfo WHERE [ID] = 1", dbOpenSnapshot)
+Set rs1 = db.OpenRecordset("SELECT Release FROM tblDBinfo WHERE [ID] = 1", dbOpenSnapshot)
 grabVersion = rs1!release
 rs1.Close: Set rs1 = Nothing
+Set db = Nothing
 
 Exit Function
 err_handler:

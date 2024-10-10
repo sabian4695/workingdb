@@ -243,7 +243,7 @@ Set rsPI = db.OpenRecordset("SELECT * from tblPartInfo WHERE partNumber = '" & p
 Set rsPack = db.OpenRecordset("SELECT * from tblPartPackagingInfo WHERE partInfoId = " & rsPI!recordId)
 Set rsU = db.OpenRecordset("SELECT * from tblUnits WHERE recordId = " & rsPI!unitId)
 Set rsDevU = db.OpenRecordset("SELECT * from tblUnits WHERE recordId = " & Nz(rsPI!developingUnit, 0))
-Set rsPE = CurrentDb().OpenRecordset("SELECT * from tblPermissions where Dept = 'Project' AND Level = 'Engineer' AND user IN " & _
+Set rsPE = db.OpenRecordset("SELECT * from tblPermissions where Dept = 'Project' AND Level = 'Engineer' AND user IN " & _
                                     "(SELECT person FROM tblPartTeam WHERE partNumber = '" & partNum & "')")
 
 mexFr = "0"
@@ -523,14 +523,17 @@ Dim revID
 revID = idNAM(partNumber, "NAM")
 If revID = "" Then Exit Function
 
+Dim db As Database
+Set db = CurrentDb()
 Dim rs1 As Recordset
-Set rs1 = CurrentDb().OpenRecordset("SELECT [CHANGE_NOTICE] from ENG_ENG_REVISED_ITEMS where [REVISED_ITEM_ID] = " & revID & _
+Set rs1 = db.OpenRecordset("SELECT [CHANGE_NOTICE] from ENG_ENG_REVISED_ITEMS where [REVISED_ITEM_ID] = " & revID & _
     " AND [CANCELLATION_DATE] IS NULL AND [CHANGE_NOTICE] IN (SELECT [CHANGE_NOTICE] FROM ENG_ENG_ENGINEERING_CHANGES WHERE [CHANGE_ORDER_TYPE_ID] = 6502)", dbOpenSnapshot)
 
 If rs1.RecordCount > 0 Then loadPlannerECO = rs1!CHANGE_NOTICE
 
 rs1.Close
 Set rs1 = Nothing
+Set db = Nothing
 End Function
 
 Function loadTransferECO(partNumber As String) As String
@@ -541,27 +544,33 @@ Dim revID
 revID = idNAM(partNumber, "NAM")
 If revID = "" Then Exit Function
 
+Dim db As Database
+Set db = CurrentDb()
 Dim rs1 As Recordset
-Set rs1 = CurrentDb().OpenRecordset("SELECT [CHANGE_NOTICE] from ENG_ENG_REVISED_ITEMS where [REVISED_ITEM_ID] = " & revID & _
+Set rs1 = db.OpenRecordset("SELECT [CHANGE_NOTICE] from ENG_ENG_REVISED_ITEMS where [REVISED_ITEM_ID] = " & revID & _
     " AND [CANCELLATION_DATE] IS NULL AND [CHANGE_NOTICE] IN (SELECT [CHANGE_NOTICE] FROM ENG_ENG_ENGINEERING_CHANGES WHERE [CHANGE_ORDER_TYPE_ID] = 72)", dbOpenSnapshot)
 
 If rs1.RecordCount > 0 Then loadTransferECO = rs1!CHANGE_NOTICE
 
 rs1.Close
 Set rs1 = Nothing
+Set db = Nothing
 End Function
 
 Public Function getAttachmentsCount(stepId As Long) As Long
 On Error GoTo err_handler
 
 getAttachmentsCount = 0
+Dim db As Database
+Set db = CurrentDb()
 Dim rs1 As Recordset
-Set rs1 = CurrentDb().OpenRecordset("SELECT count(ID) as countIt from tblPartAttachmentsSP WHERE [partStepId] = " & stepId)
+Set rs1 = db.OpenRecordset("SELECT count(ID) as countIt from tblPartAttachmentsSP WHERE [partStepId] = " & stepId)
 
 getAttachmentsCount = Nz(rs1!countIt, 0)
 
 rs1.Close
 Set rs1 = Nothing
+Set db = Nothing
 
 err_handler:
 End Function
@@ -572,12 +581,14 @@ On Error GoTo err_handler
 getAttachmentsCountReq = 0
 If Nz(docType) = "" Then Exit Function 'no document required
 
+Dim db As Database
+Set db = CurrentDb()
 Dim rsAttStd As Recordset
-Set rsAttStd = CurrentDb.OpenRecordset("SELECT uniqueFile FROM tblPartAttachmentStandards WHERE recordId = " & docType)
+Set rsAttStd = db.OpenRecordset("SELECT uniqueFile FROM tblPartAttachmentStandards WHERE recordId = " & docType)
 
 If rsAttStd!uniqueFile Then
     Dim rsRelated As Recordset
-    Set rsRelated = CurrentDb.OpenRecordset("SELECT count(recordId) as countIt FROM tblPartProjectPartNumbers WHERE projectId = " & projectId)
+    Set rsRelated = db.OpenRecordset("SELECT count(recordId) as countIt FROM tblPartProjectPartNumbers WHERE projectId = " & projectId)
     getAttachmentsCountReq = rsRelated!countIt + 1 'count of all related parts on this project + 1 for master
     rsRelated.Close
     Set rsRelated = Nothing
@@ -587,6 +598,7 @@ End If
 
 rsAttStd.Close
 Set rsAttStd = Nothing
+Set db = Nothing
 
 err_handler:
 End Function
@@ -660,10 +672,16 @@ End If
 
 dataValue = CDbl(dataValue)
 
+Dim db As Database
+Set db = CurrentDb()
 Dim rs1 As Recordset
-Set rs1 = CurrentDb.OpenRecordset("SELECT " & columnName & " FROM tblDropDownsSP WHERE ID = " & dataValue)
+Set rs1 = db.OpenRecordset("SELECT " & columnName & " FROM tblDropDownsSP WHERE ID = " & dataValue)
 
 grabHistoryRef = rs1(columnName)
+
+rs1.Close
+Set rs1 = Nothing
+Set db = Nothing
 
 err_handler:
 End Function
@@ -738,13 +756,16 @@ Public Function getApprovalsComplete(stepId As Long, partNumber As String) As Lo
 On Error GoTo err_handler
 
 getApprovalsComplete = 0
+Dim db As Database
+Set db = CurrentDb()
 Dim rs1 As Recordset
-Set rs1 = CurrentDb().OpenRecordset("SELECT count(approvedOn) as appCount from tblPartTrackingApprovals WHERE [partNumber] = '" & partNumber & "' AND [tableRecordId] = " & stepId & " AND [tableName] = 'tblPartSteps'")
+Set rs1 = db.OpenRecordset("SELECT count(approvedOn) as appCount from tblPartTrackingApprovals WHERE [partNumber] = '" & partNumber & "' AND [tableRecordId] = " & stepId & " AND [tableName] = 'tblPartSteps'")
 
 getApprovalsComplete = Nz(rs1!appCount, 0)
 
 rs1.Close
 Set rs1 = Nothing
+Set db = Nothing
 
 err_handler:
 End Function
@@ -753,13 +774,16 @@ Public Function getTotalApprovals(stepId As Long, partNumber As String) As Long
 On Error GoTo err_handler
 
 getTotalApprovals = 0
+Dim db As Database
+Set db = CurrentDb()
 Dim rs1 As Recordset
-Set rs1 = CurrentDb().OpenRecordset("SELECT count(recordId) as appCount from tblPartTrackingApprovals WHERE [partNumber] = '" & partNumber & "' AND [tableRecordId] = " & stepId & " AND [tableName] = 'tblPartSteps'")
+Set rs1 = db.OpenRecordset("SELECT count(recordId) as appCount from tblPartTrackingApprovals WHERE [partNumber] = '" & partNumber & "' AND [tableRecordId] = " & stepId & " AND [tableName] = 'tblPartSteps'")
 
 getTotalApprovals = Nz(rs1!appCount, 0)
 
 rs1.Close
 Set rs1 = Nothing
+Set db = Nothing
 
 err_handler:
 End Function
@@ -768,7 +792,9 @@ Public Function recalcStepDueDates(projId As Long, oldDueDate As Date, moveBy As
 On Error Resume Next
 
 Dim rsSteps As Recordset
-Set rsSteps = CurrentDb().OpenRecordset("Select dueDate from tblPartSteps Where partProjectId = " & projId & " AND dueDate > #" & oldDueDate & "#")
+Dim db As Database
+Set db = CurrentDb()
+Set rsSteps = db.OpenRecordset("Select dueDate from tblPartSteps Where partProjectId = " & projId & " AND dueDate > #" & oldDueDate & "#")
 
 Do While Not rsSteps.EOF
     rsSteps.Edit
@@ -779,6 +805,7 @@ Loop
 
 rsSteps.Close
 Set rsSteps = Nothing
+Set db = Nothing
 
 End Function
 
@@ -787,13 +814,16 @@ On Error Resume Next
 
 getCurrentStepDue = ""
 
+Dim db As Database
+Set db = CurrentDb()
 Dim rs1 As Recordset
-Set rs1 = CurrentDb().OpenRecordset("SELECT Min(dueDate) as minDue from tblPartSteps WHERE partProjectId = " & projId & " AND status <> 'Closed'")
+Set rs1 = db.OpenRecordset("SELECT Min(dueDate) as minDue from tblPartSteps WHERE partProjectId = " & projId & " AND status <> 'Closed'")
 
 getCurrentStepDue = Nz(rs1!minDue, "")
 
 rs1.Close
 Set rs1 = Nothing
+Set db = Nothing
 
 End Function
 
@@ -846,7 +876,7 @@ Do While Not rsGateTemplate.EOF
             strInsert1 = "INSERT INTO tblPartTrackingApprovals(partNumber,requestedBy,requestedDate,dept,reqLevel,tableName,tableRecordId) VALUES ('" & _
                 pNum & "','" & Environ("username") & "','" & Now() & "','" & _
                 Nz(rsApprovalsTemplate![dept], "") & "','" & Nz(rsApprovalsTemplate![reqLevel], "") & "','tblPartSteps'," & TempVars!stepId & ");"
-            CurrentDb().Execute strInsert1
+            db.Execute strInsert1
             rsApprovalsTemplate.MoveNext
         Loop
 nextStep:
@@ -875,9 +905,15 @@ If IsNull(User) Then
     Exit Function
 End If
 
+Dim db As Database
+Set db = CurrentDb()
 Dim rsPermissions As Recordset
-Set rsPermissions = CurrentDb().OpenRecordset("SELECT * from tblPermissions where user = '" & User & "'")
+Set rsPermissions = db.OpenRecordset("SELECT * from tblPermissions where user = '" & User & "'")
 grabTitle = rsPermissions!dept & " " & rsPermissions!Level
+
+rsPermissions.Close
+Set rsPermissions = Nothing
+Set db = Nothing
 
 err_handler:
 End Function
@@ -980,15 +1016,17 @@ On Error GoTo err_handler
 
 notifyPE = False
 
+Dim db As Database
+Set db = CurrentDb()
 Dim rsPartTeam As Recordset
-Set rsPartTeam = CurrentDb().OpenRecordset("SELECT * from tblPartTeam where partNumber = '" & partNum & "'")
+Set rsPartTeam = db.OpenRecordset("SELECT * from tblPartTeam where partNumber = '" & partNum & "'")
 If rsPartTeam.RecordCount = 0 Then Exit Function
 
 Do While Not rsPartTeam.EOF
     Dim rsPermissions As Recordset, sendTo As String
     If IsNull(rsPartTeam!person) Then GoTo nextRec
     sendTo = rsPartTeam!person
-    Set rsPermissions = CurrentDb().OpenRecordset("SELECT user, userEmail from tblPermissions where user = '" & sendTo & "' AND Dept = 'Project' AND Level = 'Engineer'")
+    Set rsPermissions = db.OpenRecordset("SELECT user, userEmail from tblPermissions where user = '" & sendTo & "' AND Dept = 'Project' AND Level = 'Engineer'")
     If rsPermissions.RecordCount = 0 Then GoTo nextRec
     If sendTo = Environ("username") And Not sendAlways Then GoTo nextRec
     
@@ -1008,6 +1046,10 @@ Loop
 
 notifyPE = True
 
+rsPartTeam.Close
+Set rsPartTeam = Nothing
+Set db = Nothing
+
 Exit Function
 err_handler:
     Call handleError("wdbProjectE", "notifyPE", Err.DESCRIPTION, Err.number)
@@ -1016,8 +1058,10 @@ End Function
 Function findDept(partNumber As String, dept As String, Optional returnMe As Boolean = False) As String
 On Error GoTo err_handler
 
+Dim db As Database
+Set db = CurrentDb()
 Dim rsPermissions As Recordset, permEm
-Set rsPermissions = CurrentDb().OpenRecordset("SELECT user, userEmail from tblPermissions where Dept = '" & dept & "' AND Level = 'Engineer' AND user IN " & _
+Set rsPermissions = db.OpenRecordset("SELECT user, userEmail from tblPermissions where Dept = '" & dept & "' AND Level = 'Engineer' AND user IN " & _
                                     "(SELECT person FROM tblPartTeam WHERE partNumber = '" & partNumber & "')")
 If rsPermissions.RecordCount = 0 Then Exit Function
 
@@ -1028,6 +1072,10 @@ nextRec:
     rsPermissions.MoveNext
 Loop
 If findDept <> "" Then findDept = Left(findDept, Len(findDept) - 1)
+
+rsPermissions.Close
+Set rsPermissions = Nothing
+Set db = Nothing
 
 Exit Function
 err_handler:
@@ -1183,9 +1231,11 @@ On Error GoTo err_handler
 
 iHaveOpenApproval = False
 
+Dim db As Database
+Set db = CurrentDb()
 Dim rsPermissions As Recordset, rsApprovals As Recordset
-Set rsPermissions = CurrentDb().OpenRecordset("SELECT * from tblPermissions where user = '" & Environ("username") & "'")
-Set rsApprovals = CurrentDb().OpenRecordset("SELECT * from tblPartTrackingApprovals WHERE approvedOn is null AND tableName = 'tblPartSteps' AND tableRecordId = " & stepId & " AND ((dept = '" & rsPermissions!dept & "' AND reqLevel = '" & rsPermissions!Level & "') OR approver = '" & Environ("username") & "')")
+Set rsPermissions = db.OpenRecordset("SELECT * from tblPermissions where user = '" & Environ("username") & "'")
+Set rsApprovals = db.OpenRecordset("SELECT * from tblPartTrackingApprovals WHERE approvedOn is null AND tableName = 'tblPartSteps' AND tableRecordId = " & stepId & " AND ((dept = '" & rsPermissions!dept & "' AND reqLevel = '" & rsPermissions!Level & "') OR approver = '" & Environ("username") & "')")
 
 If rsApprovals.RecordCount > 0 Then iHaveOpenApproval = True
 
@@ -1193,6 +1243,7 @@ rsPermissions.Close
 Set rsPermissions = Nothing
 rsApprovals.Close
 Set rsApprovals = Nothing
+Set db = Nothing
 
 Exit Function
 err_handler:
@@ -1204,9 +1255,11 @@ On Error GoTo err_handler
 
 iAmApprover = False
 
+Dim db As Database
+Set db = CurrentDb()
 Dim rsPermissions As Recordset, rsApprovals As Recordset
-Set rsPermissions = CurrentDb().OpenRecordset("SELECT * from tblPermissions where user = '" & Environ("username") & "'")
-Set rsApprovals = CurrentDb().OpenRecordset("SELECT * from tblPartTrackingApprovals WHERE approvedOn is null AND recordId = " & approvalId & " AND ((dept = '" & rsPermissions!dept & "' AND reqLevel = '" & rsPermissions!Level & "') OR approver = '" & Environ("username") & "')")
+Set rsPermissions = db.OpenRecordset("SELECT * from tblPermissions where user = '" & Environ("username") & "'")
+Set rsApprovals = db.OpenRecordset("SELECT * from tblPartTrackingApprovals WHERE approvedOn is null AND recordId = " & approvalId & " AND ((dept = '" & rsPermissions!dept & "' AND reqLevel = '" & rsPermissions!Level & "') OR approver = '" & Environ("username") & "')")
 
 If rsApprovals.RecordCount > 0 Then iAmApprover = True
 
@@ -1214,6 +1267,7 @@ rsPermissions.Close
 Set rsPermissions = Nothing
 rsApprovals.Close
 Set rsApprovals = Nothing
+Set db = Nothing
 
 Exit Function
 err_handler:
@@ -1240,8 +1294,10 @@ Dim SendItems As New clsOutlookCreateItem               ' outlook class
     
     Set SendItems = New clsOutlookCreateItem
 
+    Dim db As Database
+    Set db = CurrentDb()
     Dim rs2 As Recordset
-    Set rs2 = CurrentDb.OpenRecordset("SELECT * FROM tblPartTeam WHERE partNumber = '" & partNum & "'", dbOpenSnapshot)
+    Set rs2 = db.OpenRecordset("SELECT * FROM tblPartTeam WHERE partNumber = '" & partNum & "'", dbOpenSnapshot)
     strTo = ""
 
     Do While Not rs2.EOF
@@ -1270,6 +1326,10 @@ Call FSO.deleteFile(z)
     
 emailPartInfo = True
 
+rs2.Close
+Set rs2 = Nothing
+Set db = Nothing
+
 Exit Function
 err_handler:
     Call handleError("wdbProjectE", "emailPartInfo", Err.DESCRIPTION, Err.number)
@@ -1285,8 +1345,10 @@ Dim sqlColumns As String, sqlValues As String
 If (VarType(oldVal) = vbDate) Then oldVal = Format(oldVal, "mm/dd/yyyy")
 If (VarType(newVal) = vbDate) Then newVal = Format(newVal, "mm/dd/yyyy")
 
+Dim db As Database
+Set db = CurrentDb()
 Dim rs1 As Recordset
-Set rs1 = CurrentDb().OpenRecordset("tblPartUpdateTracking")
+Set rs1 = db.OpenRecordset("tblPartUpdateTracking")
 
 Dim updatedBy As String
 updatedBy = Environ("username")
@@ -1313,6 +1375,7 @@ End With
 
 rs1.Close
 Set rs1 = Nothing
+Set db = Nothing
 
 Exit Function
 err_handler:
@@ -1324,8 +1387,11 @@ On Error GoTo err_handler
 
 toolShipAuthorizationEmail = False
 
+Dim db As Database
+Set db = CurrentDb()
+
 Dim rsApprovals As Recordset
-Set rsApprovals = CurrentDb().OpenRecordset("Select * from tblPartTrackingApprovals WHERE tableName = 'tblPartSteps' AND tableRecordId = " & stepId)
+Set rsApprovals = db.OpenRecordset("Select * from tblPartTrackingApprovals WHERE tableName = 'tblPartSteps' AND tableRecordId = " & stepId)
 
 Dim approvalsBool
 approvalsBool = True
@@ -1356,7 +1422,7 @@ Else
 End If
 
 Dim rs2 As Recordset, strTo As String
-Set rs2 = CurrentDb.OpenRecordset("SELECT * FROM tblPartTeam WHERE partNumber = '" & partNumber & "'", dbOpenSnapshot)
+Set rs2 = db.OpenRecordset("SELECT * FROM tblPartTeam WHERE partNumber = '" & partNumber & "'", dbOpenSnapshot)
 strTo = ""
 
 Do While Not rs2.EOF
@@ -1374,6 +1440,12 @@ SendItems.CreateMailItem sendTo:=strTo, _
 
 toolShipAuthorizationEmail = True
 
+rsApprovals.Close
+Set rsApprovals = Nothing
+rs2.Close
+Set rs2 = Nothing
+Set db = Nothing
+
 Exit Function
 err_handler:
     Call handleError("wdbProjectE", "toolShipAuthorizationEmail", Err.DESCRIPTION, Err.number)
@@ -1388,8 +1460,11 @@ Dim emailBody As String, subjectLine As String
 subjectLine = "Part Approval Notification"
 emailBody = generateHTML(subjectLine, partNumber & " has received customer approval", "Part Approved", "No extra details...", "", "")
 
+Dim db As Database
+Set db = CurrentDb()
+
 Dim rs2 As Recordset, strTo As String
-Set rs2 = CurrentDb.OpenRecordset("SELECT * FROM tblPartTeam WHERE partNumber = '" & partNumber & "'", dbOpenSnapshot)
+Set rs2 = db.OpenRecordset("SELECT * FROM tblPartTeam WHERE partNumber = '" & partNumber & "'", dbOpenSnapshot)
 strTo = ""
 
 Do While Not rs2.EOF
@@ -1406,6 +1481,10 @@ SendItems.CreateMailItem sendTo:=strTo, _
     Set SendItems = Nothing
 
 emailPartApprovalNotification = True
+
+rs2.Close
+Set rs2 = Nothing
+Set db = Nothing
 
 Exit Function
 err_handler:
@@ -1478,8 +1557,11 @@ Dim emailBody As String, subjectLine As String
 subjectLine = partNumber & " Capital Packet Approval"
 emailBody = generateHTML(subjectLine, capitalPacketNum & " Capital Packet for " & partNumber & " is now Approved", "Capital Packet", "No extra details...", "", "", attachLink)
 
+Dim db As Database
+Set db = CurrentDb()
+
 Dim rs2 As Recordset, strTo As String
-Set rs2 = CurrentDb.OpenRecordset("SELECT * FROM tblPartTeam WHERE partNumber = '" & partNumber & "'", dbOpenSnapshot)
+Set rs2 = db.OpenRecordset("SELECT * FROM tblPartTeam WHERE partNumber = '" & partNumber & "'", dbOpenSnapshot)
 strTo = ""
 
 Do While Not rs2.EOF
@@ -1492,6 +1574,10 @@ strTo = Left(strTo, Len(strTo) - 1)
 Call sendNotification(strTo, 9, 2, partNumber & " Capital Packet Approval", emailBody, "Part Project", CLng(partNumber), True)
 
 emailApprovedCapitalPacket = True
+
+rs2.Close
+Set rs2 = Nothing
+Set db = Nothing
 
 Exit Function
 err_handler:

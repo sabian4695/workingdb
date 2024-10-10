@@ -9,14 +9,12 @@ Dim db As Database
 Set db = CurrentDb
 
 Dim rs1 As Recordset
-Set rs1 = db.OpenRecordset("tblPartProject")
+Set rs1 = db.OpenRecordset("tblPartSteps")
 
 Do While Not rs1.EOF
     
-    If DCount("recordId", "tblPartSteps", "partProjectId = " & rs1!recordId) = DCount("recordId", "tblPartSteps", "partProjectId = " & rs1!recordId & " AND status = 'Closed'") Then
-        rs1.Edit
-        rs1!projectStatus = 4
-        rs1.Update
+    If Len(rs1!stepType) > 55 Then
+        Debug.Print Len(rs1!stepType)
     End If
     
     rs1.MoveNext
@@ -92,17 +90,20 @@ End Function
 
 Public Function exportSQL(sqlString As String, FileName As String)
 On Error Resume Next
-CurrentDb.QueryDefs.Delete "myExportQueryDef"
+Dim db As Database
+Set db = CurrentDb()
+db.QueryDefs.Delete "myExportQueryDef"
 On Error GoTo err_handler
 
 Dim qExport As DAO.QueryDef
-Set qExport = CurrentDb.CreateQueryDef("myExportQueryDef", sqlString)
+Set qExport = db.CreateQueryDef("myExportQueryDef", sqlString)
 
 DoCmd.TransferSpreadsheet acExport, acSpreadsheetTypeExcel12Xml, "myExportQueryDef", FileName, True
 If MsgBox("Export Complete. File path: " & FileName & vbNewLine & "Do you want to open this file?", vbYesNo, "Notice") = vbYes Then openPath (FileName)
 
-CurrentDb.QueryDefs.Delete "myExportQueryDef"
+db.QueryDefs.Delete "myExportQueryDef"
 
+Set db = Nothing
 Exit Function
 err_handler:
     Call handleError("wdbGlobalFunctions", "exportSQL", Err.DESCRIPTION, Err.number)
@@ -195,8 +196,10 @@ Dim sqlColumns As String, sqlValues As String
 If (VarType(oldVal) = vbDate) Then oldVal = Format(oldVal, "mm/dd/yyyy")
 If (VarType(newVal) = vbDate) Then newVal = Format(newVal, "mm/dd/yyyy")
 
+Dim db As Database
+Set db = CurrentDb()
 Dim rs1 As Recordset
-Set rs1 = CurrentDb().OpenRecordset("tblWdbUpdateTracking")
+Set rs1 = db.OpenRecordset("tblWdbUpdateTracking")
 
 If Len(oldVal) > 255 Then oldVal = Left(oldVal, 255)
 If Len(newVal) > 255 Then newVal = Left(newVal, 255)
@@ -218,6 +221,7 @@ End With
 
 rs1.Close
 Set rs1 = Nothing
+Set db = Nothing
 
 Exit Function
 err_handler:
@@ -232,8 +236,10 @@ Dim sqlColumns As String, sqlValues As String
 If (VarType(oldVal) = vbDate) Then oldVal = Format(oldVal, "mm/dd/yyyy")
 If (VarType(newVal) = vbDate) Then newVal = Format(newVal, "mm/dd/yyyy")
 
+Dim db As Database
+Set db = CurrentDb()
 Dim rs1 As Recordset
-Set rs1 = CurrentDb().OpenRecordset("tblSalesUpdateTracking")
+Set rs1 = db.OpenRecordset("tblSalesUpdateTracking")
 
 With rs1
     .addNew
@@ -252,6 +258,7 @@ End With
 
 rs1.Close
 Set rs1 = Nothing
+Set db = Nothing
 
 Exit Function
 err_handler:
@@ -261,6 +268,8 @@ End Function
 Public Function addWorkdays(dateInput As Date, daysToAdd As Long) As Date
 On Error GoTo err_handler
 
+Dim db As Database
+Set db = CurrentDb()
 Dim i As Long, testDate As Date, daysLeft As Long, rsHolidays As Recordset, intDirection
 testDate = dateInput
 daysLeft = Abs(daysToAdd)
@@ -273,13 +282,18 @@ Do While daysLeft > 0
         testDate = testDate + intDirection
         GoTo skipDate
     End If
-    Set rsHolidays = CurrentDb().OpenRecordset("SELECT * from tblHolidays WHERE holidayDate = #" & testDate & "#")
+    Set rsHolidays = db.OpenRecordset("SELECT * from tblHolidays WHERE holidayDate = #" & testDate & "#")
     If rsHolidays.RecordCount > 0 Then GoTo skipDate ' IF HOLIDAY -> skip to next day
      daysLeft = daysLeft - 1
 skipDate:
 Loop
 
 addWorkdays = testDate
+
+On Error Resume Next
+rsHolidays.Close
+Set rsHolidays = Nothing
+Set db = Nothing
 
 Exit Function
 err_handler:
@@ -305,10 +319,13 @@ End Function
 Function getFullName() As String
 On Error GoTo err_handler
 
+Dim db As Database
+Set db = CurrentDb()
 Dim rs1 As Recordset
-Set rs1 = CurrentDb().OpenRecordset("SELECT firstName, lastName FROM tblPermissions WHERE User = '" & Environ("username") & "'", dbOpenSnapshot)
+Set rs1 = db.OpenRecordset("SELECT firstName, lastName FROM tblPermissions WHERE User = '" & Environ("username") & "'", dbOpenSnapshot)
 getFullName = rs1!firstName & " " & rs1!lastName
 rs1.Close: Set rs1 = Nothing
+Set db = Nothing
 
 Exit Function
 err_handler:
@@ -318,8 +335,10 @@ End Function
 Function notificationsCount()
 On Error Resume Next
 
+Dim db As Database
+Set db = CurrentDb()
 Dim rsNoti As Recordset
-Set rsNoti = CurrentDb.OpenRecordset("SELECT count(ID) as unRead FROM tblNotificationsSP WHERE recipientUser = '" & Environ("username") & "' AND readDate is null")
+Set rsNoti = db.OpenRecordset("SELECT count(ID) as unRead FROM tblNotificationsSP WHERE recipientUser = '" & Environ("username") & "' AND readDate is null")
 
 If rsNoti!unRead > 9 Then
     Form_DASHBOARD.Form.notifications.Caption = "9+"
@@ -334,19 +353,23 @@ End If
 
 rsNoti.Close
 Set rsNoti = Nothing
+Set db = Nothing
 
 End Function
 
 Function loadECOtype(changeNotice As String) As String
 On Error GoTo err_handler
 
+Dim db As Database
+Set db = CurrentDb()
 Dim rs1 As Recordset
-Set rs1 = CurrentDb().OpenRecordset("SELECT [CHANGE_ORDER_TYPE_ID] from ENG_ENG_ENGINEERING_CHANGES where [CHANGE_NOTICE] = '" & changeNotice & "'", dbOpenSnapshot)
+Set rs1 = db.OpenRecordset("SELECT [CHANGE_ORDER_TYPE_ID] from ENG_ENG_ENGINEERING_CHANGES where [CHANGE_NOTICE] = '" & changeNotice & "'", dbOpenSnapshot)
 
 loadECOtype = DLookup("[ECO_Type]", "[tblOracleDropDowns]", "[ECO_Type_ID]=" & rs1!CHANGE_ORDER_TYPE_ID)
 
 rs1.Close
 Set rs1 = Nothing
+Set db = Nothing
 
 Exit Function
 err_handler:
@@ -614,13 +637,16 @@ Public Function getTotalPackingListWeight(packId As Long) As Double
 On Error Resume Next
 getTotalPackingListWeight = 0
 
+Dim db As Database
+Set db = CurrentDb()
 Dim rs1 As Recordset
-Set rs1 = CurrentDb().OpenRecordset("SELECT sum(unitWeight*quantity) as total FROM tblPackListChild WHERE packListId = " & packId & " GROUP BY packListId")
+Set rs1 = db.OpenRecordset("SELECT sum(unitWeight*quantity) as total FROM tblPackListChild WHERE packListId = " & packId & " GROUP BY packListId")
 
 getTotalPackingListWeight = rs1!total
 
 rs1.Close
 Set rs1 = Nothing
+Set db = Nothing
 
 End Function
 
@@ -628,13 +654,16 @@ Public Function getTotalPackingListCost(packId As Long) As Double
 On Error Resume Next
 getTotalPackingListCost = 0
 
+Dim db As Database
+Set db = CurrentDb()
 Dim rs1 As Recordset
-Set rs1 = CurrentDb().OpenRecordset("SELECT sum(unitCost*quantity) as total FROM tblPackListChild WHERE packListId = " & packId & " GROUP BY packListId")
+Set rs1 = db.OpenRecordset("SELECT sum(unitCost*quantity) as total FROM tblPackListChild WHERE packListId = " & packId & " GROUP BY packListId")
 
 getTotalPackingListCost = rs1!total
 
 rs1.Close
 Set rs1 = Nothing
+Set db = Nothing
 
 End Function
 
@@ -648,11 +677,13 @@ If (CurrentProject.Path = "H:\dev") Then
     End If
 End If
 
+Dim db As Database
+Set db = CurrentDb()
 Dim d As Boolean, l As Boolean, rsPerm As Recordset
 d = False
 l = False
 
-Set rsPerm = CurrentDb.OpenRecordset("SELECT * FROM tblPermissions WHERE user = '" & userName & "'")
+Set rsPerm = db.OpenRecordset("SELECT * FROM tblPermissions WHERE user = '" & userName & "'")
 'restrict = true means you cannot access
 'set No Access first, then allow as it is OK
 d = True
@@ -675,6 +706,10 @@ End Select
 
 setRestrict:
 restrict = d Or l
+
+rsPerm.Close
+Set rsPerm = Nothing
+Set db = Nothing
 
 Exit Function
 err_handler:
@@ -947,16 +982,25 @@ Function getEmail(userName As String) As String
 On Error GoTo err_handler
 
 On Error GoTo tryOracle
+Dim db As Database
+Set db = CurrentDb()
 Dim rsPermissions As Recordset
-Set rsPermissions = CurrentDb().OpenRecordset("SELECT * from tblPermissions WHERE user = '" & userName & "'")
+Set rsPermissions = db.OpenRecordset("SELECT * from tblPermissions WHERE user = '" & userName & "'")
 getEmail = rsPermissions!userEmail
 rsPermissions.Close
+Set rsPermissions = Nothing
 
-Exit Function
+GoTo exitFunc
+
 tryOracle:
 Dim rsEmployee As Recordset
-Set rsEmployee = CurrentDb().OpenRecordset("SELECT FIRST_NAME, LAST_NAME, EMAIL_ADDRESS FROM APPS_XXCUS_USER_EMPLOYEES_V WHERE USER_NAME = '" & StrConv(userName, vbUpperCase) & "'")
+Set rsEmployee = db.OpenRecordset("SELECT FIRST_NAME, LAST_NAME, EMAIL_ADDRESS FROM APPS_XXCUS_USER_EMPLOYEES_V WHERE USER_NAME = '" & StrConv(userName, vbUpperCase) & "'")
 getEmail = Nz(rsEmployee!EMAIL_ADDRESS, "")
+rsEmployee.Close
+Set rsEmployee = Nothing
+
+exitFunc:
+Set db = Nothing
 
 Exit Function
 err_handler:
@@ -1000,19 +1044,21 @@ End Function
 
 Function idNAM(inputVal As Variant, typeVal As Variant) As Variant
 On Error Resume Next 'just skip in case Oracle Errors
+Dim db As Database
+Set db = CurrentDb()
 Dim rs1 As Recordset
 idNAM = ""
 
 If inputVal = "" Then Exit Function
 
 If typeVal = "ID" Then
-    Set rs1 = CurrentDb.OpenRecordset("SELECT SEGMENT1 FROM APPS_MTL_SYSTEM_ITEMS WHERE INVENTORY_ITEM_ID = " & inputVal, dbOpenSnapshot)
+    Set rs1 = db.OpenRecordset("SELECT SEGMENT1 FROM APPS_MTL_SYSTEM_ITEMS WHERE INVENTORY_ITEM_ID = " & inputVal, dbOpenSnapshot)
     If rs1.RecordCount = 0 Then GoTo exitFunction
     idNAM = rs1("SEGMENT1")
 End If
 
 If typeVal = "NAM" Then
-    Set rs1 = CurrentDb.OpenRecordset("SELECT INVENTORY_ITEM_ID FROM APPS_MTL_SYSTEM_ITEMS WHERE SEGMENT1 = '" & inputVal & "'", dbOpenSnapshot)
+    Set rs1 = db.OpenRecordset("SELECT INVENTORY_ITEM_ID FROM APPS_MTL_SYSTEM_ITEMS WHERE SEGMENT1 = '" & inputVal & "'", dbOpenSnapshot)
     If rs1.RecordCount = 0 Then GoTo exitFunction
     idNAM = rs1("INVENTORY_ITEM_ID")
 End If
@@ -1020,24 +1066,28 @@ End If
 exitFunction:
 rs1.Close
 Set rs1 = Nothing
+Set db = Nothing
 End Function
 
 Function getDescriptionFromId(inventId As Long) As String
 On Error GoTo err_handler
 
+Dim db As Database
+Set db = CurrentDb()
 Dim rs1 As Recordset
 
 getDescriptionFromId = ""
 If IsNull(inventId) Then Exit Function
 On Error Resume Next
 
-Set rs1 = CurrentDb.OpenRecordset("SELECT DESCRIPTION FROM APPS_MTL_SYSTEM_ITEMS WHERE INVENTORY_ITEM_ID = " & inventId, dbOpenSnapshot)
+Set rs1 = db.OpenRecordset("SELECT DESCRIPTION FROM APPS_MTL_SYSTEM_ITEMS WHERE INVENTORY_ITEM_ID = " & inventId, dbOpenSnapshot)
 If rs1.RecordCount = 0 Then GoTo exitFunction
 getDescriptionFromId = rs1("DESCRIPTION")
 
 exitFunction:
 rs1.Close
 Set rs1 = Nothing
+Set db = Nothing
 
 Exit Function
 err_handler:

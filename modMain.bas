@@ -589,7 +589,10 @@ End Function
 Private Sub clearSheet()
     On Error Resume Next
     
-    CurrentDb().Execute "DELETE FROM tblPLM"
+    Dim db As Database
+    Set db = CurrentDb()
+    db.Execute "DELETE FROM tblPLM"
+    Set db = Nothing
     Form_frmPLM.Requery
     Form_sfrmPLM.Requery
 End Sub
@@ -657,7 +660,7 @@ startIt = False
             End If
             Form_frmPLM.Dirty = False
             
-            CurrentDb().Execute "UPDATE tblPLM SET [" & fld.name & "] = '" & strValue & "' WHERE [FilePath] = '" & typRecord.FilePath & "'"
+            db.Execute "UPDATE tblPLM SET [" & fld.name & "] = '" & strValue & "' WHERE [FilePath] = '" & typRecord.FilePath & "'"
         End If
         If fld.name = "File_Data_Name" Then
             startIt = True
@@ -673,8 +676,8 @@ Set fld = Nothing
             End If
         End If
     Next i
-    Set db = Nothing
-    fncWriteExcel = True
+Set db = Nothing
+fncWriteExcel = True
 End Function
 
 Private Function fncWriteExcelForUpdate(ByRef iobjRecords As CATIAPropertyTable) As Boolean
@@ -755,7 +758,7 @@ Private Function fncWriteExcelForUpdate(ByRef iobjRecords As CATIAPropertyTable)
             
             If Nz(rs1(gcurMainProperty(j)), "") <> strValue Then
                 
-                CurrentDb().Execute "UPDATE tblPLM SET [" & gcurMainProperty(j) & "] = '" & strValue & "' WHERE [ID] = " & rs1![ID]
+                db.Execute "UPDATE tblPLM SET [" & gcurMainProperty(j) & "] = '" & strValue & "' WHERE [ID] = " & rs1![ID]
                 Form_frmPLM.Form.Dirty = False
                 Form_sfrmPLM.Dirty = False
             End If
@@ -830,7 +833,10 @@ fncSetCheckBox = True
 End Function
 
 Private Sub ClearDeletePropertyCheckBox()
-CurrentDb().Execute "UPDATE [tblPLM] SET [Sel] = False"
+Dim db As Database
+Set db = CurrentDb()
+db.Execute "UPDATE [tblPLM] SET [Sel] = False"
+Set db = Nothing
 End Sub
 
 Private Function fncGetProperty() As CATIAPropertyTable
@@ -1221,7 +1227,10 @@ Private Function fncNumberingDesignNo(ByRef con As ADODB.Connection, ByVal i As 
     Set lRec = con.Execute(lSql)
     designNo = lRec.Fields(0).Value
     On Error GoTo 0
-    CurrentDb().Execute "UPDATE tblPLM SET Design_No = " & designNo
+    Dim db As Database
+    Set db = CurrentDb()
+    db.Execute "UPDATE tblPLM SET Design_No = " & designNo
+    Set db = Nothing
     
     GoTo Finally
 Error:

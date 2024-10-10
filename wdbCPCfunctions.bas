@@ -58,8 +58,10 @@ Else
     sqlValues = sqlValues & ",'" & tag1 & "');"
 End If
 
-
-CurrentDb().Execute "INSERT INTO tblCPC_UpdateTracking" & sqlColumns & sqlValues
+Dim db As Database
+Set db = CurrentDb()
+db.Execute "INSERT INTO tblCPC_UpdateTracking" & sqlColumns & sqlValues
+Set db = Nothing
 
 Exit Sub
 err_handler:
