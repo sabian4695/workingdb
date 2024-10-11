@@ -1167,7 +1167,7 @@ performAction:
         Case "deleteStep" 'delete the step!
             Call registerPartUpdates("tblPartSteps", rsSteps!recordId, "Deleted - stepAction", rsSteps!stepType, "", partNum, rsSteps!stepType, "stepAction")
             rsSteps.Delete
-            If CurrentProject.AllForms("frmPartDashboard").IsLoaded Then Form_sfrmPartDashboard.Requery
+            If CurrentProject.AllForms("frmPartDashboard").IsLoaded Then Form_frmPartDashboard.partDash_refresh_Click
         Case "closeStep" 'close the step!
             Dim currentDate
             currentDate = Now()
@@ -1188,12 +1188,10 @@ performAction:
                 rsGate.Update
                 rsGate.Close
                 Set rsGate = Nothing
-                
-                If CurrentProject.AllForms("frmPartDashboard").IsLoaded Then Form_sfrmPartDashboardDates.Requery
             End If
             
             Call notifyPE(rsSteps!partNumber, "Closed", rsSteps!stepType, True)
-            If CurrentProject.AllForms("frmPartDashboard").IsLoaded Then Form_sfrmPartDashboard.Requery
+            If CurrentProject.AllForms("frmPartDashboard").IsLoaded Then Form_frmPartDashboard.partDash_refresh_Click
     End Select
 
 nextOne:
