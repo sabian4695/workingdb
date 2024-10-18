@@ -54,7 +54,6 @@ Set rsPI = db.OpenRecordset("SELECT * from tblPartInfo WHERE partNumber = '" & p
 Set rsPack = db.OpenRecordset("SELECT * from tblPartPackagingInfo WHERE partInfoId = " & rsPI!recordId & " AND (packType = 1 OR packType = 99)")
 Set rsU = db.OpenRecordset("SELECT * from tblUnits WHERE recordId = " & rsPI!unitId)
 
-
 If Nz(rsPI!dataStatus) = "" Then errorArray.Add "Data Status"
 
 ''check catalog stuff
@@ -65,11 +64,11 @@ If Nz(rsPI!dataStatus) = "" Then errorArray.Add "Data Status"
 
 If Nz(rsPI!customerId) = "" Then errorArray.Add "Customer"
 If Nz(rsPI!developingLocation) = "" Then errorArray.Add "Developing Org"
+If Nz(rsPI!unitId) = "" Then errorArray.Add "MP Unit"
 
 'check part info stuff - always reqruied
 If rsPI!dataStatus = 2 Then
-    If Nz(rsPI!unitId) = "" Then errorArray.Add "MP Unit"
-    If Nz(rsPI!developingUnit) = "" Then errorArray.Add "Dev Unit"
+    If Nz(rsPI!developingUnit) = "" Then errorArray.Add "In-House Unit"
 End If
 
 If Nz(rsPI!partType) = "" Then errorArray.Add "Part Type"
