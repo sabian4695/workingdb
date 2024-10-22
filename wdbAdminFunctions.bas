@@ -175,7 +175,7 @@ End If
 
 End Function
 
-Public Sub handleError(modName As String, activeCon As String, errDesc As String, errNum As Long)
+Public Sub handleError(modName As String, activeCon As String, errDesc As String, errNum As Long, Optional dataTag As String = "")
 On Error Resume Next
 If (CurrentProject.Path = "H:\dev") Then
     MsgBox errDesc, vbInformation, "Error Code: " & errNum
@@ -217,14 +217,12 @@ Dim strSQL As String
 modName = StrQuoteReplace(modName)
 errDesc = StrQuoteReplace(errDesc)
 errNum = StrQuoteReplace(errNum)
+dataTag = StrQuoteReplace(dataTag)
 
-strSQL = "INSERT INTO tblErrorLog(User,Form,Active_Control,Error_Date,Error_Description,Error_Number,databaseVersion) VALUES ('" & _
- Environ("username") & "','" & modName & "','" & activeCon & "',#" & Now & "#,'" & errDesc & "'," & errNum & ",'" & TempVars!wdbVersion & "')"
+strSQL = "INSERT INTO tblErrorLog(User,Form,Active_Control,Error_Date,Error_Description,Error_Number,databaseVersion,dataTag) VALUES ('" & _
+ Environ("username") & "','" & modName & "','" & activeCon & "',#" & Now & "#,'" & errDesc & "'," & errNum & ",'" & TempVars!wdbVersion & "','" & dataTag & "')"
 
-Dim db As Database
-Set db = CurrentDb()
-db.Execute strSQL
-Set db = Nothing
+dbExecute strSQL
 End Sub
 
 Function grabVersion() As String

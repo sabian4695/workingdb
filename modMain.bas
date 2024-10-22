@@ -589,10 +589,7 @@ End Function
 Private Sub clearSheet()
     On Error Resume Next
     
-    Dim db As Database
-    Set db = CurrentDb()
-    db.Execute "DELETE FROM tblPLM"
-    Set db = Nothing
+    dbExecute "DELETE FROM tblPLM"
     Form_frmPLM.Requery
     Form_sfrmPLM.Requery
 End Sub
@@ -833,10 +830,7 @@ fncSetCheckBox = True
 End Function
 
 Private Sub ClearDeletePropertyCheckBox()
-Dim db As Database
-Set db = CurrentDb()
-db.Execute "UPDATE [tblPLM] SET [Sel] = False"
-Set db = Nothing
+dbExecute "UPDATE [tblPLM] SET [Sel] = False"
 End Sub
 
 Private Function fncGetProperty() As CATIAPropertyTable
@@ -1227,10 +1221,8 @@ Private Function fncNumberingDesignNo(ByRef con As ADODB.Connection, ByVal i As 
     Set lRec = con.Execute(lSql)
     designNo = lRec.Fields(0).Value
     On Error GoTo 0
-    Dim db As Database
-    Set db = CurrentDb()
-    db.Execute "UPDATE tblPLM SET Design_No = " & designNo
-    Set db = Nothing
+
+    dbExecute "UPDATE tblPLM SET Design_No = " & designNo
     
     GoTo Finally
 Error:

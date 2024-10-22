@@ -25,6 +25,21 @@ Set rs1 = Nothing
 
 End Function
 
+Function dbExecute(sql As String)
+On Error GoTo err_handler
+
+Dim db As Database
+Set db = CurrentDb()
+
+db.Execute sql
+
+Set db = Nothing
+
+Exit Function
+err_handler:
+    Call handleError("wdbGlobalFunctions", "dbExecute", Err.DESCRIPTION, Err.number, sql)
+End Function
+
 Function findDescription(partNumber As String) As String
 On Error GoTo err_handler
 
