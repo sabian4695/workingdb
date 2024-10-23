@@ -219,7 +219,7 @@ errDesc = StrQuoteReplace(errDesc)
 errNum = StrQuoteReplace(errNum)
 dataTag = StrQuoteReplace(dataTag)
 
-strSQL = "INSERT INTO tblErrorLog(User,Form,Active_Control,Error_Date,Error_Description,Error_Number,databaseVersion,dataTag) VALUES ('" & _
+strSQL = "INSERT INTO tblErrorLog(User,Form,Active_Control,Error_Date,Error_Description,Error_Number,databaseVersion,dataTag0) VALUES ('" & _
  Environ("username") & "','" & modName & "','" & activeCon & "',#" & Now & "#,'" & errDesc & "'," & errNum & ",'" & TempVars!wdbVersion & "','" & dataTag & "')"
 
 dbExecute strSQL
