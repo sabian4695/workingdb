@@ -1352,6 +1352,8 @@ If optionExtra <> "" Then updatedBy = optionExtra
 
 If Len(oldVal) > 255 Then oldVal = Left(oldVal, 255)
 If Len(newVal) > 255 Then newVal = Left(newVal, 255)
+If Len(tag1) > 100 Then newVal = Left(tag1, 100)
+If Len(tag2) > 100 Then newVal = Left(tag2, 100)
 
 With rs1
     .addNew
@@ -1547,7 +1549,8 @@ emailApprovedCapitalPacket = False
 
 'find attachment link
 Dim attachLink As String
-attachLink = DLookup("directLink", "tblPartAttachmentsSP", "partStepId = " & stepId)
+attachLink = Nz(DLookup("directLink", "tblPartAttachmentsSP", "partStepId = " & stepId), "")
+If attachLink = "" Then Exit Function
 
 Dim emailBody As String, subjectLine As String
 subjectLine = partNumber & " Capital Packet Approval"

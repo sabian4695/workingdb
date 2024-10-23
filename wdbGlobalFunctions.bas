@@ -240,7 +240,7 @@ Set db = Nothing
 
 Exit Function
 err_handler:
-    Call handleError("wdbGlobalFunctions", "registerWdbUpdates", Err.DESCRIPTION, Err.number)
+    Call handleError("wdbGlobalFunctions", "registerWdbUpdates", Err.DESCRIPTION, Err.number, table & " " & ID)
 End Function
 
 Public Function registerSalesUpdates(table As String, ID As Variant, column As String, oldVal As Variant, newVal As Variant, Optional tag0 As String = "", Optional tag1 As Variant = "")
@@ -996,12 +996,13 @@ End Function
 Function getEmail(userName As String) As String
 On Error GoTo err_handler
 
+getEmail = ""
 On Error GoTo tryOracle
 Dim db As Database
 Set db = CurrentDb()
 Dim rsPermissions As Recordset
 Set rsPermissions = db.OpenRecordset("SELECT * from tblPermissions WHERE user = '" & userName & "'")
-getEmail = rsPermissions!userEmail
+getEmail = Nz(rsPermissions!userEmail, "")
 rsPermissions.Close
 Set rsPermissions = Nothing
 
