@@ -1009,7 +1009,7 @@ err_handler:
     Call handleError("wdbProjectE", "boxPercentConvert", Err.DESCRIPTION, Err.number)
 End Function
 
-Function notifyPE(partNum As String, notiType As String, stepTitle As String, Optional sendAlways As Boolean = False, Optional stepAction As Boolean = False) As Boolean
+Function notifyPE(partNum As String, notiType As String, stepTitle As String, Optional sendAlways As Boolean = False, Optional stepAction As Boolean = False, Optional notStepRelated As Boolean = False) As Boolean
 On Error GoTo err_handler
 
 notifyPE = False
@@ -1035,7 +1035,19 @@ Do While Not rsPartTeam.EOF
     Else
         closedBy = getFullName()
     End If
-    body = emailContentGen(partNum & " Step " & notiType, "WDB Step " & notiType, "This step has been " & notiType, stepTitle, "Part Number: " & partNum, "Closed by: " & closedBy, "Closed On: " & CStr(Date))
+    
+    Dim bodyTitle As String, emailTitle As String, subjectLine As String
+    If notStepRelated Then
+        subjectLine = partNum & " " & notiType '13251 Issue Created"
+        emailTitle = "Issue Added" 'Internal Tooling Issue Added
+        bodyTitle = stepTitle & " Issue Added"
+    Else
+        subjectLine = partNum & " Step " & notiType
+        emailTitle = "WDB Step " & notiType
+        bodyTitle = "This step has been " & notiType
+    End If
+    
+    body = emailContentGen(subjectLine, emailTitle, bodyTitle, stepTitle & " Issue", "Part Number: " & partNum, "Who: " & closedBy, "When: " & CStr(Date))
     Call sendNotification(sendTo, 10, 2, stepTitle & " for " & partNum & " has been " & notiType, body, "Part Project", CLng(partNum))
     
 nextRec:
