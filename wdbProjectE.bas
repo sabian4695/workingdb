@@ -18,7 +18,7 @@ If Form_DASHBOARD.NAM <> partNum Then
     Exit Function
 End If
 
-If userData("org") = 5 Then GoTo openIt 'bypass Oracle restrictions for NCM users
+If Nz(userData("org"), 0) = 5 Then GoTo openIt 'bypass Oracle restrictions for NCM users
 
 If Form_DASHBOARD.lblErrors.Visible = True And Form_DASHBOARD.lblErrors.Caption = "Part not found in Oracle" Then
     MsgBox "This part number must show up in Oracle to open the dash", vbInformation, "Sorry."
@@ -280,7 +280,7 @@ aifInsert "Data Status", DLookup("partDataStatus", "tblDropDownsSP", "ID = " & r
 'Dim classCodes(3) As String, classCodeFin As String
 'classCodes(0) = DLookup("partClassCode", "tblPartClassification", "recordId = " & rsPI!partClassCode)
 'classCodes(1) = DLookup("subClassCode", "tblPartClassification", "recordId = " & rsPI!subClassCode)
-'classCodes(2) = DLookup("businessCode", "tblPartClassification", "recordId = " & rsPI!businesssCode)
+'classCodes(2) = DLookup("businessCode", "tblPartClassification", "recordId = " & rsPI!businessCode)
 'classCodes(3) = DLookup("focusAreaCode", "tblPartClassification", "recordId = " & rsPI!focusAreaCode)
 '
 'classCodeFin = ""

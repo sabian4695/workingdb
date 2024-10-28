@@ -208,6 +208,8 @@ Select Case errNum
         Else
             MsgBox errDesc, vbInformation, "Error Code: " & errNum
         End If
+    Case 3343
+        MsgBox "Error. Please re-open WorkingDB to reset.", vbCritical, "Error Code: " & errNum
     Case Else
         MsgBox errDesc, vbInformation, "Error Code: " & errNum
 End Select

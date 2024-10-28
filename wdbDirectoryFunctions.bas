@@ -143,7 +143,7 @@ ElseIf partNum Like "[A-Z][A-Z]##[A-Z]##[A-Z]" Or partNum Like "[A-Z][A-Z]##[A-Z
     If FolderExists(strFilePath) = True Then
         Call openPath(strFilePath)
     Else
-        DoCmd.OpenForm "frmCreateDesignFolders"
+        If userData("dept") = "Design" Then DoCmd.OpenForm "frmCreateDesignFolders"
     End If
 Else
     thousZeros = Left(partNum, 2) & "000\"
@@ -155,7 +155,7 @@ Else
     
     If Len(partNum) = 5 Or Right(partNum, 1) = "P" Then
         If Len(FolName) = 0 Then
-            DoCmd.OpenForm "frmCreateDesignFolders"
+            If userData("dept") = "Design" Then DoCmd.OpenForm "frmCreateDesignFolders"
         Else
             Call openPath(strFilePath)
         End If
