@@ -8,35 +8,16 @@ Function fixThis()
 Dim db As Database
 Set db = CurrentDb
 
-Dim invId, currentUnit As String, rsStatus As Recordset, partStatus As String, rsCat As Recordset
-currentUnit = ""
-partStatus = ""
-
 Dim rs1 As Recordset
-Set rs1 = db.OpenRecordset("tblPartTrials")
+Set rs1 = db.OpenRecordset("SELECT * FROM tblPartSteps WHERE stepType = 'Authorize Tool Shipment' AND status <> 'Closed'")
+
+
+Dim rsApprovals As Recordset
 
 Do While Not rs1.EOF
-    currentUnit = ""
-    partStatus = ""
-    invId = idNAM(rs1!partNumber, "NAM")
+    Set rsApprovals = db.OpenRecordset("SELECT * FROM tblPartTrackingApprovals WHERE tableName = 'tblPartSteps' AND tableRecordId = " & rs1!recordId)
     
-    Set rsCat = db.OpenRecordset("SELECT SEGMENT1 FROM INV_MTL_ITEM_CATEGORIES LEFT JOIN APPS_MTL_CATEGORIES_VL ON INV_MTL_ITEM_CATEGORIES.CATEGORY_ID = APPS_MTL_CATEGORIES_VL.CATEGORY_ID " & _
-    "GROUP BY INV_MTL_ITEM_CATEGORIES.INVENTORY_ITEM_ID, APPS_MTL_CATEGORIES_VL.SEGMENT1, APPS_MTL_CATEGORIES_VL.STRUCTURE_ID HAVING STRUCTURE_ID = 101 AND [INVENTORY_ITEM_ID] = " & invId, dbOpenSnapshot)
     
-    Set rsStatus = db.OpenRecordset("SELECT INVENTORY_ITEM_STATUS_CODE FROM APPS_MTL_SYSTEM_ITEMS WHERE SEGMENT1 = '" & rs1!partNumber & "'", dbOpenSnapshot)
-    
-    If rsCat.RecordCount > 0 Then currentUnit = Nz(rsCat!SEGMENT1, "")
-    If rsStatus.RecordCount > 0 Then partStatus = Nz(rsStatus!INVENTORY_ITEM_STATUS_CODE, "")
-    
-    rs1.Edit
-    rs1!currentUnit = currentUnit
-    rs1!partStatus = partStatus
-    rs1.Update
-    
-    rsStatus.Close
-    Set rsStatus = Nothing
-    rsCat.Close
-    Set rsCat = Nothing
     
     rs1.MoveNext
 Loop
