@@ -71,7 +71,6 @@ If Len(partNum) = 5 Or (partNum Like "D*" And Len(partNum) = 6) Then
     End If
     If MsgBox("This folder does not exist. Create folder?", vbYesNo, "Folder Does Not Exist") = vbYes Then
         MkDir (fullPath)
-        MsgBox "Folder Created. Going to New Folder.", vbOKOnly, "Folder Created"
         Call openPath(fullPath)
     Else
         If MsgBox("Folder Not Created. Do you want to go to the main folder?", vbYesNo, "Folder Not Created") = vbYes Then Call openPath(mainFolder)
@@ -169,30 +168,37 @@ err_handler:
     Call handleError("wdbDirectoryFunctions", "openDocumentHistoryFolder", Err.DESCRIPTION, Err.number)
 End Function
 
-Function openModelV5Folder(partNumOriginal)
+Function openModelV5Folder(partNumOriginal, Optional openFold As Boolean = True) As String
 On Error GoTo err_handler
+
+openModelV5Folder = ""
 
 Dim partNum, thousZeros, hundZeros, FolName, mainfolderpath, strFilePath, prtpath, dPath
 
 partNum = partNumOriginal & "_"
 If partNum Like "D*" Then
-    Call checkMkDir(mainFolder("ModelV5D"), Left(partNum, Len(partNum) - 1), "*")
-ElseIf Left(partNum, 8) Like "[A-Z][A-Z]##[A-Z]##[A-Z]" Or Left(partNum, 7) Like "[A-Z][A-Z]##[A-Z]##" Or Left(partNum, 5) Like "##[A-Z]##" Then
+    If openFold Then Call checkMkDir(mainFolder("ModelV5D"), Left(partNum, Len(partNum) - 1), "*")
+    GoTo Exit_Handler
+End If
+
+If Left(partNum, 8) Like "[A-Z][A-Z]##[A-Z]##[A-Z]" Or Left(partNum, 7) Like "[A-Z][A-Z]##[A-Z]##" Or Left(partNum, 5) Like "##[A-Z]##" Then
+    '---NCM PART NUMBER---
     'Examples: AB11A76A or AB11A76 or 11A76
     partNum = partNumOriginal
-    If Not partNum Like "##[A-Z]##" Then
-        partNum = Mid(partNum, 3, 5)
-    End If
+    If Not partNum Like "##[A-Z]##" Then partNum = Mid(partNum, 3, 5)
+    
     mainfolderpath = mainFolder("ncmDrawingMaster")
     prtpath = mainfolderpath & Left(partNum, 3) & "00\" & partNum & "\"
     strFilePath = prtpath & "CATIA"
     
-    If FolderExists(strFilePath) = True Then
-        Call openPath(strFilePath)
+    If FolderExists(strFilePath) Then
+        openModelV5Folder = strFilePath
+        If openFold Then Call openPath(strFilePath)
     Else
-        DoCmd.OpenForm "frmCreateDesignFolders"
+        If openFold Then DoCmd.OpenForm "frmCreateDesignFolders"
     End If
 Else
+    '---NAM PART NUMBER---
     thousZeros = Left(partNum, 2) & "000\"
     hundZeros = Left(partNum, 3) & "00\"
     mainfolderpath = mainFolder("modelV5search")
@@ -207,14 +213,17 @@ tryagain:
                 partNum = Left(partNum, 5)
                 GoTo tryagain
             End If
-            DoCmd.OpenForm "frmCreateDesignFolders"
+            If openFold Then DoCmd.OpenForm "frmCreateDesignFolders"
         Else
-            Call openPath(strFilePath)
+            openModelV5Folder = strFilePath
+            If openFold Then Call openPath(strFilePath)
         End If
     Else
-        Call openPath(mainfolderpath)
+        If openFold Then Call openPath(mainfolderpath)
     End If
 End If
+
+Exit_Handler:
 
 Exit Function
 err_handler:
