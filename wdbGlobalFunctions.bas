@@ -9,15 +9,13 @@ Dim db As Database
 Set db = CurrentDb
 
 Dim rs1 As Recordset
-Set rs1 = db.OpenRecordset("SELECT * FROM tblPartSteps WHERE stepType = 'Authorize Tool Shipment' AND status <> 'Closed'")
+Set rs1 = db.OpenRecordset("tblPartTeam")
 
-
-Dim rsApprovals As Recordset
 
 Do While Not rs1.EOF
-    Set rsApprovals = db.OpenRecordset("SELECT * FROM tblPartTrackingApprovals WHERE tableName = 'tblPartSteps' AND tableRecordId = " & rs1!recordId)
-    
-    
+    If DCount("person", "tblPartTeam", "partNumber = '" & rs1!partNumber & "' AND person = '" & rs1!person & "'") > 1 Then
+        rs1.Delete
+    End If
     
     rs1.MoveNext
 Loop

@@ -39,7 +39,9 @@ End Function
 Function createShortcut(lnkLocation As String, targetLocation As String, shortcutName As String)
 On Error GoTo err_handler
 
-With CreateObject("WScript.Shell").createShortcut(lnkLocation & ".lnk")
+If shortcutName <> "" Then shortcutName = " - " & shortcutName
+
+With CreateObject("WScript.Shell").createShortcut(lnkLocation & shortcutName & ".lnk")
     .TargetPath = targetLocation
     .DESCRIPTION = shortcutName
     .save
