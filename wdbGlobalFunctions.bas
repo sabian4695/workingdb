@@ -159,21 +159,6 @@ err_handler:
     Call handleError("wdbGlobalFunctions", "snackBox", Err.DESCRIPTION, Err.number)
 End Function
 
-Public Function setSplashLoading(label As String)
-On Error GoTo err_handler
-
-If (CurrentProject.Path <> "H:\dev") And (CurrentProject.Path <> "\\homes\data\" & Environ("username")) Then
-    TempVars.Add "loadAmount", TempVars!loadAmount + 1
-    Form_frmSplash.lnLoading.width = (TempVars!loadAmount / 13) * TempVars!loadWd
-    Form_frmSplash.lblLoading.Caption = label
-    Form_frmSplash.Repaint
-End If
-
-Exit Function
-err_handler:
-    Call handleError("wdbGlobalFunctions", "setSplashLoading", Err.DESCRIPTION, Err.number)
-End Function
-
 Public Function labelUpdate(oldLabel As String)
 On Error GoTo err_handler
 
@@ -355,16 +340,17 @@ Set db = CurrentDb()
 Dim rsNoti As Recordset
 Set rsNoti = db.OpenRecordset("SELECT count(ID) as unRead FROM tblNotificationsSP WHERE recipientUser = '" & Environ("username") & "' AND readDate is null")
 
-If rsNoti!unRead > 9 Then
-    Form_DASHBOARD.Form.notifications.Caption = "9+"
-Else
-    Form_DASHBOARD.Form.notifications.Caption = CStr(rsNoti!unRead)
-End If
-If rsNoti!unRead = 0 Then
-    Form_DASHBOARD.Form.notifications.BackColor = RGB(60, 170, 60)
-Else
-    Form_DASHBOARD.Form.notifications.BackColor = RGB(230, 0, 0)
-End If
+Select Case rsNoti!unRead
+    Case Is > 9
+        Form_DASHBOARD.Form.notifications.Caption = "9+"
+        Form_DASHBOARD.Form.notifications.BackColor = RGB(230, 0, 0)
+    Case 0
+        Form_DASHBOARD.Form.notifications.Caption = CStr(rsNoti!unRead)
+        Form_DASHBOARD.Form.notifications.BackColor = RGB(60, 170, 60)
+    Case Else
+        Form_DASHBOARD.Form.notifications.Caption = CStr(rsNoti!unRead)
+        Form_DASHBOARD.Form.notifications.BackColor = RGB(230, 0, 0)
+End Select
 
 rsNoti.Close
 Set rsNoti = Nothing

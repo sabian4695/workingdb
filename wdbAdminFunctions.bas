@@ -13,19 +13,11 @@ x2 As Long
 y2 As Long
 End Type
 
-Private Declare PtrSafe Function apiShowWindow Lib "user32" Alias "ShowWindow" (ByVal hWnd As Long, ByVal nCmdShow As Long) As Long
 Private Declare PtrSafe Function GetDesktopWindow Lib "user32" () As Long
 Private Declare PtrSafe Function GetWindowRect Lib "user32" (ByVal hWnd As Long, r As RECT) As Long
 Public Declare PtrSafe Function IsZoomed Lib "user32" (ByVal hWnd As Long) As Long
 Private Declare PtrSafe Function moveWindow Lib "user32" Alias "MoveWindow" (ByVal hWnd As Long, ByVal X As Long, ByVal Y As Long, ByVal dx As Long, ByVal dy As Long, ByVal fRepaint As Long) As Long
 Private Declare PtrSafe Function ShowWindow Lib "user32" (ByVal hWnd As Long, ByVal nCmdShow As Long) As Long
-
-'to move windows by clicking
-Public Declare PtrSafe Function SendMessage Lib "user32" Alias "SendMessageA" (ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, lParam As Any) As LongPtr
-Public Declare PtrSafe Function ReleaseCapture Lib "user32.dll" () As Long
-
-Declare PtrSafe Function SetWindowPos Lib "user32" (ByVal hWnd As LongPtr, ByVal hWndInsertAfter As LongPtr, ByVal X As Long, ByVal Y As Long, ByVal cx As Long, ByVal cy As Long, ByVal wFlags As Long) As Long
-Declare PtrSafe Function GetCursorPos Lib "user32" (lpPoint As POINTAPI) As Long
 
 Public Type POINTAPI
     X As Long
@@ -61,43 +53,6 @@ Exit Function
 err_handler:
     Call handleError("wdbAdminFunctions", "readyForPublish", Err.DESCRIPTION, Err.number)
 End Function
-
-Sub AppWindowSelect()
-On Error GoTo err_handler
-    'select application window
-    GetWindowRect Application.hWndAccessApp, WinRECT
-    AppTop = WinRECT.y1
-    AppLeft = WinRECT.x1
-    GetCursorPos APointAPI
-    AppX = APointAPI.X
-    AppY = APointAPI.Y
-
-Exit Sub
-err_handler:
-    Call handleError("wdbAdminFunctions", "AppWindowSelect", Err.DESCRIPTION, Err.number)
-End Sub
-
-Sub AppWindowMove()
-On Error GoTo err_handler
-    'drag application window
-    GetCursorPos APointAPI
-    SetWindowPos Application.hWndAccessApp, 0, AppLeft - (AppX - APointAPI.X), AppTop - (AppY - APointAPI.Y), _
-        0, 0, &H4 + &H1
-Exit Sub
-err_handler:
-    Call handleError("wdbAdminFunctions", "AppWindowMove", Err.DESCRIPTION, Err.number)
-End Sub
-
-Sub moveForm(frm As Form)
-On Error GoTo err_handler
-
-    ReleaseCapture
-    SendMessage frm.hWnd, &HA1, &H2, 0
-
-Exit Sub
-err_handler:
-    Call handleError("wdbAdminFunctions", "moveForm", Err.DESCRIPTION, Err.number)
-End Sub
 
 Function logClick(modName As String, formName As String, Optional dataTag0 = "")
 On Error Resume Next
@@ -241,37 +196,6 @@ Set db = Nothing
 Exit Function
 err_handler:
     Call handleError("wdbAdminFunctions", "grabVersion", Err.DESCRIPTION, Err.number)
-End Function
-
-Function SixHatHideWindow(nCmdShow As Long)
-On Error GoTo err_handler
-
-    Dim loX As Long
-    Dim loForm As Form
-    On Error Resume Next
-    Set loForm = Screen.ActiveForm
-
-    If Err <> 0 Then
-        loX = apiShowWindow(hWndAccessApp, nCmdShow)
-        Err.clear
-    End If
-
-    If nCmdShow = SW_SHOWMINIMIZED And loForm.Modal = True Then
-        MsgBox "Cannot minimize Access with " _
-        & (loForm.Caption + " ") _
-        & "form on screen"
-    ElseIf nCmdShow = SW_HIDE And loForm.PopUp <> True Then
-        MsgBox "Cannot hide Access with " _
-        & (loForm.Caption + " ") _
-        & "form on screen"
-    Else
-        loX = apiShowWindow(hWndAccessApp, nCmdShow)
-    End If
-    SixHatHideWindow = (loX <> 0)
-
-Exit Function
-err_handler:
-    Call handleError("wdbAdminFunctions", "SixHatHideWindow", Err.DESCRIPTION, Err.number)
 End Function
 
 Sub SizeAccess(ByVal dx As Long, ByVal dy As Long)
