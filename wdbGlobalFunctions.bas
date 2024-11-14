@@ -9,13 +9,14 @@ Dim db As Database
 Set db = CurrentDb
 
 Dim rs1 As Recordset
-Set rs1 = db.OpenRecordset("tblPartTeam")
+Set rs1 = db.OpenRecordset("SELECT * FROM tblPartAttachmentsSP WHERE documentType = 31")
 
 
 Do While Not rs1.EOF
-    If DCount("person", "tblPartTeam", "partNumber = '" & rs1!partNumber & "' AND person = '" & rs1!person & "'") > 1 Then
-        rs1.Delete
-    End If
+    
+    rs1.Edit
+    rs1!documentTypeName = Replace(rs1!documentTypeName, "Tooling Capital Request", "Tool Shop Award")
+    rs1.Update
     
     rs1.MoveNext
 Loop

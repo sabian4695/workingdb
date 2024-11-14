@@ -56,11 +56,11 @@ Set rsU = db.OpenRecordset("SELECT * from tblUnits WHERE recordId = " & rsPI!uni
 
 If Nz(rsPI!dataStatus) = "" Then errorArray.Add "Data Status"
 
-''check catalog stuff
-'If Nz(rsPI!partClassCode) = "" Then errorArray.Add "Part Class Code"
-'If Nz(rsPI!subClassCode) = "" Then errorArray.Add "Sub Class Code"
-'If Nz(rsPI!businessCode) = "" Then errorArray.Add "Business Code"
-'If Nz(rsPI!focusAreaCode) = "" Then errorArray.Add "Focus Area Code"
+'check catalog stuff
+If Nz(rsPI!partClassCode) = "" Then errorArray.Add "Part Class Code"
+If Nz(rsPI!subClassCode) = "" Then errorArray.Add "Sub Class Code"
+If Nz(rsPI!businessCode) = "" Then errorArray.Add "Business Code"
+If Nz(rsPI!focusAreaCode) = "" Then errorArray.Add "Focus Area Code"
 
 If Nz(rsPI!customerId) = "" Then errorArray.Add "Customer"
 If Nz(rsPI!developingLocation) = "" Then errorArray.Add "Developing Org"
@@ -277,20 +277,20 @@ aifInsert "PRIMARY INFORMATION", "", , , , True
 aifInsert "Part Number", partNum, firstColBold:=True
 aifInsert "Data Status", DLookup("partDataStatus", "tblDropDownsSP", "ID = " & rsPI!dataStatus), firstColBold:=True
 
-'Dim classCodes(3) As String, classCodeFin As String
-'classCodes(0) = DLookup("partClassCode", "tblPartClassification", "recordId = " & rsPI!partClassCode)
-'classCodes(1) = DLookup("subClassCode", "tblPartClassification", "recordId = " & rsPI!subClassCode)
-'classCodes(2) = DLookup("businessCode", "tblPartClassification", "recordId = " & rsPI!businessCode)
-'classCodes(3) = DLookup("focusAreaCode", "tblPartClassification", "recordId = " & rsPI!focusAreaCode)
-'
-'classCodeFin = ""
-'Dim itema
-'For Each itema In classCodes
-'    classCodeFin = classCodeFin & "." & itema
-'Next itema
-'classCodeFin = Right(classCodeFin, Len(classCodeFin) - 1)
-'
-'aifInsert "Nifco BW Item Reporting", classCodeFin, firstColBold:=True
+Dim classCodes(3) As String, classCodeFin As String
+classCodes(0) = DLookup("partClassCode", "tblPartClassification", "recordId = " & rsPI!partClassCode)
+classCodes(1) = DLookup("subClassCode", "tblPartClassification", "recordId = " & rsPI!subClassCode)
+classCodes(2) = DLookup("businessCode", "tblPartClassification", "recordId = " & rsPI!businessCode)
+classCodes(3) = DLookup("focusAreaCode", "tblPartClassification", "recordId = " & rsPI!focusAreaCode)
+
+classCodeFin = ""
+Dim itema
+For Each itema In classCodes
+    classCodeFin = classCodeFin & "." & itema
+Next itema
+classCodeFin = Right(classCodeFin, Len(classCodeFin) - 1)
+
+aifInsert "Nifco BW Item Reporting", classCodeFin, firstColBold:=True
 
 aifInsert "Planner", rsPE!firstName & " " & rsPE!lastName, firstColBold:=True
 aifInsert "Mark Code", Nz(rsPI!partMarkCode), firstColBold:=True
@@ -607,7 +607,7 @@ On Error GoTo err_handler
 
 Dim tblHeading As String, tblArraySection As String, strHTMLBody As String
 
-tblHeading = "<table style=""width: 100%; margin: 0 auto; padding: .1em; text-align: center; background-color: #fafafa;"">" & _
+tblHeading = "<table style=""width: 100%; margin: 0 auto; padding: .1em; text-align: center; background-color: #ffffff;"">" & _
                             "<tbody>" & _
                                 "<tr><td><h2 style=""color: #414141; font-size: 28px; margin-top: 0;"">" & Title & "</h2></td></tr>" & _
                             "</tbody>" & _
@@ -625,7 +625,7 @@ titleRow = titleRow & "</tr>"
 
 dataRows = ""
 For j = 1 To rows
-    dataRows = dataRows & "<tr style=""border-collapse: collapse; font-size: 12px; text-align: center; "">"
+    dataRows = dataRows & "<tr style=""border-collapse: collapse; font-size: 11px; text-align: center; "">"
     For i = 0 To columns
         dataRows = dataRows & "<td style=""padding: .1em; border: 1px solid; "">" & data(i, j) & "</td>"
     Next i
@@ -633,13 +633,13 @@ For j = 1 To rows
 Next j
 
     
-tblArraySection = tblArraySection & "<table style=""width: 100%; margin: 0 auto; background: #2b2b2b; color: rgb(255,255,255);""><tbody>" & titleRow & dataRows & "</tbody></table>"
+tblArraySection = tblArraySection & "<table style=""width: 100%; margin: 0 auto; background: #ffffff; color: #000000;""><tbody>" & titleRow & dataRows & "</tbody></table>"
 
 strHTMLBody = "" & _
 "<!DOCTYPE html><html lang=""en"" xmlns=""http://www.w3.org/1999/xhtml"" xmlns:v=""urn:schemas-microsoft-com:vml"" xmlns:o=""urn:schemas-microsoft-com:office:office"">" & _
     "<head><meta charset=""utf-8""><title>Working DB Notification</title></head>" & _
     "<body style=""margin: 0 auto; Font-family: 'Montserrat', sans-serif; font-weight: 400; font-size: 10px; line-height: 1.8;"">" & _
-        "<table style=""max-width: 1200px; margin: 0 auto; text-align: center;"">" & _
+        "<table style=""margin: 0 auto; text-align: center;"">" & _
             "<tbody>" & _
                 "<tr><td>" & tblHeading & "</td></tr>" & _
                 "<tr><td>" & tblArraySection & "</td></tr>" & _
