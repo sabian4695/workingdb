@@ -37,38 +37,6 @@ err_handler:
     Call handleError("wdbDesignE", "createDnumber", Err.DESCRIPTION, Err.number)
 End Function
 
-Sub SetNavButtons(ByRef frmSomeForm As Form)
-On Error GoTo SetNavButtons_Error
-'-- enable/disable buttons depending on record position
-With frmSomeForm
-    If .Recordset.RecordCount <= 1 Or .CurrentRecord > .Recordset.RecordCount Then
-       .cmdFirst.Enabled = True
-       .cmdPrevious.Enabled = True
-       .cmdPrevious.SetFocus
-       .cmdNext.Enabled = False
-       .cmdLast.Enabled = False
-   ElseIf .CurrentRecord = 1 Then
-       .cmdNext.Enabled = True
-       .cmdLast.Enabled = True
-       .cmdNext.SetFocus
-       .cmdFirst.Enabled = False
-       .cmdPrevious.Enabled = False
-    Else
-       .cmdFirst.Enabled = True
-       .cmdPrevious.Enabled = True
-       .cmdNext.Enabled = True
-       .cmdLast.Enabled = True
-    End If
-End With
-SetNavButtons_Exit:
-On Error Resume Next
-Exit Sub
-SetNavButtons_Error:
-MsgBox "Error " & Err.number & " (" & Err.DESCRIPTION & _
-") in procedure SetNavButtons of Module modFormOperations"
-GoTo SetNavButtons_Exit
-End Sub
-
 Public Sub registerDRSUpdates(table As String, ID As Variant, column As String, oldVal As Variant, newVal As Variant, Optional tag0 As String, Optional tag1 As String)
 On Error GoTo err_handler
 

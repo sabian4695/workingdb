@@ -84,7 +84,7 @@ Public Function fncAddRecord(ByRef itypRecord As Record) As Long
                 itypRecord.Amount = "-"
                 itypRecord.InstanceName = ""
                 itypRecord.ModelDrawingID = ""
-                itypRecord.partNumber = ""
+                itypRecord.PartNumber = ""
                 
                 On Error Resume Next
                 Dim lngPropCnt As Long
