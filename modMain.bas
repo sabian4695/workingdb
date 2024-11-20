@@ -13,7 +13,7 @@ Public Type Record
     FileName As String
     LinkTo   As String
     LinkID   As String
-    PartNumber As String
+    partNumber As String
     InstanceName As String
     ModelDrawingID As String
     Properties() As String
@@ -627,7 +627,7 @@ Private Function fncWriteExcel(ByRef iobjRecords As CATIAPropertyTable, _
         Form_frmPLM.File_Path.Value = typRecord.FilePath
         Form_frmPLM.Link_To.Value = typRecord.LinkTo
         Form_frmPLM.Instance_Name.Value = typRecord.InstanceName
-        Form_frmPLM.File_Part_Number.Value = typRecord.PartNumber
+        Form_frmPLM.File_Part_Number.Value = typRecord.partNumber
         Form_frmPLM.Controls("ModelID/DrawingID").Value = typRecord.ModelDrawingID
         
         On Error Resume Next
@@ -883,7 +883,7 @@ Private Function fncGetProperty() As CATIAPropertyTable
         typRecord.FilePath = Nz(rs1![FilePath])
         typRecord.FileName = Nz(rs1![FileName])
         typRecord.LinkTo = Nz(rs1![LinkTo])
-        typRecord.PartNumber = Nz(rs1![PartNumber])
+        typRecord.partNumber = Nz(rs1![partNumber])
         typRecord.InstanceName = Nz(rs1![InstanceName])
         typRecord.ModelDrawingID = Nz(rs1![ModelID/DrawingID])
         typRecord.Properties = strProperties
@@ -932,7 +932,7 @@ Private Function fncIsBlankRecord(ByRef itypRecord As Record) As Boolean
     If itypRecord.FilePath <> "" Then Exit Function
     If itypRecord.FileName <> "" Then Exit Function
     If itypRecord.LinkTo <> "" Then Exit Function
-    If itypRecord.PartNumber <> "" Then Exit Function
+    If itypRecord.partNumber <> "" Then Exit Function
     If itypRecord.InstanceName <> "" Then Exit Function
     If itypRecord.ModelDrawingID <> "" Then Exit Function
     

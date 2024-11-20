@@ -649,7 +649,7 @@ Private Function fncGetPropertyFromProduct(ByRef iobjProduct As Object, ByVal ii
     If fncGetDocName(iobjProduct, strFileName) = False Then Exit Function
     
     strFileName = fncSplitFileName(strFileName)
-    strPartNumber = iobjProduct.PartNumber
+    strPartNumber = iobjProduct.partNumber
     strInstanceName = iobjProduct.name
     strPropName = modDefineDrawing.fncGetPropertyName("ModelID/DrawingID")
     strModelID = fncGetUserRefProperty(iobjProduct, strPropName)
@@ -664,7 +664,7 @@ Private Function fncGetPropertyFromProduct(ByRef iobjProduct As Object, ByVal ii
     typRecord.Amount = 1
     typRecord.FilePath = strFilePath
     typRecord.FileName = strFileName
-    typRecord.PartNumber = strPartNumber
+    typRecord.partNumber = strPartNumber
     typRecord.InstanceName = strInstanceName
     typRecord.ModelDrawingID = strModelID
     typRecord.Properties = strProperties

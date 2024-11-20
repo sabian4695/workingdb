@@ -41,7 +41,7 @@ err_handler:
     Call handleError("wdbGlobalFunctions", "dbExecute", Err.DESCRIPTION, Err.number, sql)
 End Function
 
-Function findDescription(PartNumber As String) As String
+Function findDescription(partNumber As String) As String
 On Error GoTo err_handler
 
 findDescription = ""
@@ -51,14 +51,14 @@ findDescription = ""
 Dim db As Database
 Dim rs1 As Recordset
 Set db = CurrentDb
-Set rs1 = db.OpenRecordset("SELECT SEGMENT1, DESCRIPTION FROM APPS_MTL_SYSTEM_ITEMS WHERE SEGMENT1 = '" & PartNumber & "'", dbOpenSnapshot)
+Set rs1 = db.OpenRecordset("SELECT SEGMENT1, DESCRIPTION FROM APPS_MTL_SYSTEM_ITEMS WHERE SEGMENT1 = '" & partNumber & "'", dbOpenSnapshot)
 If rs1.RecordCount = 0 Then 'not in main Oracle table, now look through SIFs
-    If DCount("[ROW_ID]", "APPS_Q_SIF_NEW_ASSEMBLED_PART_V", "[NIFCO_PART_NUMBER] = '" & PartNumber & "'") > 0 Then 'is it in assy table?
-        Set rs1 = db.OpenRecordset("SELECT SIFNUM, PART_DESCRIPTION FROM APPS_Q_SIF_NEW_ASSEMBLED_PART_V WHERE NIFCO_PART_NUMBER = '" & PartNumber & "'", dbOpenSnapshot)
+    If DCount("[ROW_ID]", "APPS_Q_SIF_NEW_ASSEMBLED_PART_V", "[NIFCO_PART_NUMBER] = '" & partNumber & "'") > 0 Then 'is it in assy table?
+        Set rs1 = db.OpenRecordset("SELECT SIFNUM, PART_DESCRIPTION FROM APPS_Q_SIF_NEW_ASSEMBLED_PART_V WHERE NIFCO_PART_NUMBER = '" & partNumber & "'", dbOpenSnapshot)
         rs1.MoveLast
         findDescription = rs1!Part_Description
-    ElseIf DCount("[ROW_ID]", "APPS_Q_SIF_NEW_MOLDED_PART_V ", "[NIFCO_PART_NUMBER] = '" & PartNumber & "'") > 0 Then 'is it in molded table?
-        Set rs1 = db.OpenRecordset("SELECT SIFNUM, PART_DESCRIPTION FROM APPS_Q_SIF_NEW_MOLDED_PART_V WHERE NIFCO_PART_NUMBER = '" & PartNumber & "'", dbOpenSnapshot)
+    ElseIf DCount("[ROW_ID]", "APPS_Q_SIF_NEW_MOLDED_PART_V ", "[NIFCO_PART_NUMBER] = '" & partNumber & "'") > 0 Then 'is it in molded table?
+        Set rs1 = db.OpenRecordset("SELECT SIFNUM, PART_DESCRIPTION FROM APPS_Q_SIF_NEW_MOLDED_PART_V WHERE NIFCO_PART_NUMBER = '" & partNumber & "'", dbOpenSnapshot)
         rs1.MoveLast
         findDescription = rs1!Part_Description
     End If
@@ -839,7 +839,7 @@ nextWO:
                     GoTo nextStep
                 End If
                 ReDim Preserve todaySteps(ti)
-                todaySteps(ti) = rsOpenSteps!PartNumber & "," & rsOpenSteps!Action & ",Today"
+                todaySteps(ti) = rsOpenSteps!partNumber & "," & rsOpenSteps!Action & ",Today"
                 ti = ti + 1
             Case Is < Date 'over due
                 If li > 15 Then
@@ -847,7 +847,7 @@ nextWO:
                     GoTo nextStep
                 End If
                 ReDim Preserve lateSteps(li)
-                lateSteps(li) = rsOpenSteps!PartNumber & "," & rsOpenSteps!Action & "," & Format(rsOpenSteps!dueDate, "mm/dd/yyyy")
+                lateSteps(li) = rsOpenSteps!partNumber & "," & rsOpenSteps!Action & "," & Format(rsOpenSteps!dueDate, "mm/dd/yyyy")
                 li = li + 1
             Case Is <= (Date + 7) 'due in next week
                 If ni > 15 Then
@@ -855,7 +855,7 @@ nextWO:
                     GoTo nextStep
                 End If
                 ReDim Preserve nextSteps(ni)
-                nextSteps(ni) = rsOpenSteps!PartNumber & "," & rsOpenSteps!Action & "," & Format(rsOpenSteps!dueDate, "mm/dd/yyyy")
+                nextSteps(ni) = rsOpenSteps!partNumber & "," & rsOpenSteps!Action & "," & Format(rsOpenSteps!dueDate, "mm/dd/yyyy")
                 ni = ni + 1
         End Select
 nextStep:

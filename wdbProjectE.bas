@@ -358,7 +358,7 @@ Select Case rsPI!partType
         Else
             aifInsert "Glass Cost", "0", firstColBold:=True, set5Dec:=True
         End If
-        If rsPI!Regrind Then
+        If rsPI!regrind Then
             mat0 = 0: mat1 = 0
             orgCalc = Replace(Nz(rsU!Org, rsPI!developingLocation), "CUU", "MEX")
             orgID = DLookup("ID", "tblOrgs", "Org = '" & orgCalc & "'")
@@ -514,12 +514,12 @@ err_handler:
     Call handleError("wdbProjectE", "aifInsert", Err.DESCRIPTION, Err.number)
 End Function
 
-Function loadPlannerECO(PartNumber As String) As String
+Function loadPlannerECO(partNumber As String) As String
 On Error Resume Next
 loadPlannerECO = ""
 
 Dim revID
-revID = idNAM(PartNumber, "NAM")
+revID = idNAM(partNumber, "NAM")
 If revID = "" Then Exit Function
 
 Dim db As Database
@@ -535,12 +535,12 @@ Set rs1 = Nothing
 Set db = Nothing
 End Function
 
-Function loadTransferECO(PartNumber As String) As String
+Function loadTransferECO(partNumber As String) As String
 On Error Resume Next
 loadTransferECO = ""
 
 Dim revID
-revID = idNAM(PartNumber, "NAM")
+revID = idNAM(partNumber, "NAM")
 If revID = "" Then Exit Function
 
 Dim db As Database
@@ -751,14 +751,14 @@ err_handler:
     Call handleError("wdbProjectE", "completelyDeletePartProjectAndInfo", Err.DESCRIPTION, Err.number)
 End Function
 
-Public Function getApprovalsComplete(stepId As Long, PartNumber As String) As Long
+Public Function getApprovalsComplete(stepId As Long, partNumber As String) As Long
 On Error GoTo err_handler
 
 getApprovalsComplete = 0
 Dim db As Database
 Set db = CurrentDb()
 Dim rs1 As Recordset
-Set rs1 = db.OpenRecordset("SELECT count(approvedOn) as appCount from tblPartTrackingApprovals WHERE [partNumber] = '" & PartNumber & "' AND [tableRecordId] = " & stepId & " AND [tableName] = 'tblPartSteps'")
+Set rs1 = db.OpenRecordset("SELECT count(approvedOn) as appCount from tblPartTrackingApprovals WHERE [partNumber] = '" & partNumber & "' AND [tableRecordId] = " & stepId & " AND [tableName] = 'tblPartSteps'")
 
 getApprovalsComplete = Nz(rs1!appCount, 0)
 
@@ -769,14 +769,14 @@ Set db = Nothing
 err_handler:
 End Function
 
-Public Function getTotalApprovals(stepId As Long, PartNumber As String) As Long
+Public Function getTotalApprovals(stepId As Long, partNumber As String) As Long
 On Error GoTo err_handler
 
 getTotalApprovals = 0
 Dim db As Database
 Set db = CurrentDb()
 Dim rs1 As Recordset
-Set rs1 = db.OpenRecordset("SELECT count(recordId) as appCount from tblPartTrackingApprovals WHERE [partNumber] = '" & PartNumber & "' AND [tableRecordId] = " & stepId & " AND [tableName] = 'tblPartSteps'")
+Set rs1 = db.OpenRecordset("SELECT count(recordId) as appCount from tblPartTrackingApprovals WHERE [partNumber] = '" & partNumber & "' AND [tableRecordId] = " & stepId & " AND [tableName] = 'tblPartSteps'")
 
 getTotalApprovals = Nz(rs1!appCount, 0)
 
@@ -838,7 +838,7 @@ Dim projTempId As Long, pNum As String, runningDate As Date
 Set rsProject = db.OpenRecordset("SELECT * from tblPartProject WHERE recordId = " & projId)
 
 projTempId = rsProject!projectTemplateId
-pNum = rsProject!PartNumber
+pNum = rsProject!partNumber
 runningDate = rsProject!projectStartDate
 
 If Nz(pNum) = "" Then Exit Function 'escape possible part number null projects
@@ -1065,14 +1065,14 @@ err_handler:
     Call handleError("wdbProjectE", "notifyPE", Err.DESCRIPTION, Err.number)
 End Function
 
-Function findDept(PartNumber As String, dept As String, Optional returnMe As Boolean = False) As String
+Function findDept(partNumber As String, dept As String, Optional returnMe As Boolean = False) As String
 On Error GoTo err_handler
 
 Dim db As Database
 Set db = CurrentDb()
 Dim rsPermissions As Recordset, permEm
 Set rsPermissions = db.OpenRecordset("SELECT user, userEmail from tblPermissions where Dept = '" & dept & "' AND Level = 'Engineer' AND user IN " & _
-                                    "(SELECT person FROM tblPartTeam WHERE partNumber = '" & PartNumber & "')")
+                                    "(SELECT person FROM tblPartTeam WHERE partNumber = '" & partNumber & "')")
 If rsPermissions.RecordCount = 0 Then Exit Function
 
 Do While Not rsPermissions.EOF
@@ -1121,7 +1121,7 @@ Do While Not rsSteps.EOF
     Select Case rsStepActions!compareTable
         Case "INV_MTL_EAM_ASSET_ATTR_VALUES"
             Dim rsPI As Recordset, rsPMI As Recordset
-            Set rsPI = db.OpenRecordset("SELECT moldInfoId FROM tblPartInfo WHERE partNumber = '" & rsSteps!PartNumber & "'")
+            Set rsPI = db.OpenRecordset("SELECT moldInfoId FROM tblPartInfo WHERE partNumber = '" & rsSteps!partNumber & "'")
             If rsPI.RecordCount = 0 Then GoTo nextOne
             If Nz(rsPI!moldInfoId) = "" Then GoTo nextOne
             Set rsPMI = db.OpenRecordset("SELECT toolNumber FROM tblPartMoldingInfo WHERE recordId = " & rsPI!moldInfoId)
@@ -1133,9 +1133,9 @@ Do While Not rsSteps.EOF
             Set rsPMI = Nothing
         Case "ENG_ENG_ENGINEERING_CHANGES"
             Dim rsECOrev As Recordset 'find the transfer ECO
-            If Nz(rsSteps!PartNumber) = "" Then GoTo nextOne
+            If Nz(rsSteps!partNumber) = "" Then GoTo nextOne
             Dim pnId As String
-            pnId = idNAM(rsSteps!PartNumber, "NAM")
+            pnId = idNAM(rsSteps!partNumber, "NAM")
             If pnId = "" Then GoTo nextOne
             Set rsECOrev = db.OpenRecordset("select CHANGE_NOTICE from ENG_ENG_ENGINEERING_CHANGES " & _
                 "where CHANGE_NOTICE IN (select CHANGE_NOTICE from ENG_ENG_REVISED_ITEMS where REVISED_ITEM_ID = " & pnId & " ) " & _
@@ -1145,10 +1145,10 @@ Do While Not rsSteps.EOF
             Set rsECOrev = Nothing
             GoTo performAction 'transfer ECO found!
         Case "Cost Documents" 'Checking SP site for documents
-            If Nz(rsSteps!PartNumber) = "" Then GoTo nextOne
+            If Nz(rsSteps!partNumber) = "" Then GoTo nextOne
             Dim rsCostDocs As Recordset
             Set rsCostDocs = db.OpenRecordset("SELECT * FROM [" & rsStepActions!compareTable & "] WHERE " & _
-                "[Part Number] = '" & rsSteps!PartNumber & "' AND [" & rsStepActions!compareColumn & "] = '" & rsStepActions!compareData & "' AND [Document Type] = 'Custom Item Cost Sheet'")
+                "[Part Number] = '" & rsSteps!partNumber & "' AND [" & rsStepActions!compareColumn & "] = '" & rsStepActions!compareData & "' AND [Document Type] = 'Custom Item Cost Sheet'")
             If rsCostDocs.RecordCount = 0 Then GoTo nextOne
             GoTo performAction 'Custom Item Cost Sheet Found!
     End Select
@@ -1182,8 +1182,8 @@ performAction:
         Case "closeStep" 'close the step!
             Dim currentDate
             currentDate = Now()
-            Call registerPartUpdates("tblPartSteps", rsSteps!recordId, "closeDate", rsSteps!closeDate, currentDate, rsSteps!PartNumber, rsSteps!stepType, rsSteps!partProjectId, "stepAction")
-            Call registerPartUpdates("tblPartSteps", rsSteps!recordId, "status", rsSteps!status, "Closed", rsSteps!PartNumber, rsSteps!stepType, rsSteps!partProjectId, "stepAction")
+            Call registerPartUpdates("tblPartSteps", rsSteps!recordId, "closeDate", rsSteps!closeDate, currentDate, rsSteps!partNumber, rsSteps!stepType, rsSteps!partProjectId, "stepAction")
+            Call registerPartUpdates("tblPartSteps", rsSteps!recordId, "status", rsSteps!status, "Closed", rsSteps!partNumber, rsSteps!stepType, rsSteps!partProjectId, "stepAction")
             rsSteps.Edit
             rsSteps!closeDate = currentDate
             rsSteps!status = "Closed"
@@ -1192,7 +1192,7 @@ performAction:
             If (DCount("recordId", "tblPartSteps", "[closeDate] is null AND partGateId = " & rsSteps!partGateId) = 0) Then 'if it's the last step in the gate, close the gate!
                 Dim rsGate As Recordset
                 Set rsGate = db.OpenRecordset("SELECT * FROM tblPartGates WHERE recordId = " & rsSteps!partGateId)
-                Call registerPartUpdates("tblPartGates", rsSteps!partGateId, "actualDate", rsGate!gateDate, currentDate, rsSteps!PartNumber, rsGate!gateTitle, rsSteps!partProjectId, "stepAction")
+                Call registerPartUpdates("tblPartGates", rsSteps!partGateId, "actualDate", rsGate!gateDate, currentDate, rsSteps!partNumber, rsGate!gateTitle, rsSteps!partProjectId, "stepAction")
                 
                 rsGate.Edit
                 rsGate!actualDate = currentDate
@@ -1201,7 +1201,7 @@ performAction:
                 Set rsGate = Nothing
             End If
             
-            Call notifyPE(rsSteps!PartNumber, "Closed", rsSteps!stepType, True)
+            Call notifyPE(rsSteps!partNumber, "Closed", rsSteps!stepType, True)
             If CurrentProject.AllForms("frmPartDashboard").IsLoaded Then Form_frmPartDashboard.partDash_refresh_Click
     End Select
 
@@ -1344,7 +1344,7 @@ err_handler:
 End Function
 
 Public Function registerPartUpdates(table As String, ID As Variant, column As String, _
-    oldVal As Variant, newVal As Variant, PartNumber As String, _
+    oldVal As Variant, newVal As Variant, partNumber As String, _
     Optional tag1 As String = "", Optional tag2 As Variant = "", Optional optionExtra As String = "")
 On Error GoTo err_handler
 
@@ -1376,7 +1376,7 @@ With rs1
         !columnName = column
         !previousData = StrQuoteReplace(CStr(Nz(oldVal, "")))
         !newData = StrQuoteReplace(CStr(Nz(newVal, "")))
-        !PartNumber = PartNumber
+        !partNumber = partNumber
         !dataTag1 = StrQuoteReplace(tag1)
         !dataTag2 = StrQuoteReplace(tag2)
     .Update
@@ -1392,7 +1392,7 @@ err_handler:
     Call handleError("wdbProjectE", "registerPartUpdates", Err.DESCRIPTION, Err.number)
 End Function
 
-Function toolShipAuthorizationEmail(toolNumber As String, stepId As Long, shipMethod As String, PartNumber As String) As Boolean
+Function toolShipAuthorizationEmail(toolNumber As String, stepId As Long, shipMethod As String, partNumber As String) As Boolean
 On Error GoTo err_handler
 
 toolShipAuthorizationEmail = False
@@ -1417,7 +1417,7 @@ ReDim Preserve arr(rsApprovals.RecordCount)
 rsApprovals.MoveFirst
 
 Do While Not rsApprovals.EOF
-    arr(i) = rsApprovals!Approver & " - " & rsApprovals!approvedOn
+    arr(i) = rsApprovals!approver & " - " & rsApprovals!approvedOn
     i = i + 1
     rsApprovals.MoveNext
 Loop
@@ -1432,7 +1432,7 @@ Else
 End If
 
 Dim rs2 As Recordset, strTo As String
-Set rs2 = db.OpenRecordset("SELECT * FROM tblPartTeam WHERE partNumber = '" & PartNumber & "'", dbOpenSnapshot)
+Set rs2 = db.OpenRecordset("SELECT * FROM tblPartTeam WHERE partNumber = '" & partNumber & "'", dbOpenSnapshot)
 strTo = ""
 
 Do While Not rs2.EOF
@@ -1461,20 +1461,20 @@ err_handler:
     Call handleError("wdbProjectE", "toolShipAuthorizationEmail", Err.DESCRIPTION, Err.number)
 End Function
 
-Function emailPartApprovalNotification(stepId As Long, PartNumber As String) As Boolean
+Function emailPartApprovalNotification(stepId As Long, partNumber As String) As Boolean
 On Error GoTo err_handler
 
 emailPartApprovalNotification = False
 
 Dim emailBody As String, subjectLine As String
 subjectLine = "Part Approval Notification"
-emailBody = generateHTML(subjectLine, PartNumber & " has received customer approval", "Part Approved", "No extra details...", "", "")
+emailBody = generateHTML(subjectLine, partNumber & " has received customer approval", "Part Approved", "No extra details...", "", "")
 
 Dim db As Database
 Set db = CurrentDb()
 
 Dim rs2 As Recordset, strTo As String
-Set rs2 = db.OpenRecordset("SELECT * FROM tblPartTeam WHERE partNumber = '" & PartNumber & "'", dbOpenSnapshot)
+Set rs2 = db.OpenRecordset("SELECT * FROM tblPartTeam WHERE partNumber = '" & partNumber & "'", dbOpenSnapshot)
 strTo = ""
 
 Do While Not rs2.EOF
@@ -1501,7 +1501,7 @@ err_handler:
     Call handleError("wdbProjectE", "emailPartApprovalNotification", Err.DESCRIPTION, Err.number)
 End Function
 
-Function emailAIF(stepId As Long, PartNumber As String, aifType As String, projId As Long) As Boolean
+Function emailAIF(stepId As Long, partNumber As String, aifType As String, projId As Long) As Boolean
 On Error GoTo err_handler
 
 emailAIF = False
@@ -1512,7 +1512,7 @@ Set db = CurrentDb()
 Dim rsAssParts As Recordset
 Set rsAssParts = db.OpenRecordset("SELECT * FROM tblPartProjectPartNumbers WHERE projectId = " & projId)
 
-If emailAIFsend(stepId, PartNumber, "Kickoff") = False Then Exit Function 'do primary part number first
+If emailAIFsend(stepId, partNumber, "Kickoff") = False Then Exit Function 'do primary part number first
 
 If rsAssParts.RecordCount > 0 Then
     Do While Not rsAssParts.EOF
@@ -1530,22 +1530,22 @@ err_handler:
     Call handleError("wdbProjectE", "emailAIF", Err.DESCRIPTION, Err.number)
 End Function
 
-Function emailAIFsend(stepId As Long, PartNumber As String, aifType As String)
+Function emailAIFsend(stepId As Long, partNumber As String, aifType As String)
 On Error GoTo err_handler
 
 emailAIFsend = False
 
 'find attachment link
 Dim attachLink As String
-attachLink = DLookup("directLink", "tblPartAttachmentsSP", "partStepId = " & stepId & " AND partNumber = '" & PartNumber & "'")
+attachLink = DLookup("directLink", "tblPartAttachmentsSP", "partStepId = " & stepId & " AND partNumber = '" & partNumber & "'")
 
 Dim emailBody As String, subjectLine As String, strTo As String
-subjectLine = PartNumber & " " & aifType & " AIF"
-emailBody = generateHTML(subjectLine, aifType & " AIF " & PartNumber & " is now ready", aifType & " AIF", "No extra details...", "", "", attachLink)
+subjectLine = partNumber & " " & aifType & " AIF"
+emailBody = generateHTML(subjectLine, aifType & " AIF " & partNumber & " is now ready", aifType & " AIF", "No extra details...", "", "", attachLink)
 
 strTo = "cost_team_mailbox@us.nifco.com"
 
-Call sendNotification(strTo, 2, 2, PartNumber & " " & aifType & " AIF", emailBody, "Part Project", CLng(PartNumber), customEmail:=True)
+Call sendNotification(strTo, 2, 2, partNumber & " " & aifType & " AIF", emailBody, "Part Project", CLng(partNumber), customEmail:=True)
 
 emailAIFsend = True
 
@@ -1554,7 +1554,7 @@ err_handler:
     Call handleError("wdbProjectE", "emailAIFsub", Err.DESCRIPTION, Err.number)
 End Function
 
-Function emailApprovedCapitalPacket(stepId As Long, PartNumber As String, capitalPacketNum As String) As Boolean
+Function emailApprovedCapitalPacket(stepId As Long, partNumber As String, capitalPacketNum As String) As Boolean
 On Error GoTo err_handler
 
 emailApprovedCapitalPacket = False
@@ -1565,14 +1565,14 @@ attachLink = Nz(DLookup("directLink", "tblPartAttachmentsSP", "partStepId = " & 
 If attachLink = "" Then Exit Function
 
 Dim emailBody As String, subjectLine As String
-subjectLine = PartNumber & " Capital Packet Approval"
-emailBody = generateHTML(subjectLine, capitalPacketNum & " Capital Packet for " & PartNumber & " is now Approved", "Capital Packet", "No extra details...", "", "", attachLink)
+subjectLine = partNumber & " Capital Packet Approval"
+emailBody = generateHTML(subjectLine, capitalPacketNum & " Capital Packet for " & partNumber & " is now Approved", "Capital Packet", "No extra details...", "", "", attachLink)
 
 Dim db As Database
 Set db = CurrentDb()
 
 Dim rs2 As Recordset, strTo As String
-Set rs2 = db.OpenRecordset("SELECT * FROM tblPartTeam WHERE partNumber = '" & PartNumber & "'", dbOpenSnapshot)
+Set rs2 = db.OpenRecordset("SELECT * FROM tblPartTeam WHERE partNumber = '" & partNumber & "'", dbOpenSnapshot)
 strTo = ""
 
 Do While Not rs2.EOF
@@ -1582,7 +1582,7 @@ Loop
 
 strTo = Left(strTo, Len(strTo) - 1)
 
-Call sendNotification(strTo, 9, 2, PartNumber & " Capital Packet Approval", emailBody, "Part Project", CLng(PartNumber), True)
+Call sendNotification(strTo, 9, 2, partNumber & " Capital Packet Approval", emailBody, "Part Project", CLng(partNumber), True)
 
 emailApprovedCapitalPacket = True
 
