@@ -833,7 +833,7 @@ Dim db As DAO.Database
 Set db = CurrentDb()
 Dim rsProject As Recordset, rsStepTemplate As Recordset, rsApprovalsTemplate As Recordset, rsGateTemplate As Recordset
 Dim strInsert As String, strInsert1 As String
-Dim projTempId As Long, pNum As String, runningDate As Date
+Dim projTempId As Long, pNum As String, runningDate As Date, G3planned As Date
 
 Set rsProject = db.OpenRecordset("SELECT * from tblPartProject WHERE recordId = " & projId)
 
@@ -880,9 +880,31 @@ Do While Not rsGateTemplate.EOF
 nextStep:
         rsStepTemplate.MoveNext
     Loop
+    If Left(rsGateTemplate!gateTitle, 2) = "G3" Then G3planned = runningDate
     db.Execute "UPDATE tblPartGates SET plannedDate = '" & runningDate & "' WHERE recordId = " & TempVars!gateId 'set the planned date as the last step due date in this gate
     rsGateTemplate.MoveNext
 Loop
+
+DoEvents
+'FOR ASSEMBLED PARTS, ADD AUTOMATION GATES
+If projTempId = 8 Then
+    Dim rsAssyTemplate As Recordset
+    Set rsAssyTemplate = db.OpenRecordset("SELECT * FROM tblPartStepTemplate WHERE gateTemplateId = 43")
+    
+    'G3 planned date (-3 weeks) is the due date for the last gate for automation, per Matt Lindsey
+    Dim totalDays As Long, assyRunningDate As Date
+    totalDays = DSum("duration", "tblPartStepTemplate", "gateTemplateId = 43")
+    assyRunningDate = addWorkdays(G3planned, (totalDays + 15) * -1)
+    
+    Do While Not rsAssyTemplate.EOF
+        assyRunningDate = addWorkdays(assyRunningDate, Nz(rsAssyTemplate![duration], 1))
+        db.Execute "INSERT INTO tblPartAssemblyGates(projectId,templateGateId,partNumber,gateStatus,plannedDate) VALUES (" & projId & "," & rsAssyTemplate!recordId & ",'" & pNum & "',1,'" & assyRunningDate & "')", dbFailOnError
+        rsAssyTemplate.MoveNext
+    Loop
+    
+    rsAssyTemplate.Close
+    Set rsAssyTemplate = Nothing
+End If
 
 rsGateTemplate.Close
 Set rsGateTemplate = Nothing
@@ -914,42 +936,6 @@ Set rsPermissions = Nothing
 Set db = Nothing
 
 err_handler:
-End Function
-
-Public Function setProgressBarPROJECT()
-On Error GoTo err_handler
-
-Dim percent As Double, width As Long
-width = 17820
-
-percent = grabProjectProgressPercent(Form_frmPartDashboard.recordId)
-
-If percent < 0.1 Then
-    Form_frmPartDashboard.progressBarPROJECT.width = 1
-Else
-    Form_frmPartDashboard.progressBarPROJECT.width = percent * width
-End If
-
-Dim pColor
-Select Case True
-    Case percent < 0.25
-        pColor = RGB(150, 100, 100)
-    Case percent >= 0.25 And percent < 0.5
-        pColor = RGB(185, 130, 100)
-    Case percent >= 0.5 And percent < 0.75
-        pColor = RGB(140, 150, 100)
-    Case percent >= 0.75
-        pColor = RGB(100, 150, 100)
-End Select
-Form_frmPartDashboard.progressBarPROJECT.BackColor = pColor
-Form_frmPartDashboard.progressBarPROJECT_.BorderColor = pColor
-Form_frmPartDashboard.progressBarPROJECT.BorderColor = pColor
-
-Form_frmPartDashboard.percComplete = Round(percent * 100, 0) & "%"
-
-Exit Function
-err_handler:
-    Call handleError("wdbProjectE", "setProgressBarPROJECT", Err.DESCRIPTION, Err.number)
 End Function
 
 Public Function grabProjectProgressPercent(projId As Long) As Double
