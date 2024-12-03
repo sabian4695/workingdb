@@ -1178,7 +1178,7 @@ performAction:
             If (DCount("recordId", "tblPartSteps", "[closeDate] is null AND partGateId = " & rsSteps!partGateId) = 0) Then 'if it's the last step in the gate, close the gate!
                 Dim rsGate As Recordset
                 Set rsGate = db.OpenRecordset("SELECT * FROM tblPartGates WHERE recordId = " & rsSteps!partGateId)
-                Call registerPartUpdates("tblPartGates", rsSteps!partGateId, "actualDate", rsGate!gateDate, currentDate, rsSteps!partNumber, rsGate!gateTitle, rsSteps!partProjectId, "stepAction")
+                Call registerPartUpdates("tblPartGates", rsSteps!partGateId, "actualDate", rsGate!actualDate, currentDate, rsSteps!partNumber, rsGate!gateTitle, rsSteps!partProjectId, "stepAction")
                 
                 rsGate.Edit
                 rsGate!actualDate = currentDate
