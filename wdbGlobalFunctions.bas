@@ -3,6 +3,19 @@ Option Explicit
 
 Public bClone As Boolean
 
+Declare PtrSafe Sub ChooseColor Lib "msaccess.exe" Alias "#53" (ByVal hwnd As LongPtr, rgb As Long)
+
+Public Function colorPicker() As Long
+On Error GoTo err_handler
+    Static lngColor As Long
+    ChooseColor Application.hWndAccessApp, lngColor
+    colorPicker = lngColor
+Exit Function
+err_handler:
+    Call handleError("wdbGlobalFunctions", "colorPicker", Err.DESCRIPTION, Err.number)
+End Function
+
+
 Function fixThis()
 
 Dim db As Database
@@ -359,13 +372,13 @@ Set rsNoti = db.OpenRecordset("SELECT count(ID) as unRead FROM tblNotificationsS
 Select Case rsNoti!unRead
     Case Is > 9
         Form_DASHBOARD.Form.notifications.Caption = "9+"
-        Form_DASHBOARD.Form.notifications.BackColor = RGB(230, 0, 0)
+        Form_DASHBOARD.Form.notifications.BackColor = rgb(230, 0, 0)
     Case 0
         Form_DASHBOARD.Form.notifications.Caption = CStr(rsNoti!unRead)
-        Form_DASHBOARD.Form.notifications.BackColor = RGB(60, 170, 60)
+        Form_DASHBOARD.Form.notifications.BackColor = rgb(60, 170, 60)
     Case Else
         Form_DASHBOARD.Form.notifications.Caption = CStr(rsNoti!unRead)
-        Form_DASHBOARD.Form.notifications.BackColor = RGB(230, 0, 0)
+        Form_DASHBOARD.Form.notifications.BackColor = rgb(230, 0, 0)
 End Select
 
 rsNoti.Close
@@ -1027,9 +1040,9 @@ err_handler:
     Call handleError("wdbGlobalFunctions", "getEmail", Err.DESCRIPTION, Err.number)
 End Function
 
-Function splitString(a, b, c) As String
+Function splitString(a, B, c) As String
     On Error GoTo errorCatch
-    splitString = Split(a, b)(c)
+    splitString = Split(a, B)(c)
     Exit Function
 errorCatch:
     splitString = ""

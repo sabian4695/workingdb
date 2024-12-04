@@ -490,7 +490,7 @@ WKS.Range("A" & inV & ":E" & inV).Borders(xlTop).Weight = xlThin
 WKS.Range("A" & inV & ":E" & inV).Borders(xlBottom).Weight = xlThin
 
 If heading Then
-    WKS.Range("A" & inV & ":E" & inV).Interior.Color = RGB(214, 220, 228)
+    WKS.Range("A" & inV & ":E" & inV).Interior.Color = rgb(214, 220, 228)
     WKS.Range("A" & inV & ":E" & inV).Font.Size = 14
     WKS.Range("A" & inV & ":E" & inV).Font.Bold = True
     WKS.Range("A" & inV & ":E" & inV).Merge
@@ -499,11 +499,11 @@ End If
 
 If Title Then
     WKS.Range("A" & inV & ":E" & inV).Font.Bold = True
-    WKS.Range("A" & inV & ":E" & inV).Interior.Color = RGB(242, 242, 242)
+    WKS.Range("A" & inV & ":E" & inV).Interior.Color = rgb(242, 242, 242)
 End If
 If firstColBold Then
     WKS.Range("A" & inV).Font.Bold = True
-    WKS.Range("A" & inV).Interior.Color = RGB(242, 242, 242)
+    WKS.Range("A" & inV).Interior.Color = rgb(242, 242, 242)
     WKS.Range("B" & inV & ":E" & inV).Merge
     If set5Dec Then WKS.Range("B" & inV & ":E" & inV).NumberFormat = "0.00000"
 End If
@@ -1352,6 +1352,7 @@ If Len(oldVal) > 255 Then oldVal = Left(oldVal, 255)
 If Len(newVal) > 255 Then newVal = Left(newVal, 255)
 If Len(tag1) > 100 Then newVal = Left(tag1, 100)
 If Len(tag2) > 100 Then newVal = Left(tag2, 100)
+If ID = "" Then ID = Null
 
 With rs1
     .addNew
