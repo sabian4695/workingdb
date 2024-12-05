@@ -52,7 +52,7 @@ err_handler:
     Call handleError("wdbDirectoryFunctions", "createShortcut", Err.DESCRIPTION, Err.number)
 End Function
 
-Public Sub checkMkDir(mainFolder, partNum, Optional variableVal)
+Public Function checkMkDir(mainFolder, partNum, Optional variableVal = "", Optional openBool As Boolean = True) As String
 On Error GoTo err_handler
 Dim FolName As String, fullPath As String
 
@@ -63,29 +63,29 @@ Else
 End If
 
 If FolName = "" Then FolName = partNum
-
 fullPath = mainFolder & FolName
 
 If Len(partNum) = 5 Or (partNum Like "D*" And Len(partNum) = 6) Then
     If FolderExists(fullPath) Then
-        Call openPath(fullPath)
-        Exit Sub
-    End If
-    If MsgBox("This folder does not exist. Create folder?", vbYesNo, "Folder Does Not Exist") = vbYes Then
-        MkDir (fullPath)
-        Call openPath(fullPath)
+        checkMkDir = fullPath
     Else
-        If MsgBox("Folder Not Created. Do you want to go to the main folder?", vbYesNo, "Folder Not Created") = vbYes Then Call openPath(mainFolder)
-        Exit Sub
+        If MsgBox("This folder does not exist. Create folder?", vbYesNo, "Folder Does Not Exist") = vbNo Then
+            If MsgBox("Folder Not Created. Do you want to go to the main folder?", vbYesNo, "Folder Not Created") = vbYes Then checkMkDir = mainFolder
+        Else
+            MkDir (fullPath)
+            checkMkDir = fullPath
+        End If
     End If
 Else
-    Call openPath(mainFolder)
+    checkMkDir = mainFolder
 End If
 
-Exit Sub
+If openBool Then openPath (checkMkDir)
+
+Exit Function
 err_handler:
     Call handleError("wdbDirectoryFunctions", "checkMkDir", Err.DESCRIPTION, Err.number)
-End Sub
+End Function
 
 Function mainFolder(sName As String) As String
 On Error GoTo err_handler
@@ -124,45 +124,51 @@ err_handler:
     Call handleError("wdbDirectoryFunctions", "zeros", Err.DESCRIPTION, Err.number)
 End Function
 
-Function openDocumentHistoryFolder(partNum)
+Function openDocumentHistoryFolder(partNum, Optional openBool As Boolean = True) As String
 On Error GoTo err_handler
+openDocumentHistoryFolder = ""
 
 Dim thousZeros, hundZeros
 Dim mainPath, FolName, strFilePath, prtFilePath, dPath As String
+Dim exists As Boolean
+exists = True
 
-If partNum Like "D*" Then
-    Call checkMkDir(mainFolder("DocHisD"), partNum, "*")
-ElseIf partNum Like "[A-Z][A-Z]##[A-Z]##[A-Z]" Or partNum Like "[A-Z][A-Z]##[A-Z]##" Or partNum Like "##[A-Z]##" Then
-    'Examples: AB11A76A or AB11A76 or 11A76
-    If Not partNum Like "##[A-Z]##" Then
-        partNum = Mid(partNum, 3, 5)
-    End If
-    mainPath = mainFolder("ncmDrawingMaster")
-    prtFilePath = mainPath & Left(partNum, 3) & "00\" & partNum & "\"
-    strFilePath = prtFilePath & "Documents"
-    
-    If FolderExists(strFilePath) = True Then
-        Call openPath(strFilePath)
-    Else
-        If userData("dept") = "Design" Then DoCmd.OpenForm "frmCreateDesignFolders"
-    End If
-Else
-    thousZeros = Left(partNum, 2) & "000\"
-    hundZeros = Left(partNum, 3) & "00\"
-    mainPath = mainFolder("docHisSearch")
-    prtFilePath = mainPath & thousZeros & hundZeros
-    FolName = Dir(prtFilePath & partNum & "*", vbDirectory)
-    strFilePath = prtFilePath & FolName
-    
-    If Len(partNum) = 5 Or Right(partNum, 1) = "P" Then
-        If Len(FolName) = 0 Then
-            If userData("dept") = "Design" Then DoCmd.OpenForm "frmCreateDesignFolders"
+Select Case partNum
+    Case partNum Like "D*"
+        openDocumentHistoryFolder = checkMkDir(mainFolder("DocHisD"), partNum, "*", False)
+    Case partNum Like "[A-Z][A-Z]##[A-Z]##[A-Z]" Or partNum Like "[A-Z][A-Z]##[A-Z]##" Or partNum Like "##[A-Z]##"
+        'Examples: AB11A76A or AB11A76 or 11A76
+        If Not partNum Like "##[A-Z]##" Then partNum = Mid(partNum, 3, 5)
+        mainPath = mainFolder("ncmDrawingMaster")
+        prtFilePath = mainPath & Left(partNum, 3) & "00\" & partNum & "\"
+        strFilePath = prtFilePath & "Documents"
+        
+        If FolderExists(strFilePath) = True Then openDocumentHistoryFolder = strFilePath
+    Case Else
+        thousZeros = Left(partNum, 2) & "000\"
+        hundZeros = Left(partNum, 3) & "00\"
+        mainPath = mainFolder("docHisSearch")
+        prtFilePath = mainPath & thousZeros & hundZeros
+        FolName = Dir(prtFilePath & partNum & "*", vbDirectory)
+        strFilePath = prtFilePath & FolName
+        
+        If Len(partNum) = 5 Or Right(partNum, 1) = "P" Then
+            If Len(FolName) <> 0 Then openDocumentHistoryFolder = strFilePath
         Else
-            Call openPath(strFilePath)
+            openDocumentHistoryFolder = mainPath
         End If
+End Select
+
+If openBool = False Then Exit Function
+
+If openDocumentHistoryFolder = "" Then
+    If userData("dept") = "Design" Then
+        DoCmd.OpenForm "frmCreateDesignFolders"
     Else
         Call openPath(mainPath)
     End If
+Else
+    Call openPath(openDocumentHistoryFolder)
 End If
 
 Exit Function
