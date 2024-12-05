@@ -1118,3 +1118,19 @@ err_handler:
 wdbEmail = False
     Call handleError("wdbGlobalFunctions", "wdbEmail", Err.DESCRIPTION, Err.number)
 End Function
+
+Function removeReferenceString(stringWithReference As String, Optional addBetween As String = "") As String
+On Error GoTo err_handler
+
+Dim tempString As String
+tempString = stringWithReference
+
+If InStr(stringWithReference, "(") Then tempString = Trim(Split(stringWithReference, "(")(0))
+If InStr(stringWithReference, ")") Then tempString = tempString & addBetween & Trim(Split(stringWithReference, ")")(1))
+
+removeReferenceString = tempString
+
+Exit Function
+err_handler:
+    Call handleError("wdbGlobalFunctions", "removeReferenceString", Err.DESCRIPTION, Err.number)
+End Function
