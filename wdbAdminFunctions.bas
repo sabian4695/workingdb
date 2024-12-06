@@ -5,6 +5,7 @@ Global Const SW_HIDE = 0
 Global Const SW_SHOWNORMAL = 1
 Global Const SW_SHOWMINIMIZED = 2
 Global Const SW_SHOWMAXIMIZED = 3
+Global Const SW_RESTORE = 9
 
 Private Type RECT
 x1 As Long
@@ -193,16 +194,32 @@ err_handler:
     Call handleError("wdbAdminFunctions", "grabVersion", Err.DESCRIPTION, Err.number)
 End Function
 
+Sub maximizeAccess()
+On Error GoTo err_handler
+
+Dim h As Long
+Dim R As RECT
+
+On Error Resume Next
+
+h = Application.hWndAccessApp
+'If maximised, restore
+If (IsZoomed(h) = False) Then ShowWindow h, SW_SHOWMAXIMIZED
+
+Exit Sub
+err_handler:
+    Call handleError("wdbAdminFunctions", "SizeAccess", Err.DESCRIPTION, Err.number)
+End Sub
+
 Sub SizeAccess(ByVal dx As Long, ByVal dy As Long)
 On Error GoTo err_handler
 'Set size of Access and center on Desktop
 
-Const SW_RESTORE As Long = 9
 Dim h As Long
 Dim R As RECT
-'
+
 On Error Resume Next
-'
+
 h = Application.hWndAccessApp
 'If maximised, restore
 If (IsZoomed(h)) Then ShowWindow h, SW_RESTORE

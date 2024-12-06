@@ -133,7 +133,7 @@ Dim mainPath, FolName, strFilePath, prtFilePath, dPath As String
 Dim exists As Boolean
 exists = True
 
-Select Case partNum
+Select Case True
     Case partNum Like "D*"
         openDocumentHistoryFolder = checkMkDir(mainFolder("DocHisD"), partNum, "*", False)
     Case partNum Like "[A-Z][A-Z]##[A-Z]##[A-Z]" Or partNum Like "[A-Z][A-Z]##[A-Z]##" Or partNum Like "##[A-Z]##"
