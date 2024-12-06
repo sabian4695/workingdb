@@ -31,7 +31,14 @@ readyForPublish = False
 Dim compileMe As Object
 Set compileMe = Application.VBE.CommandBars.FindControl(type:=msoControlButton, ID:=578)
 
+'try to compile
 If compileMe.Enabled Then compileMe.Execute
+
+'do a double check
+If (Application.IsCompiled = False) Then
+    If compileMe.Enabled Then compileMe.Execute
+End If
+DoEvents
 
 '--Can you even do this?--
 Dim errorMsg As String: errorMsg = ""
