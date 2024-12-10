@@ -5,6 +5,187 @@ Public bClone As Boolean
 
 Declare PtrSafe Sub ChooseColor Lib "msaccess.exe" Alias "#53" (ByVal hwnd As LongPtr, rgb As Long)
 
+Declare PtrSafe Function LoadCursorFromFile Lib "user32" Alias "LoadCursorFromFileA" (ByVal lpFileName As String) As Long
+Declare PtrSafe Function setCursor Lib "user32" Alias "SetCursor" (ByVal hCursor As Long) As Long
+
+Function setCustomCursor()
+Dim lngRet As Long
+lngRet = LoadCursorFromFile("\\data\mdbdata\WorkingDB\Pictures\Theme_Pictures\cursor.cur")
+lngRet = setCursor(lngRet)
+End Function
+
+Public Function setTheme(setForm As Form)
+On Error Resume Next
+
+Dim scalarBack As Double, scalarFront As Double, darkMode As Boolean
+Dim backBase As Long, foreBase As Long, colorLevels(4)
+
+darkMode = TempVars!themeMode = "Dark"
+
+If darkMode Then
+    foreBase = 16777215
+    scalarBack = 1.3
+    scalarFront = 0.9
+Else
+    foreBase = 657930
+    scalarBack = 1.1
+    scalarFront = 0.3
+End If
+
+backBase = CLng(TempVars!themePrimary)
+
+Dim colorLevArr() As String
+colorLevArr = Split(TempVars!themeColorLevels, ",")
+
+colorLevels(0) = backBase
+colorLevels(1) = shadeColor(backBase, CDbl(colorLevArr(0)))
+colorLevels(2) = shadeColor(backBase, CDbl(colorLevArr(1)))
+colorLevels(3) = shadeColor(backBase, CDbl(colorLevArr(2)))
+colorLevels(4) = shadeColor(backBase, CDbl(colorLevArr(3)))
+
+'On Error Resume Next
+setForm.FormHeader.BackColor = colorLevels(findColorLevel(setForm.FormHeader.tag))
+setForm.Detail.AlternateBackColor = colorLevels(findColorLevel(setForm.FormHeader.tag))
+If Len(setForm.Detail.tag) = 4 Then
+    setForm.Detail.BackColor = colorLevels(findColorLevel(setForm.Detail.tag) + 1)
+Else
+    setForm.Detail.BackColor = colorLevels(findColorLevel(setForm.Detail.tag))
+End If
+
+setForm.FormFooter.BackColor = colorLevels(findColorLevel(setForm.FormHeader.tag))
+
+'assuming form parts don't use tags for other uses
+
+Dim ctl As Control
+Dim classColor As String, fadeBack, fadeFore
+Dim Level
+Dim backCol As Long
+
+For Each ctl In setForm.Controls
+    If ctl.tag Like "*.L#*" Then
+        Level = findColorLevel(ctl.tag)
+        backCol = colorLevels(Level)
+    Else
+        GoTo nextControl
+    End If
+
+    Select Case ctl.ControlType
+        Case acCommandButton, acToggleButton 'OPTIONS: cardBtn.L#, cardBtnContrastBorder.L#, btn.L#
+            If ctl.tag Like "*btn*" Then ctl.BackColor = backCol
+            Select Case True
+                Case ctl.tag Like "*cardBtn.L#*"
+                    ctl.BorderColor = backCol
+                Case ctl.tag Like "*cardBtnContrastBorder.L#*"
+                    If ctl.BorderStyle <> 0 Then ctl.BorderColor = colorLevels(Level + 1)
+                Case ctl.tag Like "*btn.L#*"
+                    If ctl.BorderStyle <> 0 Then ctl.BorderColor = backCol
+                    ctl.ForeColor = foreBase
+                    
+                    'fade the colors
+                    fadeBack = shadeColor(backCol, scalarBack)
+                    fadeFore = shadeColor(foreBase, scalarFront)
+                    
+                    ctl.HoverColor = fadeBack
+                    ctl.PressedColor = fadeBack
+                    ctl.HoverForeColor = fadeFore
+                    ctl.PressedForeColor = fadeFore
+            End Select
+        Case acLabel
+            Select Case True
+               Case ctl.tag Like "*lbl.L#*"
+                   ctl.ForeColor = shadeColor(foreBase, 1)
+               Case ctl.tag Like "*lbl_wBack.L#*"
+                   ctl.ForeColor = shadeColor(foreBase, 1)
+                   ctl.BackColor = backCol
+            End Select
+        Case acTextBox, acComboBox 'OPTIONS: txt.L#, txtBackBorder.L#, txtContrastBorder.L#
+            If ctl.tag Like "*txt*" Then
+                ctl.BackColor = backCol
+                ctl.ForeColor = foreBase
+            End If
+            
+            Select Case True
+                Case ctl.tag Like "*txtBackBorder*"
+                    If ctl.BorderStyle <> 0 Then ctl.BorderColor = backCol
+                Case ctl.tag Like "*txtContrastBorder*"
+                    If ctl.BorderStyle <> 0 Then ctl.BorderColor = colorLevels(Level + 1)
+            End Select
+        Case acRectangle, acSubform 'OPTIONS: cardBox.L#
+            If ctl.tag Like "*cardBox*" Then
+                ctl.BackColor = backCol
+                ctl.BorderColor = backCol
+            End If
+        Case acTabCtl 'OPTIONS: tab.L#
+            If ctl.tag Like "*tab*" Then
+                ctl.BackColor = colorLevels(Level - 1)
+                ctl.BorderColor = backCol
+                ctl.PressedColor = backCol
+                
+                'fade the colors
+                fadeBack = shadeColor(CLng(colorLevels(Level - 1)), scalarBack)
+                fadeFore = shadeColor(foreBase, scalarFront)
+                
+                ctl.HoverColor = fadeBack
+                ctl.ForeColor = fadeFore
+                
+                ctl.HoverForeColor = foreBase
+                ctl.PressedForeColor = foreBase
+            End If
+        Case acImage 'OPTIONS: pic.L#
+            If ctl.tag Like "*pic*" Then ctl.BackColor = backCol
+    End Select
+    
+nextControl:
+Next
+
+Exit Function
+err_handler:
+    Call handleError("wdbGlobalFunctions", "setTheme", Err.DESCRIPTION, Err.number)
+End Function
+
+Function findColorLevel(tagText As String) As Long
+On Error GoTo err_handler
+
+findColorLevel = 0
+If tagText = "" Then Exit Function
+
+findColorLevel = Mid(tagText, InStr(tagText, ".L") + 2, 1)
+
+Exit Function
+err_handler:
+    Call handleError("wdbGlobalFunctions", "setTheme", Err.DESCRIPTION, Err.number)
+End Function
+
+Function shadeColor(inputColor As Long, scalar As Double) As Long
+On Error GoTo err_handler
+
+Dim tempHex, ioR, ioG, ioB
+
+tempHex = Hex(inputColor)
+
+If tempHex = "0" Then tempHex = "111111"
+
+If Len(tempHex) = 1 Then tempHex = "0" & tempHex
+If Len(tempHex) = 2 Then tempHex = "0" & tempHex
+If Len(tempHex) = 3 Then tempHex = "0" & tempHex
+If Len(tempHex) = 4 Then tempHex = "0" & tempHex
+If Len(tempHex) = 5 Then tempHex = "0" & tempHex
+
+ioR = val("&H" & Mid(tempHex, 5, 2)) * scalar
+ioG = val("&H" & Mid(tempHex, 3, 2)) * scalar
+ioB = val("&H" & Mid(tempHex, 1, 2)) * scalar
+
+If ioR > 255 Then ioR = 255
+If ioG > 255 Then ioG = 255
+If ioB > 255 Then ioB = 255
+
+shadeColor = rgb(ioR, ioG, ioB)
+
+Exit Function
+err_handler:
+    Call handleError("wdbGlobalFunctions", "shadeColor", Err.DESCRIPTION, Err.number)
+End Function
+
 Public Function colorPicker() As Long
 On Error GoTo err_handler
     Static lngColor As Long
