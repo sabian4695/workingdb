@@ -45,14 +45,14 @@ colorLevels(4) = shadeColor(backBase, CDbl(colorLevArr(3)))
 
 'On Error Resume Next
 setForm.FormHeader.BackColor = colorLevels(findColorLevel(setForm.FormHeader.tag))
-setForm.Detail.AlternateBackColor = colorLevels(findColorLevel(setForm.FormHeader.tag))
+setForm.Detail.BackColor = colorLevels(findColorLevel(setForm.Detail.tag))
 If Len(setForm.Detail.tag) = 4 Then
-    setForm.Detail.BackColor = colorLevels(findColorLevel(setForm.Detail.tag) + 1)
+    setForm.Detail.AlternateBackColor = colorLevels(findColorLevel(setForm.Detail.tag) + 1)
 Else
-    setForm.Detail.BackColor = colorLevels(findColorLevel(setForm.Detail.tag))
+    setForm.Detail.AlternateBackColor = setForm.Detail.BackColor
 End If
 
-setForm.FormFooter.BackColor = colorLevels(findColorLevel(setForm.FormHeader.tag))
+setForm.FormFooter.BackColor = colorLevels(findColorLevel(setForm.FormFooter.tag))
 
 'assuming form parts don't use tags for other uses
 

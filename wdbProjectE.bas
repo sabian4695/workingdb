@@ -1137,6 +1137,12 @@ Do While Not rsSteps.EOF
                 "[Part Number] = '" & rsSteps!partNumber & "' AND [" & rsStepActions!compareColumn & "] = '" & rsStepActions!compareData & "' AND [Document Type] = 'Custom Item Cost Sheet'")
             If rsCostDocs.RecordCount = 0 Then GoTo nextOne
             GoTo performAction 'Custom Item Cost Sheet Found!
+        Case "Master Setups"
+            If Nz(rsSteps!partNumber) = "" Then GoTo nextOne
+            Dim rsMasterSetups As Recordset
+            Set rsMasterSetups = db.OpenRecordset("SELECT * FROM [" & rsStepActions!compareTable & "] WHERE [Part Number] = '" & rsSteps!partNumber & "'")
+            If rsMasterSetups.RecordCount = 0 Then GoTo nextOne
+            GoTo performAction 'Master Setup Sheet Found!
     End Select
     
     Set rsLookItUp = db.OpenRecordset("SELECT " & rsStepActions!compareColumn & " FROM " & rsStepActions!compareTable & " WHERE " & matchingCol & " = " & identifier)
@@ -1210,6 +1216,8 @@ rsSteps.Close
 Set rsSteps = Nothing
 rsCostDocs.Close
 Set rsCostDocs = Nothing
+rsMasterSetups.Close
+Set rsMasterSetups = Nothing
 
 Set db = Nothing
 
