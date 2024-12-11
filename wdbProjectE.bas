@@ -4,6 +4,50 @@ Option Explicit
 Dim XL As Excel.Application, WB As Excel.Workbook, WKS As Excel.Worksheet
 Dim inV As Long
 
+Function grabPartTeam(partNum As String, Optional withEmail As Boolean = False, Optional includeMe As Boolean = False, Optional searchForPrimaryProj As Boolean = False) As String
+On Error GoTo err_handler
+
+grabPartTeam = ""
+
+Dim db As Database
+Set db = CurrentDb()
+
+'if this boolean is set, find the part team for the master PN no matter what
+If searchForPrimaryProj Then
+    Dim projId
+    projId = Nz(DLookup("projectId", "tblPartProjectPartNumbers", "childPartNumber = '" & partNum & "'"))
+    
+    If projId <> "" Then
+        partNum = DLookup("partNumber", "tblPartProject", "recordId = " & projId)
+    End If
+End If
+
+Dim rs2 As Recordset
+Set rs2 = db.OpenRecordset("SELECT * FROM tblPartTeam WHERE partNumber = '" & partNum & "'", dbOpenSnapshot)
+
+Do While Not rs2.EOF
+    If includeMe = False Then
+        If rs2!person = Environ("username") Then GoTo skip
+    End If
+    
+    If withEmail Then
+        grabPartTeam = grabPartTeam & getEmail(rs2!person) & "; "
+    Else
+        grabPartTeam = grabPartTeam & rs2!person & ", "
+        grabPartTeam = Left(grabPartTeam, Len(grabPartTeam) - 1)
+    End If
+    
+skip:
+    rs2.MoveNext
+Loop
+
+Set db = Nothing
+
+Exit Function
+err_handler:
+    Call handleError("wdbProjectE", "grabPartTeam", Err.DESCRIPTION, Err.number)
+End Function
+
 Function openPartProject(partNum As String) As Boolean
 On Error GoTo err_handler
 
@@ -1295,17 +1339,8 @@ Dim SendItems As New clsOutlookCreateItem               ' outlook class
     Dim strSubject As String                                ' email subject
     
     Set SendItems = New clsOutlookCreateItem
-
-    Dim db As Database
-    Set db = CurrentDb()
-    Dim rs2 As Recordset
-    Set rs2 = db.OpenRecordset("SELECT * FROM tblPartTeam WHERE partNumber = '" & partNum & "'", dbOpenSnapshot)
-    strTo = ""
-
-    Do While Not rs2.EOF
-        If rs2!person <> Environ("username") Then strTo = strTo & getEmail(rs2!person) & "; "
-        rs2.MoveNext
-    Loop
+    
+    strTo = grabPartTeam(partNum, True)
     
     strSubject = partNum & " Sales Kickoff Meeting"
     
@@ -1327,10 +1362,6 @@ Set FSO = CreateObject("Scripting.FileSystemObject")
 Call FSO.deleteFile(z)
     
 emailPartInfo = True
-
-rs2.Close
-Set rs2 = Nothing
-Set db = Nothing
 
 Exit Function
 err_handler:
@@ -1426,19 +1457,10 @@ Else
     toolEmail = generateHTML("Tool Ship Authorization", toolNumber & " has been approved to ship", "Ship Method: " & shipMethod, "Approvals: none", "", "")
 End If
 
-Dim rs2 As Recordset, strTo As String
-Set rs2 = db.OpenRecordset("SELECT * FROM tblPartTeam WHERE partNumber = '" & partNumber & "'", dbOpenSnapshot)
-strTo = ""
-
-Do While Not rs2.EOF
-    If rs2!person <> Environ("username") Then strTo = strTo & getEmail(rs2!person) & "; "
-    rs2.MoveNext
-Loop
-
 Dim SendItems As New clsOutlookCreateItem
 Set SendItems = New clsOutlookCreateItem
 
-SendItems.CreateMailItem sendTo:=strTo, _
+SendItems.CreateMailItem sendTo:=grabPartTeam(partNumber, True), _
                              subject:=subjectLine, _
                              htmlBody:=toolEmail
     Set SendItems = Nothing
@@ -1447,8 +1469,6 @@ toolShipAuthorizationEmail = True
 
 rsApprovals.Close
 Set rsApprovals = Nothing
-rs2.Close
-Set rs2 = Nothing
 Set db = Nothing
 
 Exit Function
@@ -1465,31 +1485,15 @@ Dim emailBody As String, subjectLine As String
 subjectLine = "Part Approval Notification"
 emailBody = generateHTML(subjectLine, partNumber & " has received customer approval", "Part Approved", "No extra details...", "", "")
 
-Dim db As Database
-Set db = CurrentDb()
-
-Dim rs2 As Recordset, strTo As String
-Set rs2 = db.OpenRecordset("SELECT * FROM tblPartTeam WHERE partNumber = '" & partNumber & "'", dbOpenSnapshot)
-strTo = ""
-
-Do While Not rs2.EOF
-    If rs2!person <> Environ("username") Then strTo = strTo & getEmail(rs2!person) & "; "
-    rs2.MoveNext
-Loop
-
 Dim SendItems As New clsOutlookCreateItem
 Set SendItems = New clsOutlookCreateItem
 
-SendItems.CreateMailItem sendTo:=strTo, _
+SendItems.CreateMailItem sendTo:=grabPartTeam(partNumber, True), _
                              subject:=subjectLine, _
                              htmlBody:=emailBody
     Set SendItems = Nothing
 
 emailPartApprovalNotification = True
-
-rs2.Close
-Set rs2 = Nothing
-Set db = Nothing
 
 Exit Function
 err_handler:
@@ -1563,27 +1567,9 @@ Dim emailBody As String, subjectLine As String
 subjectLine = partNumber & " Capital Packet Approval"
 emailBody = generateHTML(subjectLine, capitalPacketNum & " Capital Packet for " & partNumber & " is now Approved", "Capital Packet", "No extra details...", "", "", attachLink)
 
-Dim db As Database
-Set db = CurrentDb()
-
-Dim rs2 As Recordset, strTo As String
-Set rs2 = db.OpenRecordset("SELECT * FROM tblPartTeam WHERE partNumber = '" & partNumber & "'", dbOpenSnapshot)
-strTo = ""
-
-Do While Not rs2.EOF
-    If rs2!person <> Environ("username") Then strTo = strTo & rs2!person & ","
-    rs2.MoveNext
-Loop
-
-strTo = Left(strTo, Len(strTo) - 1)
-
-Call sendNotification(strTo, 9, 2, partNumber & " Capital Packet Approval", emailBody, "Part Project", CLng(partNumber), True)
+Call sendNotification(grabPartTeam(partNumber), 9, 2, partNumber & " Capital Packet Approval", emailBody, "Part Project", CLng(partNumber), True)
 
 emailApprovedCapitalPacket = True
-
-rs2.Close
-Set rs2 = Nothing
-Set db = Nothing
 
 Exit Function
 err_handler:
