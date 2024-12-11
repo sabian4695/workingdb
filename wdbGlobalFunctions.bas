@@ -18,30 +18,41 @@ Public Function setTheme(setForm As Form)
 On Error Resume Next
 
 Dim scalarBack As Double, scalarFront As Double, darkMode As Boolean
-Dim backBase As Long, foreBase As Long, colorLevels(4)
+Dim backBase As Long, foreBase As Long, colorLevels(4), backSecondary As Long, btnXback As Long
 
 darkMode = TempVars!themeMode = "Dark"
 
 If darkMode Then
     foreBase = 16777215
+    btnXback = 592250
     scalarBack = 1.3
     scalarFront = 0.9
 Else
     foreBase = 657930
+    btnXback = 4539870
     scalarBack = 1.1
     scalarFront = 0.3
 End If
 
 backBase = CLng(TempVars!themePrimary)
+backSecondary = CLng(TempVars!themeSecondary)
 
 Dim colorLevArr() As String
 colorLevArr = Split(TempVars!themeColorLevels, ",")
 
-colorLevels(0) = backBase
-colorLevels(1) = shadeColor(backBase, CDbl(colorLevArr(0)))
-colorLevels(2) = shadeColor(backBase, CDbl(colorLevArr(1)))
-colorLevels(3) = shadeColor(backBase, CDbl(colorLevArr(2)))
-colorLevels(4) = shadeColor(backBase, CDbl(colorLevArr(3)))
+If backSecondary <> 0 Then
+    colorLevels(0) = backBase
+    colorLevels(1) = shadeColor(backSecondary, CDbl(colorLevArr(0)))
+    colorLevels(2) = shadeColor(backBase, CDbl(colorLevArr(1)))
+    colorLevels(3) = shadeColor(backSecondary, CDbl(colorLevArr(2)))
+    colorLevels(4) = shadeColor(backBase, CDbl(colorLevArr(3)))
+Else
+    colorLevels(0) = backBase
+    colorLevels(1) = shadeColor(backBase, CDbl(colorLevArr(0)))
+    colorLevels(2) = shadeColor(backBase, CDbl(colorLevArr(1)))
+    colorLevels(3) = shadeColor(backBase, CDbl(colorLevArr(2)))
+    colorLevels(4) = shadeColor(backBase, CDbl(colorLevArr(3)))
+End If
 
 'On Error Resume Next
 setForm.FormHeader.BackColor = colorLevels(findColorLevel(setForm.FormHeader.tag))
@@ -89,6 +100,18 @@ For Each ctl In setForm.Controls
                     ctl.PressedColor = fadeBack
                     ctl.HoverForeColor = fadeFore
                     ctl.PressedForeColor = fadeFore
+                Case ctl.tag Like "*btnX.L#*"
+                    If ctl.BorderStyle <> 0 Then ctl.BorderColor = backCol
+                    ctl.ForeColor = foreBase
+                    ctl.BackColor = btnXback
+                    'fade the colors
+                    fadeBack = shadeColor(btnXback, scalarBack)
+                    fadeFore = shadeColor(foreBase, scalarFront)
+                    
+                    ctl.HoverColor = fadeBack
+                    ctl.PressedColor = fadeBack
+                    ctl.HoverForeColor = fadeFore
+                    ctl.PressedForeColor = fadeFore
             End Select
         Case acLabel
             Select Case True
@@ -97,6 +120,7 @@ For Each ctl In setForm.Controls
                Case ctl.tag Like "*lbl_wBack.L#*"
                    ctl.ForeColor = shadeColor(foreBase, 1)
                    ctl.BackColor = backCol
+                   If ctl.BorderStyle <> 0 Then ctl.BorderColor = backCol
             End Select
         Case acTextBox, acComboBox 'OPTIONS: txt.L#, txtBackBorder.L#, txtContrastBorder.L#
             If ctl.tag Like "*txt*" Then
