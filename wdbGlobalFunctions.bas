@@ -550,13 +550,15 @@ err_handler:
     Call handleError("wdbGlobalFunctions", "countWorkdays", Err.DESCRIPTION, Err.number)
 End Function
 
-Function getFullName() As String
+Function getFullName(Optional userName As String = "") As String
 On Error GoTo err_handler
+
+If userName = "" Then userName = Environ("username")
 
 Dim db As Database
 Set db = CurrentDb()
 Dim rs1 As Recordset
-Set rs1 = db.OpenRecordset("SELECT firstName, lastName FROM tblPermissions WHERE User = '" & Environ("username") & "'", dbOpenSnapshot)
+Set rs1 = db.OpenRecordset("SELECT firstName, lastName FROM tblPermissions WHERE User = '" & userName & "'", dbOpenSnapshot)
 getFullName = rs1!firstName & " " & rs1!lastName
 rs1.Close: Set rs1 = Nothing
 Set db = Nothing
