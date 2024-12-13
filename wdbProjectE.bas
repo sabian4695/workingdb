@@ -1357,9 +1357,9 @@ Dim SendItems As New clsOutlookCreateItem               ' outlook class
                              Attachments:=z
     Set SendItems = Nothing
     
-Dim FSO
-Set FSO = CreateObject("Scripting.FileSystemObject")
-Call FSO.deleteFile(z)
+Dim fso
+Set fso = CreateObject("Scripting.FileSystemObject")
+Call fso.deleteFile(z)
     
 emailPartInfo = True
 

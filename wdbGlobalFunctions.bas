@@ -24,12 +24,12 @@ darkMode = TempVars!themeMode = "Dark"
 
 If darkMode Then
     foreBase = 16777215
-    btnXback = 592250
+    btnXback = 4342397
     scalarBack = 1.3
     scalarFront = 0.9
 Else
     foreBase = 657930
-    btnXback = 4539870
+    btnXback = 8947896
     scalarBack = 1.1
     scalarFront = 0.3
 End If
@@ -54,7 +54,6 @@ Else
     colorLevels(4) = shadeColor(backBase, CDbl(colorLevArr(3)))
 End If
 
-'On Error Resume Next
 setForm.FormHeader.BackColor = colorLevels(findColorLevel(setForm.FormHeader.tag))
 setForm.Detail.BackColor = colorLevels(findColorLevel(setForm.Detail.tag))
 If Len(setForm.Detail.tag) = 4 Then
@@ -67,10 +66,14 @@ setForm.FormFooter.BackColor = colorLevels(findColorLevel(setForm.FormFooter.tag
 
 'assuming form parts don't use tags for other uses
 
-Dim ctl As Control
+Dim ctl As Control, eachBtn As CommandButton
 Dim classColor As String, fadeBack, fadeFore
 Dim Level
-Dim backCol As Long
+Dim backCol As Long, levFore As Double
+
+For Each eachBtn In setForm.Controls
+    
+Next eachBtn
 
 For Each ctl In setForm.Controls
     If ctl.tag Like "*.L#*" Then
@@ -112,13 +115,30 @@ For Each ctl In setForm.Controls
                     ctl.PressedColor = fadeBack
                     ctl.HoverForeColor = fadeFore
                     ctl.PressedForeColor = fadeFore
+                Case ctl.tag Like "*btnContrastBorder.L#*"
+                    If ctl.BorderStyle <> 0 Then ctl.BorderColor = colorLevels(Level + 1)
+                    ctl.ForeColor = foreBase
+                    
+                    'fade the colors
+                    fadeBack = shadeColor(backCol, scalarBack)
+                    fadeFore = shadeColor(foreBase, scalarFront)
+                    
+                    ctl.HoverColor = fadeBack
+                    ctl.PressedColor = fadeBack
+                    ctl.HoverForeColor = fadeFore
+                    ctl.PressedForeColor = fadeFore
             End Select
         Case acLabel
+            If darkMode Then
+                levFore = (1 / colorLevArr(Level)) + 0.2
+            Else
+                levFore = colorLevArr(Level) * 7
+            End If
             Select Case True
                Case ctl.tag Like "*lbl.L#*"
-                   ctl.ForeColor = shadeColor(foreBase, 1)
+                   ctl.ForeColor = shadeColor(foreBase, levFore)
                Case ctl.tag Like "*lbl_wBack.L#*"
-                   ctl.ForeColor = shadeColor(foreBase, 1)
+                   ctl.ForeColor = shadeColor(foreBase, levFore)
                    ctl.BackColor = backCol
                    If ctl.BorderStyle <> 0 Then ctl.BorderColor = backCol
             End Select
@@ -128,17 +148,27 @@ For Each ctl In setForm.Controls
                 ctl.ForeColor = foreBase
             End If
             
+            If ctl.FormatConditions.count = 1 Then 'special case for null value conditional formatting. Typically this is used for placeholder values
+                If ctl.FormatConditions.ITEM(0).Expression1 Like "*IsNull*" Then
+                    ctl.FormatConditions.ITEM(0).BackColor = backCol
+                    ctl.FormatConditions.ITEM(0).ForeColor = foreBase
+                End If
+            End If
+            
             Select Case True
                 Case ctl.tag Like "*txtBackBorder*"
                     If ctl.BorderStyle <> 0 Then ctl.BorderColor = backCol
                 Case ctl.tag Like "*txtContrastBorder*"
                     If ctl.BorderStyle <> 0 Then ctl.BorderColor = colorLevels(Level + 1)
             End Select
-        Case acRectangle, acSubform 'OPTIONS: cardBox.L#
-            If ctl.tag Like "*cardBox*" Then
-                ctl.BackColor = backCol
-                ctl.BorderColor = backCol
-            End If
+        Case acRectangle, acSubform 'OPTIONS: cardBox.L#, cardBoxContrastBorder.L#
+            ctl.BackColor = backCol
+            Select Case True
+                Case ctl.tag Like "*cardBox.L#*"
+                    ctl.BorderColor = backCol
+                Case ctl.tag Like "*cardBoxContrastBorder.L#*"
+                    ctl.BorderColor = colorLevels(Level + 1)
+            End Select
         Case acTabCtl 'OPTIONS: tab.L#
             If ctl.tag Like "*tab*" Then
                 ctl.BackColor = colorLevels(Level - 1)
