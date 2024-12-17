@@ -20,6 +20,14 @@ On Error Resume Next
 Dim scalarBack As Double, scalarFront As Double, darkMode As Boolean
 Dim backBase As Long, foreBase As Long, colorLevels(4), backSecondary As Long, btnXback As Long
 
+'IF NO THEME SET, APPLY DEFAULT THEME (for Dev mode)
+If Nz(TempVars!themePrimary, "") = "" Then
+    TempVars.Add "themePrimary", 3355443
+    TempVars.Add "themeSecondary", 0
+    TempVars.Add "themeMode", "Dark"
+    TempVars.Add "themeColorLevels", "1.3,1.6,1.9,2.2"
+End If
+
 darkMode = TempVars!themeMode = "Dark"
 
 If darkMode Then
