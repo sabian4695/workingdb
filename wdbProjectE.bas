@@ -1181,12 +1181,18 @@ Do While Not rsSteps.EOF
                 "[Part Number] = '" & rsSteps!partNumber & "' AND [" & rsStepActions!compareColumn & "] = '" & rsStepActions!compareData & "' AND [Document Type] = 'Custom Item Cost Sheet'")
             If rsCostDocs.RecordCount = 0 Then GoTo nextOne
             GoTo performAction 'Custom Item Cost Sheet Found!
-        Case "Master Setups"
+        Case "Master Setups" 'checking for master setup
             If Nz(rsSteps!partNumber) = "" Then GoTo nextOne
             Dim rsMasterSetups As Recordset
             Set rsMasterSetups = db.OpenRecordset("SELECT * FROM [" & rsStepActions!compareTable & "] WHERE [Part Number] = '" & rsSteps!partNumber & "'")
             If rsMasterSetups.RecordCount = 0 Then GoTo nextOne
             GoTo performAction 'Master Setup Sheet Found!
+        Case "tblPartAssemblyGates"
+            If Nz(rsSteps!partNumber) = "" Then GoTo nextOne
+            Dim rsPartAssemblyGates As Recordset
+            Set rsPartAssemblyGates = db.OpenRecordset("SELECT * FROM " & rsStepActions!compareTable & " WHERE projectId = " & rsSteps!partProjectId & " AND " & rsStepActions!compareColumn & " = " & rsStepActions!compareData & " AND gateStatus = 3")
+            If rsPartAssemblyGates.RecordCount = 0 Then GoTo nextOne
+            GoTo performAction 'Automation gate is complete!
     End Select
     
     Set rsLookItUp = db.OpenRecordset("SELECT " & rsStepActions!compareColumn & " FROM " & rsStepActions!compareTable & " WHERE " & matchingCol & " = " & identifier)
@@ -1262,6 +1268,8 @@ rsCostDocs.Close
 Set rsCostDocs = Nothing
 rsMasterSetups.Close
 Set rsMasterSetups = Nothing
+rsPartAssemblyGates.Close
+Set rsPartAssemblyGates = Nothing
 
 Set db = Nothing
 
