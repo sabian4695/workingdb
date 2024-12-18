@@ -258,7 +258,6 @@ err_handler:
     Call handleError("wdbGlobalFunctions", "colorPicker", Err.DESCRIPTION, Err.number)
 End Function
 
-
 Function fixThis()
 
 Dim db As Database

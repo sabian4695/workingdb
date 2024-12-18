@@ -138,8 +138,15 @@ If rsPI!partType = 1 Or rsPI!partType = 4 Then 'molded / new color
     If Nz(rsPMI!toolType) = "" Then errorArray.Add "Tool Level"
     If Nz(rsPMI!gateCutting) = "" Then errorArray.Add "Tool Gate Level"
     If Nz(rsPI!materialNumber) = "" Then errorArray.Add "Material Number"
+    
+    'check if material number exists in Oracle
+    If Nz(rsPI!materialNumber) = "" Then errorArray.Add "Material Number"
+    If idNAM(rsPI!materialNumber, "NAM") = "" Then errorArray.Add "Material Number Not in Oracle"
+    
     If Nz(rsPI!pieceWeight) = "" Then errorArray.Add "Piece Weight"
     If Nz(rsPI!materialNumber1) <> "" Then 'if there is a second material, must enter wieght for that material
+        'also check if this material exists in Oracle
+        If idNAM(rsPI!materialNumber1, "NAM") = "" Then errorArray.Add "Second Material Number Not in Oracle"
         If Nz(rsPI!matNum1PieceWeight) = "" Then errorArray.Add "Second Material Piece Weight"
     End If
     If Nz(rsPMI!toolNumber) = "" Then errorArray.Add "Tool Number"
