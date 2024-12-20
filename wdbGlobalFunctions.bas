@@ -168,6 +168,8 @@ For Each ctl In setForm.Controls
                     If ctl.BorderStyle <> 0 Then ctl.BorderColor = backCol
                 Case ctl.tag Like "*txtContrastBorder*"
                     If ctl.BorderStyle <> 0 Then ctl.BorderColor = colorLevels(Level + 1)
+                Case ctl.tag Like "*txtTransFore*"
+                    ctl.ForeColor = backCol
             End Select
         Case acRectangle, acSubform 'OPTIONS: cardBox.L#, cardBoxContrastBorder.L#
             ctl.BackColor = backCol
@@ -260,39 +262,24 @@ End Function
 
 Function fixThis()
 
-Dim db As Database
-Set db = CurrentDb
+dbExecute ("UPDATE tblPartSteps SET stepType = 'Complete Master Setup' WHERE stepType = 'Upload Master Setup' AND status <> 'Closed'")
 
-Dim rs1 As Recordset
-Set rs1 = db.OpenRecordset("SELECT * FROM tblPartProject WHERE projectTemplateId = 8")
 
-Dim rsAssyTemplate As Recordset
-
-Do While Not rs1.EOF
-    If grabProjectProgressPercent(rs1!recordId) = 1 Then GoTo nextOne
-    If Nz(DLookup("actualDate", "tblPartGates", "projectId = " & rs1!recordId & " AND gateTitle LIKE 'G3*'"), "") <> "" Then GoTo nextOne
-
-    Dim totalDays As Long, assyRunningDate As Date, G3planned As Date
-    G3planned = DLookup("plannedDate", "tblPartGates", "projectId = " & rs1!recordId & " AND gateTitle LIKE 'G3*'")
-    
-    totalDays = DSum("duration", "tblPartStepTemplate", "gateTemplateId = 43")
-    assyRunningDate = addWorkdays(G3planned, (totalDays + 15) * -1)
-    
-    Set rsAssyTemplate = db.OpenRecordset("SELECT * FROM tblPartStepTemplate WHERE gateTemplateId = 43")
-    Do While Not rsAssyTemplate.EOF
-        assyRunningDate = addWorkdays(assyRunningDate, Nz(rsAssyTemplate![duration], 1))
-        db.Execute "INSERT INTO tblPartAssemblyGates(projectId,templateGateId,partNumber,gateStatus,plannedDate) VALUES (" & rs1!recordId & "," & rsAssyTemplate!recordId & ",'" & rs1!partNumber & "',1,'" & assyRunningDate & "')", dbFailOnError
-        rsAssyTemplate.MoveNext
-    Loop
-    rsAssyTemplate.Close
-    Set rsAssyTemplate = Nothing
-    
-nextOne:
-    rs1.MoveNext
-Loop
-
-rs1.Close
-Set rs1 = Nothing
+'Dim db As Database
+'Set db = CurrentDb
+'
+'Dim rs1 As Recordset
+'Set rs1 = db.OpenRecordset("SELECT * FROM tblPartSteps WHERE projectTemplateId = 8")
+'
+'Do While Not rs1.EOF
+'
+'
+'nextOne:
+'    rs1.MoveNext
+'Loop
+'
+'rs1.Close
+'Set rs1 = Nothing
 
 End Function
 

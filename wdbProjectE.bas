@@ -95,8 +95,14 @@ If findDept(partNum, "Project", True) = "" Then errorArray.Add "Project Engineer
 
 '---Grab General Data---
 Set rsPI = db.OpenRecordset("SELECT * from tblPartInfo WHERE partNumber = '" & partNum & "'")
-Set rsPack = db.OpenRecordset("SELECT * from tblPartPackagingInfo WHERE partInfoId = " & rsPI!recordId & " AND (packType = 1 OR packType = 99)")
-Set rsU = db.OpenRecordset("SELECT * from tblUnits WHERE recordId = " & rsPI!unitId)
+
+If rsPI.RecordCount > 1 Then
+    errorArray.Add "There is a rogue Part Info record. Please contact a WDB developer to have this fixed."
+    GoTo sendMsg
+End If
+
+Set rsPack = db.OpenRecordset("SELECT * from tblPartPackagingInfo WHERE partInfoId = " & Nz(rsPI!recordId, 0) & " AND (packType = 1 OR packType = 99)")
+Set rsU = db.OpenRecordset("SELECT * from tblUnits WHERE recordId = " & Nz(rsPI!unitId, 0))
 
 If Nz(rsPI!dataStatus) = "" Then errorArray.Add "Data Status"
 
@@ -237,7 +243,7 @@ Else
     rsPack.Close: Set rsPack = Nothing
 End If
 
-If rsPI!unitId = 3 And rsPI!dataStatus = 2 Then 'if U06 - these are required for transfer
+If Nz(rsPI!unitId, 0) = 3 And rsPI!dataStatus = 2 Then 'if U06 - these are required for transfer
     If Nz(rsPI!outsourceInfoId) = "" Then
         errorArray.Add "Outsource Info"
     Else
