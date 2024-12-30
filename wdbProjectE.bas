@@ -429,6 +429,16 @@ Select Case rsPI!partType
         Else
             aifInsert "Regrind Cost", "0", firstColBold:=True, set5Dec:=True
         End If
+        
+        resID = 1
+        If InStr(rsPI!resource, ",") Then
+            resourceCSV = Split(rsPI!resource, ",")
+            For Each ITEM In resourceCSV
+                aifInsert "Resource " & resID, CStr(ITEM), firstColBold:=True
+                resID = resID + 1
+            Next ITEM
+        End If
+        
         aifInsert "Material Number 1", Nz(rsPI!materialNumber), firstColBold:=True
         aifInsert "Piece Weight (lb)", gramsToLbs(Nz(rsPI!pieceWeight)), firstColBold:=True, set5Dec:=True
         aifInsert "Material Number 2", Nz(rsPI!materialNumber1), firstColBold:=True
