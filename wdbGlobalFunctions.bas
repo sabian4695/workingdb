@@ -523,6 +523,14 @@ err_handler:
     Call handleError("wdbGlobalFunctions", "registerSalesUpdates", Err.DESCRIPTION, Err.number)
 End Function
 
+Function checkTime(whatIsHappening As String)
+
+DoEvents
+Debug.Print Format$((Timer - TempVars!tStamp) * 100!, "0.00 " & whatIsHappening)
+TempVars.Add "tStamp", Timer
+
+End Function
+
 Public Function addWorkdays(dateInput As Date, daysToAdd As Long) As Date
 On Error GoTo err_handler
 
@@ -534,14 +542,18 @@ daysLeft = Abs(daysToAdd)
 intDirection = 1
 If daysToAdd < 0 Then intDirection = -1
 
+Set rsHolidays = db.OpenRecordset("tblHolidays")
+
 Do While daysLeft > 0
     testDate = testDate + intDirection
     If Weekday(testDate) = 7 Or Weekday(testDate) = 1 Then ' IF WEEKEND -> skip
         testDate = testDate + intDirection
         GoTo skipDate
     End If
-    Set rsHolidays = db.OpenRecordset("SELECT * from tblHolidays WHERE holidayDate = #" & testDate & "#")
-    If rsHolidays.RecordCount > 0 Then GoTo skipDate ' IF HOLIDAY -> skip to next day
+    
+    rsHolidays.FindFirst "holidayDate = #" & testDate & "#"
+    If Not rsHolidays.NoMatch Then GoTo skipDate ' IF HOLIDAY -> skip to next da
+
      daysLeft = daysLeft - 1
 skipDate:
 Loop

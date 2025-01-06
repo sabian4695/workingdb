@@ -185,7 +185,6 @@ If rsPI!partType = 2 Or rsPI!partType = 5 Then
     If Nz(rsAI!partsPerHour) = "" Then errorArray.Add "Assembly Parts Per Hour"
     
     If rsPI!dataStatus = 2 Then 'required for transfer
-        If Nz(rsAI!assemblyWeight100Pc) = "" Then errorArray.Add "100 Piece Weight"
         If Nz(rsAI!resource) = "" Then errorArray.Add "Assembly Resource"
         If Nz(rsAI!machineLine) = "" Then errorArray.Add "Assembly Machine Line"
     End If
