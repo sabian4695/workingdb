@@ -1045,7 +1045,7 @@ Private Function fncNumbering(ByRef iobjRecords As CATIAPropertyTable, ByRef obl
     Dim i As Long
     For i = 1 To lngRecCnt
     
-        If fncCheckNumberingRow(iobjRecords, i) = False Then GoTo CONTINUE
+        If fncCheckNumberingRow(iobjRecords, i) = False Then GoTo continue
         
         fncNumbering = fncNumberingRow(iobjRecords, i)
 
@@ -1060,7 +1060,7 @@ Private Function fncNumbering(ByRef iobjRecords As CATIAPropertyTable, ByRef obl
         
         isNumbering = True
         
-CONTINUE:
+continue:
     Next i
     
     Dim blnDuplicateChkBox As Boolean

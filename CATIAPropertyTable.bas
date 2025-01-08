@@ -184,7 +184,7 @@ Public Function fncCheckBlank(ByRef ostrPropertyName As String) As String
     
         Dim typRecord As Record
         If Me.fncItem(i, typRecord) = False Then
-            GoTo CONTINUE
+            GoTo continue
         End If
         
         Dim lngValIndex As Long
@@ -206,13 +206,13 @@ Public Function fncCheckBlank(ByRef ostrPropertyName As String) As String
         End If
         
         If blnNoCheckFlag = True Then
-            GoTo CONTINUE
+            GoTo continue
         End If
         
         Dim strSel As String
         strSel = typRecord.Sel
         If Trim(strSel) <> True Then
-            GoTo CONTINUE
+            GoTo continue
         End If
         
         lngValIndex = modMain.fncGetIndex("Design_No") - 1
@@ -252,7 +252,7 @@ Public Function fncCheckBlank(ByRef ostrPropertyName As String) As String
             
         Next j
         
-CONTINUE:
+continue:
     Next i
 End Function
 
@@ -355,7 +355,7 @@ Public Function fncReplaceProhibitCharacter() As Boolean
         Dim strSel As String
         strSel = mRecords(i).Sel
         If Trim(strSel) <> True Then
-            GoTo CONTINUE
+            GoTo continue
         End If
         
         Dim strBuf As String
@@ -372,7 +372,7 @@ Public Function fncReplaceProhibitCharacter() As Boolean
             mRecords(i).Properties(lngIndex_FullDesignNo) = strBuf
             fncReplaceProhibitCharacter = True
         End If
-CONTINUE:
+continue:
     Next i
 End Function
 
@@ -386,12 +386,12 @@ Public Sub ClearModelID()
         Dim strSel As String
         strSel = mRecords(i).Sel
         If Trim(strSel) <> True Then
-            GoTo CONTINUE
+            GoTo continue
         End If
         
         mRecords(i).ModelDrawingID = ""
 
-CONTINUE:
+continue:
     Next i
 End Sub
 
@@ -444,7 +444,7 @@ Public Sub SetDefaultDesinerSection()
     Dim i As Long
     For i = 1 To lngRecCnt
         If mRecords(i).IsChildInstance = True Then
-            GoTo CONTINUE
+            GoTo continue
         End If
     
         Dim strDesigner As String
@@ -488,7 +488,7 @@ Public Sub SetDefaultDesinerSection()
         Dim strSel As String
         strSel = mRecords(i).Sel
         If Trim(strSel) <> True Then
-            GoTo CONTINUE
+            GoTo continue
         End If
         
         If Trim(modSetting.gstrUnsetMaterialGrade) = "1" And strClassification = "Submission data" Then
@@ -496,7 +496,7 @@ Public Sub SetDefaultDesinerSection()
         End If
         
         If Trim(modSetting.gstrAutoInput) = "0" Then
-            GoTo CONTINUE
+            GoTo continue
         End If
         
         Dim strDesignNo As String
@@ -504,14 +504,14 @@ Public Sub SetDefaultDesinerSection()
         If blnNoCheckFlag = False And Trim(strDesignNo) = "" Then
             mRecords(i).Properties(lngIndex_FileDataName) = ""
             mRecords(i).Properties(lngIndex_FullDesignNo) = ""
-            GoTo CONTINUE
+            GoTo continue
         End If
         
         If blnNoCheckFlag = False And Trim(strSection) = "" Then
             gBlankSection = True
             mRecords(i).Properties(lngIndex_FileDataName) = ""
             mRecords(i).Properties(lngIndex_FullDesignNo) = ""
-            GoTo CONTINUE
+            GoTo continue
         End If
         
         Dim blnOldSection As Boolean
@@ -547,7 +547,7 @@ Public Sub SetDefaultDesinerSection()
                 On Error GoTo 0
                 mRecords(i).Properties(lngIndex_FileDataName) = ""
                 mRecords(i).Properties(lngIndex_FullDesignNo) = ""
-                GoTo CONTINUE
+                GoTo continue
             End If
             If IsNumeric(strOfficeCode) = True Then
                 blnOldSection = False
@@ -562,7 +562,7 @@ Public Sub SetDefaultDesinerSection()
             gBlankStatus = True
             mRecords(i).Properties(lngIndex_FileDataName) = ""
             mRecords(i).Properties(lngIndex_FullDesignNo) = ""
-            GoTo CONTINUE
+            GoTo continue
         End If
         
         If blnNoCheckFlag = False And (strStatus <> "Mass production" And strStatus <> "Prototype/Study") Then
@@ -574,7 +574,7 @@ Public Sub SetDefaultDesinerSection()
             On Error GoTo 0
             mRecords(i).Properties(lngIndex_FileDataName) = ""
             mRecords(i).Properties(lngIndex_FullDesignNo) = ""
-            GoTo CONTINUE
+            GoTo continue
         End If
         
         Dim strStatusCode As String
@@ -763,7 +763,7 @@ CONTINUE2:
         
         mRecords(i).Properties(lngIndex_FileDataName) = strFileDataName
 
-CONTINUE:
+continue:
         
         If Trim(modSetting.gstrAutoInput) <> "0" And blnSetFileName = True And Trim(mRecords(i).Properties(lngIndex_DesignNo)) = "" Then
             
@@ -1036,7 +1036,7 @@ Public Function fncSetPropertyFromDB(ByRef ilstModelID() As String, _
             ReDim Preserve gstrNotFoundModelID(lngNotFoundCnt + 1)
             gstrNotFoundModelID(lngNotFoundCnt + 1) = strModelID
             
-            GoTo CONTINUE
+            GoTo continue
         End If
         
         typRecord.FromDB = True
@@ -1046,7 +1046,7 @@ Public Function fncSetPropertyFromDB(ByRef ilstModelID() As String, _
             Exit Function
         End If
         
-CONTINUE:
+continue:
     Next i
     fncSetPropertyFromDB = True
 End Function
@@ -1062,7 +1062,7 @@ Public Function fncReplaceRecord(ByRef iRecord As modMain.Record) As Boolean
     For i = 1 To lngRecCnt
     
         If mRecords(i).ModelDrawingID <> iRecord.ModelDrawingID Then
-            GoTo CONTINUE
+            GoTo continue
         End If
         
         mRecords(i).FromDB = iRecord.FromDB
@@ -1080,7 +1080,7 @@ Public Function fncReplaceRecord(ByRef iRecord As modMain.Record) As Boolean
         Next j
         
         fncReplaceRecord = True
-CONTINUE:
+continue:
     Next i
     
 End Function
@@ -1096,12 +1096,12 @@ Public Function fncSetLinkID() As Boolean
     For i = 1 To lngRecCnt
         
         If mRecords(i).LinkID <> "" Then
-            GoTo CONTINUE
+            GoTo continue
         End If
         
         If mRecords(i).LinkTo = "" And mRecords(i).LinkID = "" Then
             mRecords(i).LinkID = "-"
-            GoTo CONTINUE
+            GoTo continue
         End If
         
         Dim lngIndex As Long
@@ -1110,7 +1110,7 @@ Public Function fncSetLinkID() As Boolean
         mRecords(i).LinkID = mRecords(lngIndex).ID
         mRecords(lngIndex).LinkID = mRecords(i).ID
         
-CONTINUE:
+continue:
     Next i
     fncSetLinkID = True
 End Function

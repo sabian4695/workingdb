@@ -147,7 +147,7 @@ Private Function fncGetDrawingLink(ByRef iobjDrawDoc As Object) As String
             Dim objLinkDoc As Object
             Set objLinkDoc = objView.GenerativeBehavior.Document
             On Error GoTo 0
-            If objLinkDoc Is Nothing Then GoTo CONTINUE
+            If objLinkDoc Is Nothing Then GoTo continue
             
             If TypeName(objLinkDoc) = "Product" Then
                 fncGetDrawingLink = objLinkDoc.ReferenceProduct.Parent.fullName
@@ -173,7 +173,7 @@ Private Function fncGetDrawingLink(ByRef iobjDrawDoc As Object) As String
                 fncGetDrawingLink = objParent.fullName
                 Exit Function
             End If
-CONTINUE:
+continue:
         Next j
     Next i
 End Function
@@ -218,8 +218,8 @@ Private Function fncGetOldNumberingProperty(ByRef iobjTable As CATIAPropertyTabl
             Exit Function
         End If
         
-        If typRecord.IsChildInstance = True Then GoTo CONTINUE
-        If Trim(typRecord.ModelDrawingID) = "" Then GoTo CONTINUE
+        If typRecord.IsChildInstance = True Then GoTo continue
+        If Trim(typRecord.ModelDrawingID) = "" Then GoTo continue
         
         Dim lngTypeIndex As Long
         lngTypeIndex = modMain.fncGetIndex("File_Data_Type")
@@ -235,7 +235,7 @@ Private Function fncGetOldNumberingProperty(ByRef iobjTable As CATIAPropertyTabl
             ReDim Preserve lstModelID(lngIndex + 1)
             lstModelID(lngIndex + 1) = typRecord.ModelDrawingID
         End If
-CONTINUE:
+continue:
     Next i
     
     On Error Resume Next
@@ -1385,9 +1385,9 @@ Public Function fncSaveData(ByRef iobjCatiaData As CATIAPropertyTable, _
             If iobjCatiaData.fncItem(j, typCATIARecord) = False Then Exit Function
             If iobjExcelData.fncItem(j, typExcelRecord) = False Then Exit Function
             
-            If typExcelRecord.IsChildInstance = True Then GoTo CONTINUE
-            If typExcelRecord.Sel <> True Then GoTo CONTINUE
-            If typExcelRecord.Level <> i Then GoTo CONTINUE
+            If typExcelRecord.IsChildInstance = True Then GoTo continue
+            If typExcelRecord.Sel <> True Then GoTo continue
+            If typExcelRecord.Level <> i Then GoTo continue
                 
             Dim strOldPath As String
             strOldPath = typExcelRecord.FilePath
@@ -1399,7 +1399,7 @@ Public Function fncSaveData(ByRef iobjCatiaData As CATIAPropertyTable, _
             blnIn3DEX = fncSavedIn3dex(strOldPath)
             If blnIn3DEX = True And _
                typExcelRecord.FileName = typExcelRecord.Properties(lngFileNameIndex) Then
-                GoTo CONTINUE
+                GoTo continue
             End If
             
             Dim lngClassification As Long
@@ -1414,7 +1414,7 @@ Public Function fncSaveData(ByRef iobjCatiaData As CATIAPropertyTable, _
                 (strClassification = "Reference" Or _
                  strClassification = "SubProduct" Or _
                  strClassification = "LayOut") Then
-                GoTo CONTINUE
+                GoTo continue
             End If
 
             Dim strNewPath As String
@@ -1423,7 +1423,7 @@ Public Function fncSaveData(ByRef iobjCatiaData As CATIAPropertyTable, _
 
             Call iobjExcelData.UpdateModelID(j, typExcelRecord.ModelDrawingID)
             
-CONTINUE:
+continue:
         Next j
     Next i
     fncSaveData = True
