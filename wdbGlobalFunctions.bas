@@ -179,21 +179,45 @@ For Each ctl In setForm.Controls
                 Case ctl.tag Like "*cardBoxContrastBorder.L#*"
                     ctl.BorderColor = colorLevels(Level + 1)
             End Select
-        Case acTabCtl 'OPTIONS: tab.L#
+        Case acTabCtl 'OPTIONS: tab.L#, tabContrastBorder.L#
+            If darkMode Then
+                levFore = (1 / colorLevArr(Level)) + 0.2
+            Else
+                levFore = colorLevArr(Level) * 7
+            End If
             If ctl.tag Like "*tab*" Then
-                ctl.BackColor = colorLevels(Level - 1)
-                ctl.BorderColor = backCol
-                ctl.PressedColor = backCol
-                
-                'fade the colors
-                fadeBack = shadeColor(CLng(colorLevels(Level - 1)), scalarBack)
-                fadeFore = shadeColor(foreBase, scalarFront)
-                
-                ctl.HoverColor = fadeBack
-                ctl.ForeColor = fadeFore
-                
-                ctl.HoverForeColor = foreBase
-                ctl.PressedForeColor = foreBase
+                If Level = 0 Then
+                    ctl.BackColor = colorLevels(Level + 0)
+                    ctl.BorderColor = backCol
+                    ctl.PressedColor = backCol
+                    
+                    'fade the colors
+                    fadeBack = shadeColor(CLng(colorLevels(Level - 1)), scalarBack)
+                    fadeFore = shadeColor(foreBase, levFore - 0.6)
+                    
+                    ctl.HoverColor = fadeBack
+                    ctl.ForeColor = fadeFore
+                    
+                    ctl.HoverForeColor = foreBase
+                    ctl.PressedForeColor = foreBase
+                Else
+                    ctl.BackColor = colorLevels(Level - 1)
+                    ctl.BorderColor = backCol
+                    ctl.PressedColor = backCol
+                    
+                    'fade the colors
+                    fadeBack = shadeColor(CLng(colorLevels(Level - 1)), scalarBack)
+                    fadeFore = shadeColor(foreBase, levFore)
+                    
+                    ctl.HoverColor = fadeBack
+                    ctl.ForeColor = fadeFore
+                    
+                    ctl.HoverForeColor = foreBase
+                    ctl.PressedForeColor = foreBase
+                End If
+            End If
+            If ctl.tag Like "*contrastBorder*" Then
+                ctl.BorderColor = colorLevels(Level + 1)
             End If
         Case acImage 'OPTIONS: pic.L#
             If ctl.tag Like "*pic*" Then ctl.BackColor = backCol
@@ -586,7 +610,7 @@ err_handler:
     Call handleError("wdbGlobalFunctions", "countWorkdays", Err.DESCRIPTION, Err.number)
 End Function
 
-Function getFullName(Optional userName As String = "") As String
+Function getFullName(Optional userName As String = "", Optional firstOnly As Boolean = False) As String
 On Error GoTo err_handler
 
 If userName = "" Then userName = Environ("username")
@@ -595,7 +619,13 @@ Dim db As Database
 Set db = CurrentDb()
 Dim rs1 As Recordset
 Set rs1 = db.OpenRecordset("SELECT firstName, lastName FROM tblPermissions WHERE User = '" & userName & "'", dbOpenSnapshot)
-getFullName = rs1!firstName & " " & rs1!lastName
+
+If firstOnly Then
+    getFullName = rs1!firstName
+Else
+    getFullName = rs1!firstName & " " & rs1!lastName
+End If
+
 rs1.Close: Set rs1 = Nothing
 Set db = Nothing
 
