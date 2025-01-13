@@ -282,7 +282,7 @@ err_handler:
 End Function
 
 Public Function exportAIF(partNum As String) As String
-On Error GoTo err_handler
+'On Error GoTo err_handler
 exportAIF = False
 
 '---Setup Variables---
@@ -400,7 +400,7 @@ Select Case rsPI!partType
             pressSizeID = DLookup("ID", "tblDropDownsSP", "pressSizeAll = '" & rsPMI!pressSize & "'")
         Else
             pressSizeFin = Nz(rsPMI!pressSize)
-            pressSizeID = DLookup("ID", "tblDropDownsSP", "pressSize = '" & rsPMI!pressSize & "'")
+            pressSizeID = DLookup("ID", "tblDropDownsSP", "pressSizeAll = '" & rsPMI!pressSize & "'")
         End If
         
         aifInsert "Press Tonnage", pressSizeFin, firstColBold:=True
@@ -679,22 +679,22 @@ tblHeading = "<table style=""width: 100%; margin: 0 auto; padding: .1em; text-al
                             "</tbody>" & _
                         "</table>"
                         
-Dim i As Long, titleRow, dataRows, j As Long
-i = 0
+Dim I As Long, titleRow, dataRows, j As Long
+I = 0
 tblArraySection = ""
 
 titleRow = "<tr style=""padding: .1em;"">"
-For i = 0 To columns
-    titleRow = titleRow & "<th>" & data(i, 0) & "</th>"
-Next i
+For I = 0 To columns
+    titleRow = titleRow & "<th>" & data(I, 0) & "</th>"
+Next I
 titleRow = titleRow & "</tr>"
 
 dataRows = ""
 For j = 1 To rows
     dataRows = dataRows & "<tr style=""border-collapse: collapse; font-size: 11px; text-align: center; "">"
-    For i = 0 To columns
-        dataRows = dataRows & "<td style=""padding: .1em; border: 1px solid; "">" & data(i, j) & "</td>"
-    Next i
+    For I = 0 To columns
+        dataRows = dataRows & "<td style=""padding: .1em; border: 1px solid; "">" & data(I, j) & "</td>"
+    Next I
     dataRows = dataRows & "</tr>"
 Next j
 
@@ -1466,15 +1466,15 @@ If rsApprovals.RecordCount = 0 Then
     GoTo noApprovals
 End If
 
-Dim arr() As Variant, i As Long
-i = 0
+Dim arr() As Variant, I As Long
+I = 0
 rsApprovals.MoveLast
 ReDim Preserve arr(rsApprovals.RecordCount)
 rsApprovals.MoveFirst
 
 Do While Not rsApprovals.EOF
-    arr(i) = rsApprovals!approver & " - " & rsApprovals!approvedOn
-    i = i + 1
+    arr(I) = rsApprovals!approver & " - " & rsApprovals!approvedOn
+    I = I + 1
     rsApprovals.MoveNext
 Loop
 
@@ -1611,16 +1611,16 @@ On Error GoTo err_handler
 
 Dim tblHeading As String, tblFooter As String, strHTMLBody As String, extraFooter As String, detailTable As String
 
-Dim ITEM, i
-i = 0
+Dim ITEM, I
+I = 0
 detailTable = ""
 For Each ITEM In arr()
-    If i = UBound(arr) Then
+    If I = UBound(arr) Then
         detailTable = detailTable & "<tr style=""border-collapse: collapse;""><td style=""padding: .1em 2em 1em 2em;"">" & ITEM & "</td></tr>"
     Else
         detailTable = detailTable & "<tr style=""border-collapse: collapse;""><td style=""padding: .1em 2em;"">" & ITEM & "</td></tr>"
     End If
-    i = i + 1
+    I = I + 1
 Next ITEM
 
 tblHeading = "<table style=""width: 100%; margin: 0 auto; padding: 2em 3em; text-align: center; background-color: #fafafa;"">" & _

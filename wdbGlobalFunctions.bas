@@ -90,6 +90,11 @@ For Each ctl In setForm.Controls
     Else
         GoTo nextControl
     End If
+    If darkMode Then
+        levFore = (1 / colorLevArr(Level)) + 0.2
+    Else
+        levFore = colorLevArr(Level) * 7
+    End If
 
     Select Case ctl.ControlType
         Case acCommandButton, acToggleButton 'OPTIONS: cardBtn.L#, cardBtnContrastBorder.L#, btn.L#
@@ -101,18 +106,68 @@ For Each ctl In setForm.Controls
                     If ctl.BorderStyle <> 0 Then ctl.BorderColor = colorLevels(Level + 1)
                 Case ctl.tag Like "*btn.L#*"
                     If ctl.BorderStyle <> 0 Then ctl.BorderColor = backCol
-                    ctl.ForeColor = foreBase
                     
                     'fade the colors
                     fadeBack = shadeColor(backCol, scalarBack)
+                    fadeFore = shadeColor(foreBase, scalarFront)
+                    
+                    ctl.ForeColor = foreBase
+                    ctl.HoverColor = fadeBack
+                    ctl.PressedColor = fadeBack
+                    ctl.HoverForeColor = fadeFore
+                    ctl.PressedForeColor = fadeFore
+                Case ctl.tag Like "*btnDis.L#*" 'for disabled look
+                    If ctl.BorderStyle <> 0 Then ctl.BorderColor = backCol
+                    
+                    'fade the colors
+                    fadeBack = shadeColor(backCol, scalarBack)
+                    fadeFore = shadeColor(foreBase, levFore - 0.2)
+                    
+                    ctl.ForeColor = fadeFore
+                    ctl.HoverColor = fadeBack
+                    ctl.PressedColor = fadeBack
+                    ctl.HoverForeColor = fadeFore
+                    ctl.PressedForeColor = fadeFore
+                Case ctl.tag Like "*btnDisContrastBorder.L#*" 'for disabled look
+                    If ctl.BorderStyle <> 0 Then ctl.BorderColor = colorLevels(Level + 1)
+                    
+                    'fade the colors
+                    fadeBack = shadeColor(backCol, scalarBack)
+                    fadeFore = shadeColor(foreBase, levFore - 0.2)
+                    
+                    ctl.ForeColor = fadeFore
+                    ctl.HoverColor = fadeBack
+                    ctl.PressedColor = fadeBack
+                    ctl.HoverForeColor = fadeFore
+                    ctl.PressedForeColor = fadeFore
+                Case ctl.tag Like "*btnXdis.L#*" 'for disabled look
+                    If ctl.BorderStyle <> 0 Then ctl.BorderColor = btnXback
+                    ctl.ForeColor = foreBase
+                    ctl.BackColor = btnXback
+                    
+                    'fade the colors
+                    fadeBack = shadeColor(btnXback, scalarBack)
+                    fadeFore = shadeColor(foreBase, levFore - 0.2)
+                    
+                    ctl.ForeColor = fadeFore
+                    ctl.HoverColor = fadeBack
+                    ctl.PressedColor = fadeBack
+                    ctl.HoverForeColor = fadeFore
+                    ctl.PressedForeColor = fadeFore
+                Case ctl.tag Like "*btnX.L#*"
+                    If ctl.BorderStyle <> 0 Then ctl.BorderColor = btnXback
+                    ctl.ForeColor = foreBase
+                    ctl.BackColor = btnXback
+                    'fade the colors
+                    fadeBack = shadeColor(btnXback, scalarBack)
                     fadeFore = shadeColor(foreBase, scalarFront)
                     
                     ctl.HoverColor = fadeBack
                     ctl.PressedColor = fadeBack
                     ctl.HoverForeColor = fadeFore
                     ctl.PressedForeColor = fadeFore
-                Case ctl.tag Like "*btnX.L#*"
-                    If ctl.BorderStyle <> 0 Then ctl.BorderColor = backCol
+                Case ctl.tag Like "*btnXcontrastBorder.L#*"
+                    If ctl.BorderStyle <> 0 Then ctl.BorderColor = colorLevels(Level + 1)
                     ctl.ForeColor = foreBase
                     ctl.BackColor = btnXback
                     'fade the colors
@@ -137,11 +192,6 @@ For Each ctl In setForm.Controls
                     ctl.PressedForeColor = fadeFore
             End Select
         Case acLabel
-            If darkMode Then
-                levFore = (1 / colorLevArr(Level)) + 0.2
-            Else
-                levFore = colorLevArr(Level) * 7
-            End If
             Select Case True
                Case ctl.tag Like "*lbl.L#*"
                    ctl.ForeColor = shadeColor(foreBase, levFore)
@@ -180,11 +230,6 @@ For Each ctl In setForm.Controls
                     ctl.BorderColor = colorLevels(Level + 1)
             End Select
         Case acTabCtl 'OPTIONS: tab.L#, tabContrastBorder.L#
-            If darkMode Then
-                levFore = (1 / colorLevArr(Level)) + 0.2
-            Else
-                levFore = colorLevArr(Level) * 7
-            End If
             If ctl.tag Like "*tab*" Then
                 If Level = 0 Then
                     ctl.BackColor = colorLevels(Level + 0)
@@ -560,7 +605,7 @@ On Error GoTo err_handler
 
 Dim db As Database
 Set db = CurrentDb()
-Dim i As Long, testDate As Date, daysLeft As Long, rsHolidays As Recordset, intDirection
+Dim I As Long, testDate As Date, daysLeft As Long, rsHolidays As Recordset, intDirection
 testDate = dateInput
 daysLeft = Abs(daysToAdd)
 intDirection = 1
@@ -774,20 +819,20 @@ tblHeading = "<table style=""width: 100%; margin: 0 auto; padding: 2em 2em 1em 2
                             "</tbody>" & _
                         "</table>"
                         
-Dim i As Long, lateTable As String, todayTable As String, nextTable As String, varStr As String, varStr1 As String, seeMore As String
+Dim I As Long, lateTable As String, todayTable As String, nextTable As String, varStr As String, varStr1 As String, seeMore As String
 seeMore = "<tr style=""border-collapse: collapse;""><td style=""padding: .1em 2em; font-style: italic;"" colspan=""3"">see the rest in the workingdb...</td></tr>"
-i = 0
+I = 0
 tblStepOverview = ""
 
 varStr = ""
 varStr1 = ""
 If lates(0) <> "" Then
-    For i = 0 To UBound(lates)
+    For I = 0 To UBound(lates)
         lateTable = lateTable & "<tr style=""border-collapse: collapse;"">" & _
-                                                "<td style=""padding: .1em 2em;"">" & Split(lates(i), ",")(0) & "</td>" & _
-                                                "<td style=""padding: .1em 2em;"">" & Split(lates(i), ",")(1) & "</td>" & _
-                                                "<td style=""padding: .1em 2em;  color: rgb(255,195,195);"">" & Split(lates(i), ",")(2) & "</td></tr>"
-    Next i
+                                                "<td style=""padding: .1em 2em;"">" & Split(lates(I), ",")(0) & "</td>" & _
+                                                "<td style=""padding: .1em 2em;"">" & Split(lates(I), ",")(1) & "</td>" & _
+                                                "<td style=""padding: .1em 2em;  color: rgb(255,195,195);"">" & Split(lates(I), ",")(2) & "</td></tr>"
+    Next I
     If lateCount > 1 Then varStr = "s"
     If lateCount > 15 Then varStr1 = seeMore
     tblStepOverview = tblStepOverview & "<table style=""width: 100%; margin: 0 auto; background: #2b2b2b; color: rgb(255,255,255);""><tr><th style=""padding: 1em; font-size: 20px; color: rgb(255,150,150); display: table-header-group;"" colspan=""3"">You have " & _
@@ -798,12 +843,12 @@ End If
 varStr = ""
 varStr1 = ""
 If todays(0) <> "" Then
-    For i = 0 To UBound(todays)
+    For I = 0 To UBound(todays)
         todayTable = todayTable & "<tr style=""border-collapse: collapse;"">" & _
-                                                "<td style=""padding: .1em 2em;"">" & Split(todays(i), ",")(0) & "</td>" & _
-                                                "<td style=""padding: .1em 2em;"">" & Split(todays(i), ",")(1) & "</td>" & _
-                                                "<td style=""padding: .1em 2em;"">" & Split(todays(i), ",")(2) & "</td></tr>"
-    Next i
+                                                "<td style=""padding: .1em 2em;"">" & Split(todays(I), ",")(0) & "</td>" & _
+                                                "<td style=""padding: .1em 2em;"">" & Split(todays(I), ",")(1) & "</td>" & _
+                                                "<td style=""padding: .1em 2em;"">" & Split(todays(I), ",")(2) & "</td></tr>"
+    Next I
     If todayCount > 1 Then varStr = "s"
     If todayCount > 15 Then varStr1 = seeMore
     tblStepOverview = tblStepOverview & "<table style=""width: 100%; margin: 0 auto; background: #2b2b2b; color: rgb(255,255,255);""><tr><th style=""padding: 1em; font-size: 20px; color: rgb(235,200,200); display: table-header-group;"" colspan=""3"">You have " & _
@@ -814,12 +859,12 @@ End If
 varStr = ""
 varStr1 = ""
 If nexts(0) <> "" Then
-    For i = 0 To UBound(nexts)
+    For I = 0 To UBound(nexts)
         nextTable = nextTable & "<tr style=""border-collapse: collapse;"">" & _
-                                                "<td style=""padding: .1em 2em;"">" & Split(nexts(i), ",")(0) & "</td>" & _
-                                                "<td style=""padding: .1em 2em;"">" & Split(nexts(i), ",")(1) & "</td>" & _
-                                                "<td style=""padding: .1em 2em;"">" & Split(nexts(i), ",")(2) & "</td></tr>"
-    Next i
+                                                "<td style=""padding: .1em 2em;"">" & Split(nexts(I), ",")(0) & "</td>" & _
+                                                "<td style=""padding: .1em 2em;"">" & Split(nexts(I), ",")(1) & "</td>" & _
+                                                "<td style=""padding: .1em 2em;"">" & Split(nexts(I), ",")(2) & "</td></tr>"
+    Next I
     If nextCount > 1 Then varStr = "s"
     If nextCount > 15 Then varStr1 = seeMore
     tblStepOverview = tblStepOverview & "<table style=""width: 100%; margin: 0 auto; background: #2b2b2b; color: rgb(255,255,255);""><tr><th style=""padding: 1em; font-size: 20px; color: rgb(235,235,235); display: table-header-group;"" colspan=""3"">You have " & _
@@ -891,7 +936,9 @@ If customEmail = False Then
         sendToArr = Split(sendTo, ",")
         strEmail = ""
         For Each ITEM In sendToArr
+            If ITEM = "" Then GoTo nextItem
             strEmail = strEmail & getEmail(CStr(ITEM)) & ";"
+nextItem:
         Next ITEM
         strEmail = Left(strEmail, Len(strEmail) - 1)
     Else

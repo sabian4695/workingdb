@@ -49,33 +49,33 @@ Public Function fncCheck() As String
     On Error Resume Next
     lngCnt = UBound(gcurSelection)
     On Error GoTo 0
-    Dim i As Long
-    For i = 1 To lngCnt
-        If Trim(gcurNumberingTable(i)) = "" Then
+    Dim I As Long
+    For I = 1 To lngCnt
+        If Trim(gcurNumberingTable(I)) = "" Then
             fncCheck = "E039"
             Exit Function
         End If
         
-        If Trim(gcurOfficeCode(i)) = "" Then
+        If Trim(gcurOfficeCode(I)) = "" Then
             fncCheck = "E040"
             Exit Function
         End If
         
-        If Trim(gcurSection(i)) = "" Then
+        If Trim(gcurSection(I)) = "" Then
             fncCheck = "E041"
             Exit Function
         End If
         
-        If gcurSelection(i) <> "1" And gcurSelection(i) <> "0" Then
+        If gcurSelection(I) <> "1" And gcurSelection(I) <> "0" Then
             fncCheck = "E042"
             Exit Function
-        ElseIf gcurSelection(i) = "1" Then
+        ElseIf gcurSelection(I) = "1" Then
             lngSelCnt = lngSelCnt + 1
-            gstrSection = gcurSection(i)
-            gstrOfficeCode = gcurOfficeCode(i)
-            gstrNumberingTable = gcurNumberingTable(i)
+            gstrSection = gcurSection(I)
+            gstrOfficeCode = gcurOfficeCode(I)
+            gstrNumberingTable = gcurNumberingTable(I)
         End If
-    Next i
+    Next I
 
     If lngSelCnt <> 1 Then
         fncCheck = "E043"
@@ -95,17 +95,17 @@ Public Function fncGetSectionFromOfficeCode(ByVal istrCode As String) As String
     lngCnt = UBound(gcurOfficeCode)
     On Error GoTo 0
 
-    Dim i As Long
-    For i = 1 To lngCnt
-        If gcurOfficeCode(i) = istrCode Then
-            If gcurSection(i) = "FCS/e-Pwr" Then
+    Dim I As Long
+    For I = 1 To lngCnt
+        If gcurOfficeCode(I) = istrCode Then
+            If gcurSection(I) = "FCS/e-Pwr" Then
                 fncGetSectionFromOfficeCode = "FCS"
             Else
-                fncGetSectionFromOfficeCode = gcurSection(i)
+                fncGetSectionFromOfficeCode = gcurSection(I)
             End If
             Exit Function
         End If
-    Next i
+    Next I
 End Function
 
 Public Function fncGetOfficeCodeFromSection(ByVal istrSection As String) As String
@@ -123,13 +123,13 @@ Public Function fncGetOfficeCodeFromSection(ByVal istrSection As String) As Stri
     lngCnt = UBound(gcurSection)
     On Error GoTo 0
 
-    Dim i As Long
-    For i = 1 To lngCnt
-        If gcurSection(i) = strSection Then
-            fncGetOfficeCodeFromSection = gcurOfficeCode(i)
+    Dim I As Long
+    For I = 1 To lngCnt
+        If gcurSection(I) = strSection Then
+            fncGetOfficeCodeFromSection = gcurOfficeCode(I)
             Exit Function
         End If
-    Next i
+    Next I
 End Function
 
 Public Sub Terminate()

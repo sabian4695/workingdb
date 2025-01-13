@@ -23,12 +23,12 @@ fncRead = False
     
     Dim rs1 As Recordset
     Dim db As Database
-    Dim i As Integer
+    Dim I As Integer
     Set db = CurrentDb()
     Set rs1 = db.OpenRecordset("tblPLMsettings", dbOpenSnapshot)
     
-For i = 1 To 10
-    Select Case i
+For I = 1 To 10
+    Select Case I
         Case 1
             gstrSendToPath = rs1("Value")
         Case 2
@@ -51,7 +51,7 @@ For i = 1 To 10
             gstrUnsetMaterialGrade = rs1("Value")
     End Select
 rs1.MoveNext
-Next i
+Next I
 
 rs1.Close
 Set rs1 = Nothing

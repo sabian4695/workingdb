@@ -145,15 +145,15 @@ End Function
 
 Public Function Show2(ByVal istrMessageID As String, ByRef icurAddition() As String) As Boolean
     Show2 = False
-    Dim msgDetail As String, newLine As String, lngCnt As Long, i As Integer
+    Dim msgDetail As String, newLine As String, lngCnt As Long, I As Integer
 
     On Error Resume Next
     lngCnt = UBound(icurAddition)
     On Error GoTo 0
-    For i = 1 To lngCnt
-        msgDetail = msgDetail & newLine & icurAddition(i)
+    For I = 1 To lngCnt
+        msgDetail = msgDetail & newLine & icurAddition(I)
         newLine = vbCrLf
-    Next i
+    Next I
     
     Show2 = Show(istrMessageID, msgDetail)
 End Function

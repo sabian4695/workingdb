@@ -63,16 +63,16 @@ Public Function fncCheck1() As Boolean
     lngCnt = UBound(gcurExcelTitle)
     On Error GoTo 0
     
-    Dim i As Integer
-    For i = 1 To lngCnt
+    Dim I As Integer
+    For I = 1 To lngCnt
     
-        If gcurExcelTitle(i) = "File_Data_Name" Then
+        If gcurExcelTitle(I) = "File_Data_Name" Then
             blnIsFileName = True
-        ElseIf gcurExcelTitle(i) = "File_Data_Type" Then
+        ElseIf gcurExcelTitle(I) = "File_Data_Type" Then
             blnIsFileType = True
         End If
         
-    Next i
+    Next I
     
     If blnIsFileName = False Or blnIsFileType = False Then
         Exit Function
@@ -89,12 +89,12 @@ Public Function fncCheck2() As Boolean
     lngCnt = UBound(gcurExcelTitle)
     On Error GoTo 0
     
-    Dim i As Integer
-    For i = 1 To lngCnt
-        If gcurDrawingTextName(i) = "" And gcurDrawingParamName(i) = "" Then
+    Dim I As Integer
+    For I = 1 To lngCnt
+        If gcurDrawingTextName(I) = "" And gcurDrawingParamName(I) = "" Then
             Exit Function
         End If
-    Next i
+    Next I
     
     fncCheck2 = True
 End Function
@@ -121,13 +121,13 @@ Public Function fncGetPropertyName(ByVal istrExcelTitle As String) As String
     lnCnt = UBound(gcurExcelTitle)
     On Error GoTo 0
 
-    Dim i As Long
-    For i = 1 To lnCnt
-        If gcurExcelTitle(i) = istrExcelTitle Then
-            fncGetPropertyName = gcurProperty(i)
+    Dim I As Long
+    For I = 1 To lnCnt
+        If gcurExcelTitle(I) = istrExcelTitle Then
+            fncGetPropertyName = gcurProperty(I)
             Exit Function
         End If
-    Next i
+    Next I
 End Function
 
 Public Function fncGetDrawingTextName(ByVal istrExcelTitle As String) As String
@@ -138,13 +138,13 @@ Public Function fncGetDrawingTextName(ByVal istrExcelTitle As String) As String
     lnCnt = UBound(gcurExcelTitle)
     On Error GoTo 0
 
-    Dim i As Long
-    For i = 1 To lnCnt
-        If gcurExcelTitle(i) = istrExcelTitle Then
-            fncGetDrawingTextName = gcurDrawingTextName(i)
+    Dim I As Long
+    For I = 1 To lnCnt
+        If gcurExcelTitle(I) = istrExcelTitle Then
+            fncGetDrawingTextName = gcurDrawingTextName(I)
             Exit Function
         End If
-    Next i
+    Next I
 End Function
 
 Public Function fncGetDrawingParamName(ByVal istrExcelTitle As String) As String
@@ -155,13 +155,13 @@ Public Function fncGetDrawingParamName(ByVal istrExcelTitle As String) As String
     lngCnt = UBound(gcurExcelTitle)
     On Error GoTo 0
 
-    Dim i As Long
-    For i = 1 To lngCnt
-        If gcurExcelTitle(i) = istrExcelTitle Then
-            fncGetDrawingParamName = gcurDrawingParamName(i)
+    Dim I As Long
+    For I = 1 To lngCnt
+        If gcurExcelTitle(I) = istrExcelTitle Then
+            fncGetDrawingParamName = gcurDrawingParamName(I)
             Exit Function
         End If
-    Next i
+    Next I
 End Function
 
 Public Function fncGetOldDBAttrName(ByVal istrExcelTitle As String) As String
@@ -172,13 +172,13 @@ Public Function fncGetOldDBAttrName(ByVal istrExcelTitle As String) As String
     lngCnt = UBound(gcurExcelTitle)
     On Error GoTo 0
 
-    Dim i As Long
-    For i = 1 To lngCnt
-        If gcurExcelTitle(i) = istrExcelTitle Then
-            fncGetOldDBAttrName = gcurOldDBAttrName(i)
+    Dim I As Long
+    For I = 1 To lngCnt
+        If gcurExcelTitle(I) = istrExcelTitle Then
+            fncGetOldDBAttrName = gcurOldDBAttrName(I)
             Exit Function
         End If
-    Next i
+    Next I
 End Function
 
 Public Function fncGetDataType(ByVal istrExcelTitle As String) As String
@@ -189,13 +189,13 @@ Public Function fncGetDataType(ByVal istrExcelTitle As String) As String
     lngCnt = UBound(gcurExcelTitle)
     On Error GoTo 0
 
-    Dim i As Long
-    For i = 1 To lngCnt
-        If gcurExcelTitle(i) = istrExcelTitle Then
-            fncGetDataType = gcurDataType(i)
+    Dim I As Long
+    For I = 1 To lngCnt
+        If gcurExcelTitle(I) = istrExcelTitle Then
+            fncGetDataType = gcurDataType(I)
             Exit Function
         End If
-    Next i
+    Next I
 End Function
 
 Public Function fncGetInputRequired(ByVal istrExcelTitle As String) As String
@@ -206,13 +206,13 @@ Public Function fncGetInputRequired(ByVal istrExcelTitle As String) As String
     lngCnt = UBound(gcurExcelTitle)
     On Error GoTo 0
 
-    Dim i As Long
-    For i = 1 To lngCnt
-        If gcurExcelTitle(i) = istrExcelTitle Then
-            fncGetInputRequired = gcurInputRequired(i)
+    Dim I As Long
+    For I = 1 To lngCnt
+        If gcurExcelTitle(I) = istrExcelTitle Then
+            fncGetInputRequired = gcurInputRequired(I)
             Exit Function
         End If
-    Next i
+    Next I
 End Function
 
 Public Function fncGetInputDisabled(ByVal istrExcelTitle As String) As String
@@ -223,13 +223,13 @@ Public Function fncGetInputDisabled(ByVal istrExcelTitle As String) As String
     lngCnt = UBound(gcurExcelTitle)
     On Error GoTo 0
 
-    Dim i As Long
-    For i = 1 To lngCnt
-        If gcurExcelTitle(i) = istrExcelTitle Then
-            fncGetInputDisabled = gcurInputDisabled(i)
+    Dim I As Long
+    For I = 1 To lngCnt
+        If gcurExcelTitle(I) = istrExcelTitle Then
+            fncGetInputDisabled = gcurInputDisabled(I)
             Exit Function
         End If
-    Next i
+    Next I
 End Function
 
 Public Function fncGetReplaceLine(ByVal istrExcelTitle As String) As String
@@ -240,13 +240,13 @@ Public Function fncGetReplaceLine(ByVal istrExcelTitle As String) As String
     lngCnt = UBound(gcurExcelTitle)
     On Error GoTo 0
 
-    Dim i As Long
-    For i = 1 To lngCnt
-        If gcurExcelTitle(i) = istrExcelTitle Then
-            fncGetReplaceLine = gcurReplaceLine(i)
+    Dim I As Long
+    For I = 1 To lngCnt
+        If gcurExcelTitle(I) = istrExcelTitle Then
+            fncGetReplaceLine = gcurReplaceLine(I)
             Exit Function
         End If
-    Next i
+    Next I
 End Function
 
 Public Function fncGetDesignerName(ByVal istrAlias As String, ByRef ostrName As String) As Boolean
@@ -257,12 +257,12 @@ Public Function fncGetDesignerName(ByVal istrAlias As String, ByRef ostrName As 
     lngCnt = UBound(gcurDesignerAlias)
     On Error GoTo 0
 
-    Dim i As Long
-    For i = 1 To lngCnt
-        If gcurDesignerAlias(i) = istrAlias Then
-            ostrName = gcurDesignerName(i)
+    Dim I As Long
+    For I = 1 To lngCnt
+        If gcurDesignerAlias(I) = istrAlias Then
+            ostrName = gcurDesignerName(I)
             fncGetDesignerName = True
             Exit Function
         End If
-    Next i
+    Next I
 End Function
