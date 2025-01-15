@@ -186,7 +186,7 @@ Dim partNum, thousZeros, hundZeros, FolName, mainfolderpath, strFilePath, prtpat
 partNum = partNumOriginal & "_"
 If partNum Like "D*" Then
     If openFold Then Call checkMkDir(mainFolder("ModelV5D"), Left(partNum, Len(partNum) - 1), "*")
-    GoTo Exit_Handler
+    GoTo exit_handler
 End If
 
 If Left(partNum, 8) Like "[A-Z][A-Z]##[A-Z]##[A-Z]" Or Left(partNum, 7) Like "[A-Z][A-Z]##[A-Z]##" Or Left(partNum, 5) Like "##[A-Z]##" Then
@@ -231,7 +231,7 @@ tryagain:
     End If
 End If
 
-Exit_Handler:
+exit_handler:
 
 Exit Function
 err_handler:

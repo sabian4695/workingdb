@@ -4,6 +4,194 @@ Option Explicit
 Dim XL As Excel.Application, WB As Excel.Workbook, WKS As Excel.Worksheet
 Dim inV As Long
 
+Function closeProjectStep(stepId As Long, frmActive As String) As Boolean
+On Error GoTo err_handler
+
+closeProjectStep = False
+
+Dim db As Database
+Set db = CurrentDb()
+Dim rsStep As Recordset, projectOwner As String
+Dim errorText As String, testThis
+errorText = ""
+Set rsStep = db.OpenRecordset("SELECT * from tblPartSteps WHERE recordId = " & stepId)
+
+'TEMPORARY RESTRICTION OVERRIDE
+'Project engineers can close steps for other departments until all departments are fully in
+Select Case DLookup("templateType", "tblPartProjectTemplate", "recordId = " & DLookup("projectTemplateId", "tblPartProject", "recordId = " & rsStep!partProjectId))
+    Case 1 'New Model
+        projectOwner = "Project"
+    Case 2 'Service
+        projectOwner = "Service"
+End Select
+
+'---First, check if this step is in the current gate---
+Dim rsGate As Recordset
+Set rsGate = db.OpenRecordset("SELECT * FROM tblPartGates WHERE recordId = " & rsStep!partGateId)
+
+Dim gateId As Long 'show steps for current open gate
+gateId = Nz(DMin("[partGateId]", "tblPartSteps", "partProjectId = " & rsStep!partProjectId & " AND [status] <> 'Closed'"), DMin("[partGateId]", "tblPartSteps", "partProjectId = " & rsStep!partProjectId))
+
+If gateId <> rsGate!recordId Then
+    errorText = "This step is not in the current gate, you can't close it yet"
+    GoTo errorOut
+End If
+
+
+If restrict(Environ("username"), projectOwner) = False Then GoTo theCorrectFellow 'is the bro an owner?
+
+'FIRST: are you the right person for the job???
+If Nz(rsStep!responsible) = userData("Dept") And DCount("recordId", "tblPartTeam", "person = '" & Environ("username") & "' AND partNumber = '" & rsStep!partNumber & "'") > 0 Then GoTo theCorrectFellow 'if the bro is responsible AND CHECK IF ON CF TEAM
+If restrict(Environ("username"), projectOwner, "Manager") = False Then GoTo theCorrectFellow 'is the bro an owner Manager?
+If restrict(Environ("username"), Nz(rsStep!responsible), "Manager") = False Then GoTo theCorrectFellow  'is the bro a manager in the department of the "responsible" person?
+Call snackBox("error", "Woops", "Only the 'Responsible' person, their manager, or a project/service Manager can close a step", frmActive)
+GoTo exit_handler
+theCorrectFellow:
+
+If IsNull(rsStep!closeDate) = False Then errorText = "This is already closed - what's the point in closing again?"
+If getAttachmentsCount(rsStep!recordId) = 0 And IsNull(rsStep!documentType) = False Then errorText = "This step requires a file to be added to close it"
+If getAttachmentsCount(rsStep!recordId) < Nz(getAttachmentsCountReq(rsStep!recordId, Nz(rsStep!documentType, 0), rsStep!partProjectId), 0) Then errorText = "This step requires a file per related part number to be added to close it"
+If getApprovalsComplete(rsStep!recordId, rsStep!partNumber) < getTotalApprovals(rsStep!recordId, rsStep!partNumber) Then errorText = "I spy with my little eye: open approval(s) on this step!"
+
+If errorText <> "" Then GoTo errorOut
+
+'---CHECK STEP ACTIONS---
+If IsNull(rsStep!stepActionId) Then GoTo stepActionOK
+
+Dim rsStepAction As Recordset
+Set rsStepAction = db.OpenRecordset("SELECT * from tblPartStepActions WHERE recordId = " & rsStep!stepActionId)
+
+If rsStepAction.RecordCount = 0 Then GoTo stepActionOK 'no step action found
+If rsStepAction!whenToRun <> "closeStep" And rsStepAction!whenToRun <> "firstTimeRun" Then GoTo stepActionOK 'check if this action should be running now. Ones marked "closeStep" are checks on close, meant to run now
+
+Dim rsMoldInfo As Recordset
+
+Select Case rsStepAction!stepAction
+    Case "emailPartInfo"
+        If emailPartInfo(rsStep!partNumber, Nz(rsStep!stepDescription)) = False Then Err.Raise vbObjectError + 999, , "Email couldn't send..."
+    Case "emailToolShipAuthorization"
+        Dim toolNum As String, shipMethod As String, moldInfoId As Long
+        moldInfoId = Nz(DLookup("moldInfoId", "tblPartInfo", "partNumber = '" & rsStep!partNumber & "'"))
+        If moldInfoId = 0 Then errorText = "Need a tool associated with this part to close this step."
+        If errorText <> "" Then GoTo errorOut
+        
+        Set rsMoldInfo = db.OpenRecordset("select * from tblPartMoldingInfo where recordId = " & moldInfoId)
+        
+        If IsNull(rsMoldInfo!toolNumber) Then errorText = "Need a tool associated with this part to send tool ship email!"
+        If IsNull(rsMoldInfo!shipMethod) Then errorText = "Need to select ship method in molding info before closing this step!"
+        
+        If errorText <> "" Then GoTo errorOut
+        
+        toolNum = rsMoldInfo!toolNumber
+        shipMethod = DLookup("shipMethod", "tblDropDownsSP", "ID = " & rsMoldInfo!shipMethod)
+        
+        Call toolShipAuthorizationEmail(toolNum, rsStep!recordId, shipMethod, rsStep!partNumber)
+    Case "PVtestPlanCreated"
+        If DCount("recordId", "tblPartTesting", "partNumber = '" & rsStep!partNumber & "'") = 0 Then 'are there any tests added?
+            errorText = "Tests need added to the testing tracker for this part!"
+            GoTo errorOut
+        End If
+    Case "PVtestPlanCompleted"
+        If DCount("recordId", "tblPartTesting", "partNumber = '" & rsStep!partNumber & "'") = 0 Then 'are there any tests added?
+            errorText = "Tests need added to the Testing Tracker for this part!"
+            GoTo errorOut
+        End If
+        If DCount("recordId", "tblPartTesting", "partNumber = '" & rsStep!partNumber & "' AND actualEnd is null") > 0 Then 'are there any not yet complete?
+            errorText = "All tests need to be complete in the Testing Tracker"
+            GoTo errorOut
+        End If
+    Case "emailPartApprovalNotification"
+        Call emailPartApprovalNotification(rsStep!recordId, rsStep!partNumber)
+    Case "closeStep"
+        'these steps are closed based on Oracle values being present - this is checked on the firstTimeRun module
+        'we can have it check here as well! just run the exact same module
+        'this means that the ONLY way to close these steps is if Oracle shows the data properly. clicking the close button here just runs the same check on Oracle
+
+        'for these steps - check if the project is in NCM. for NCM folks, do NOT check Oracle data.
+        Dim rsPI As Recordset
+        Set rsPI = db.OpenRecordset("SELECT developingLocation FROM tblPartInfo WHERE partNumber = '" & rsStep!partNumber & "'")
+        If rsPI!developingLocation <> "NCM" Then
+            Call scanSteps(rsStep!partNumber, "firstTimeRun")
+            Call snackBox("info", "FYI", "This step is automatically closed when specific data is present. Clicking 'Close' ran this check manually", frmActive)
+            GoTo exit_handler: 'keep stepActionChecks FALSE so it doesn't re-close the step if it was closed in the scanSteps area.
+        End If
+        rsPI.Close
+        Set rsPI = Nothing
+    Case "emailApprovedCapitalPacket"
+        'check for capital packet number
+        Dim CapNum As String
+        CapNum = Nz(DLookup("projectCapitalNumber", "tblPartProject", "recordId = " & rsStep!partProjectId), "")
+        If CapNum = "" Then
+            errorText = "Please enter a Capital Packet Number"
+            GoTo errorOut
+        End If
+        If emailApprovedCapitalPacket(rsStep!recordId, rsStep!partNumber, CapNum) = False Then
+            errorText = "Couldn't send email, double-check the attachments"
+            GoTo errorOut
+        End If
+    Case "emailKOaif"
+        'email all KO AIF attachments to COST_BOM_MAILBOX
+        If emailAIF(rsStep!recordId, rsStep!partNumber, "Kickoff", rsStep!partProjectId) = False Then
+            errorText = "Couldn't send email"
+            GoTo errorOut
+        End If
+    Case "emailTSFRaif"
+        'email all TRANSFER AIF attachments to COST_BOM_MAILBOX
+        If emailAIF(rsStep!recordId, rsStep!partNumber, "Transfer", rsStep!partProjectId) = False Then
+            errorText = "Couldn't send email"
+            GoTo errorOut
+        End If
+End Select
+
+stepActionOK:
+
+Dim currentDate
+currentDate = Now()
+
+Call registerPartUpdates("tblPartSteps", rsStep!recordId, "closeDate", "", currentDate, rsStep!partNumber, rsStep!stepType, rsStep!partProjectId)
+Call registerPartUpdates("tblPartSteps", rsStep!recordId, "status", rsStep!status, "Closed", rsStep!partNumber, rsStep!stepType, rsStep!partProjectId)
+
+rsStep.Edit
+rsStep!closeDate = currentDate
+rsStep!status = "Closed"
+rsStep.Update
+
+Call notifyPE(rsStep!partNumber, "Closed", rsStep!stepType)
+
+If (DCount("recordId", "tblPartSteps", "[closeDate] is null AND partGateId = " & rsStep!partGateId) = 0) Then
+    Call registerPartUpdates("tblPartGates", rsStep!partGateId, "actualDate", rsGate!actualDate, currentDate, rsStep!partNumber, rsGate!gateTitle, rsStep!partProjectId)
+    rsGate.Edit
+    rsGate!actualDate = currentDate
+    rsGate.Update
+    If frmActive = "frmPartDashboard" Then Form_frmPartDashboard.partDash_refresh_Click
+End If
+
+closeProjectStep = True
+
+exit_handler:
+On Error Resume Next
+rsStepAction.Close
+Set rsStepAction = Nothing
+rsMoldInfo.Close
+Set rsMoldInfo = Nothing
+rsPI.Close
+Set rsPI = Nothing
+rsStep.Close
+Set rsStep = Nothing
+rsGate.Close
+Set rsGate = Nothing
+Set db = Nothing
+
+Exit Function
+
+errorOut:
+Call snackBox("error", "Darn", errorText, frmActive)
+
+Exit Function
+err_handler:
+    Call handleError("wdbProjectE", "closeProjectStep", Err.DESCRIPTION, Err.number)
+End Function
+
 Function grabPartTeam(partNum As String, Optional withEmail As Boolean = False, Optional includeMe As Boolean = False, Optional searchForPrimaryProj As Boolean = False) As String
 On Error GoTo err_handler
 
