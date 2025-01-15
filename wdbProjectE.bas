@@ -78,6 +78,95 @@ err_handler:
     Call handleError("wdbProjectE", "openPartProject", Err.DESCRIPTION, Err.number)
 End Function
 
+Public Function autoUploadAIF(partNumber As String) As Boolean
+On Error GoTo err_handler
+autoUploadAIF = False
+
+If checkAIFfields(partNumber) Then
+    Dim currentLoc As String
+    currentLoc = exportAIF(partNumber)
+    Call registerPartUpdates("tblPartProject", Form_frmPartDashboard.recordId, "Report Created", "From: " & Environ("username"), "Exported AIF", partNumber, "AIF", Form_frmPartDashboard.recordId)
+    If MsgBox("Do you want to auto-attach this to your AIF step?", vbYesNo, "Lemme know") = vbYes Then
+        'What type of AIF is this? KO or Transfer?
+        Dim dataStatus, docType As Long
+        dataStatus = DLookup("dataStatus", "tblPartInfo", "partNumber = '" & partNumber & "'")
+        
+        Select Case dataStatus
+            Case 1 'KO
+                docType = 34
+            Case 2 'Transfer
+                docType = 8
+            Case Else
+                MsgBox "Issue with Data Status!", vbInformation, "Sorry!"
+                Exit Function
+        End Select
+        
+        Dim db As DAO.Database
+        Set db = CurrentDb
+        Dim rsStep As Recordset, rsDocType As Recordset, rsPartAtt As DAO.Recordset, rsPartAttChild As DAO.Recordset2
+        Set rsStep = db.OpenRecordset("SELECT * from tblPartSteps WHERE partProjectId = " & Form_frmPartDashboard.recordId & " AND documentType=" & docType & " AND status <> 'Closed' Order By dueDate Asc")
+        Set rsDocType = db.OpenRecordset("SELECT * FROM tblPartAttachmentStandards WHERE recordId = " & docType)
+        
+        If rsStep.RecordCount = 0 Then
+            MsgBox "No open step found for this type of AIF!", vbInformation, "Sorry!"
+            Exit Function
+        End If
+        
+        Dim attachName As String
+        attachName = rsDocType!FileName & "-" & DMax("ID", "tblPartAttachmentsSP") + 1
+        
+        Set rsPartAtt = db.OpenRecordset("tblPartAttachmentsSP", dbOpenDynaset)
+        
+        rsPartAtt.addNew
+        rsPartAtt!fileStatus = "Created"
+        rsPartAtt.Update
+        rsPartAtt.MoveLast
+        
+        rsPartAtt.Edit
+        Set rsPartAttChild = rsPartAtt.Fields("Attachments").Value
+        
+        rsPartAttChild.addNew
+        Dim fld As DAO.Field2
+        Set fld = rsPartAttChild.Fields("FileData")
+        fld.LoadFromFile (currentLoc)
+        rsPartAttChild.Update
+        
+        rsPartAtt!partNumber = Form_frmPartDashboard.partNumber
+        rsPartAtt!testId = Null
+        rsPartAtt!partStepId = rsStep!recordId
+        rsPartAtt!partProjectId = Form_frmPartDashboard.recordId
+        rsPartAtt!documentType = docType
+        rsPartAtt!uploadedBy = Environ("username")
+        rsPartAtt!uploadedDate = Now()
+        rsPartAtt!attachName = attachName
+        rsPartAtt!attachFullFileName = attachName & ".xlsx"
+        rsPartAtt!fileStatus = "Uploading"
+        rsPartAtt!gateNumber = CLng(Right(Left(DLookup("gateTitle", "tblPartGates", "recordId = " & rsStep!partGateId), 2), 1))
+        rsPartAtt!documentTypeName = rsDocType!documentType
+        rsPartAtt!businessArea = rsDocType!businessArea
+        rsPartAtt.Update
+        
+        MsgBox "File is uploading!", vbInformation, "Bet."
+        
+        On Error Resume Next
+        Set fld = Nothing
+        rsPartAttChild.Close: Set rsPartAttChild = Nothing
+        rsPartAtt.Close: Set rsPartAtt = Nothing
+        rsStep.Close: Set rsStep = Nothing
+        rsDocType.Close: Set rsDocType = Nothing
+        Set db = Nothing
+        
+        Call registerPartUpdates("tblPartAttachmentsSP", Null, "Step Attachment", attachName, "Uploaded", Form_frmPartDashboard.partNumber, rsStep!stepType, Form_frmPartDashboard.recordId)
+    End If
+End If
+
+autoUploadAIF = True
+
+Exit Function
+err_handler:
+    Call handleError("wdbProjectE", "autoUploadAIF", Err.DESCRIPTION, Err.number)
+End Function
+
 Public Function checkAIFfields(partNum As String) As Boolean
 On Error GoTo err_handler
 checkAIFfields = False
@@ -289,7 +378,7 @@ exportAIF = False
 Dim db As Database
 Set db = CurrentDb()
 Dim rsPI As Recordset, rsPack As Recordset, rsPackC As Recordset, rsComp As Recordset, rsAI As Recordset
-Dim rsPE As Recordset, rsOI As Recordset, rsU As Recordset, rsPMI As Recordset, rsDevU As Recordset
+Dim rsOI As Recordset, rsU As Recordset, rsPMI As Recordset, rsDevU As Recordset
 Dim outsourceCost As String
 Dim mexFr As String, cartQty, mat0 As Double, mat1 As Double, resourceCSV() As String, ITEM, resID As Long, orgID As Long
 
@@ -298,8 +387,6 @@ Set rsPI = db.OpenRecordset("SELECT * from tblPartInfo WHERE partNumber = '" & p
 Set rsPack = db.OpenRecordset("SELECT * from tblPartPackagingInfo WHERE partInfoId = " & rsPI!recordId)
 Set rsU = db.OpenRecordset("SELECT * from tblUnits WHERE recordId = " & rsPI!unitId)
 Set rsDevU = db.OpenRecordset("SELECT * from tblUnits WHERE recordId = " & Nz(rsPI!developingUnit, 0))
-Set rsPE = db.OpenRecordset("SELECT * from tblPermissions where Dept = 'Project' AND Level = 'Engineer' AND user IN " & _
-                                    "(SELECT person FROM tblPartTeam WHERE partNumber = '" & partNum & "')")
 
 mexFr = "0"
 If rsU!Org = "CUU" And rsPI!dataStatus = 2 Then
@@ -348,7 +435,7 @@ classCodeFin = Right(classCodeFin, Len(classCodeFin) - 1)
 
 aifInsert "Nifco BW Item Reporting", classCodeFin, firstColBold:=True
 
-aifInsert "Planner", rsPE!firstName & " " & rsPE!lastName, firstColBold:=True
+aifInsert "Planner", findDept(partNum, "Project", True, True), firstColBold:=True
 aifInsert "Mark Code", Nz(rsPI!partMarkCode), firstColBold:=True
 aifInsert "Customer", DLookup("CUSTOMER_NAME", "APPS_XXCUS_CUSTOMERS", "CUSTOMER_ID = " & rsPI!customerId), firstColBold:=True
 
@@ -1117,19 +1204,40 @@ err_handler:
     Call handleError("wdbProjectE", "notifyPE", Err.DESCRIPTION, Err.number)
 End Function
 
-Function findDept(partNumber As String, dept As String, Optional returnMe As Boolean = False) As String
-On Error GoTo err_handler
+Function findDept(partNumber As String, dept As String, Optional returnMe As Boolean = False, Optional returnFullName As Boolean = False) As String
+'On Error GoTo err_handler
+
+findDept = ""
 
 Dim db As Database
 Set db = CurrentDb()
 Dim rsPermissions As Recordset, permEm
-Set rsPermissions = db.OpenRecordset("SELECT user, userEmail from tblPermissions where Dept = '" & dept & "' AND Level = 'Engineer' AND user IN " & _
+Dim primaryProjId As Long
+Dim primaryProjPN As String
+
+Set rsPermissions = db.OpenRecordset("SELECT user, firstName, lastName from tblPermissions where Dept = '" & dept & "' AND Level = 'Engineer' AND user IN " & _
                                     "(SELECT person FROM tblPartTeam WHERE partNumber = '" & partNumber & "')")
-If rsPermissions.RecordCount = 0 Then Exit Function
+
+'---If nothing found, look through the primary part project (for child PNs)---
+If rsPermissions.RecordCount = 0 Then
+    primaryProjId = Nz(DLookup("projectId", "tblPartProjectPartNumbers", "childPartNumber  = '" & partNumber & "'"), 0)
+    If primaryProjId = 0 Then Exit Function 'no primary project found
+    
+    primaryProjPN = Nz(DLookup("partNumber", "tblPartProject", "recordId = " & primaryProjId), "")
+    If primaryProjPN = "" Then Exit Function 'no primary project found
+    
+    Set rsPermissions = db.OpenRecordset("SELECT user, firstName, lastName from tblPermissions where Dept = '" & dept & "' AND Level = 'Engineer' AND user IN " & _
+                                    "(SELECT person FROM tblPartTeam WHERE partNumber = '" & primaryProjPN & "')")
+    If rsPermissions.RecordCount = 0 Then Exit Function 'no primary project found
+End If
 
 Do While Not rsPermissions.EOF
     If rsPermissions!User = Environ("username") And Not returnMe Then GoTo nextRec
-    findDept = findDept & rsPermissions!User & ","
+    If returnFullName Then
+        findDept = findDept & rsPermissions!firstName & " " & rsPermissions!lastName & ","
+    Else
+        findDept = findDept & rsPermissions!User & ","
+    End If
 nextRec:
     rsPermissions.MoveNext
 Loop

@@ -329,29 +329,6 @@ err_handler:
     Call handleError("wdbGlobalFunctions", "colorPicker", Err.DESCRIPTION, Err.number)
 End Function
 
-Function fixThis()
-
-dbExecute ("UPDATE tblPartSteps SET stepType = 'Complete Master Setup' WHERE stepType = 'Upload Master Setup' AND status <> 'Closed'")
-
-
-'Dim db As Database
-'Set db = CurrentDb
-'
-'Dim rs1 As Recordset
-'Set rs1 = db.OpenRecordset("SELECT * FROM tblPartSteps WHERE projectTemplateId = 8")
-'
-'Do While Not rs1.EOF
-'
-'
-'nextOne:
-'    rs1.MoveNext
-'Loop
-'
-'rs1.Close
-'Set rs1 = Nothing
-
-End Function
-
 Function dbExecute(sql As String)
 On Error GoTo err_handler
 

@@ -173,7 +173,7 @@ End If
 
 Exit Function
 err_handler:
-    Call handleError("wdbDirectoryFunctions", "openDocumentHistoryFolder", Err.DESCRIPTION, Err.number)
+    Call handleError("wdbDirectoryFunctions", "openDocumentHistoryFolder", Err.DESCRIPTION, Err.number, CStr(partNum))
 End Function
 
 Function openModelV5Folder(partNumOriginal, Optional openFold As Boolean = True) As String
