@@ -368,7 +368,9 @@ Dim rsPE As Recordset, rsPMI As Recordset
 Dim errorArray As Collection
 Set errorArray = New Collection
 
-If findDept(partNum, "Project", True) = "" Then errorArray.Add "Project Engineer"
+If findDept(partNum, "Project", True) = "" Then
+    'errorArray.Add "Project Engineer" 'TEMPORARY OVERRIDE FOR PROJECT CATCHUP - Per Noah Davidson 01/16/25
+End If
 
 '---Grab General Data---
 Set rsPI = db.OpenRecordset("SELECT * from tblPartInfo WHERE partNumber = '" & partNum & "'")
@@ -559,7 +561,7 @@ err_handler:
 End Function
 
 Public Function exportAIF(partNum As String) As String
-'On Error GoTo err_handler
+On Error GoTo err_handler
 exportAIF = False
 
 '---Setup Variables---
@@ -623,7 +625,18 @@ classCodeFin = Right(classCodeFin, Len(classCodeFin) - 1)
 
 aifInsert "Nifco BW Item Reporting", classCodeFin, firstColBold:=True
 
-aifInsert "Planner", findDept(partNum, "Project", True, True), firstColBold:=True
+'---TEMPORARY OVERRIDE FOR PROJECT CATCHUP - Per Noah Davidson 01/16/25---
+'--------------
+Dim plannerName As String
+plannerName = findDept(partNum, "Project", True, True)
+If plannerName = "" Then
+    plannerName = getFullName()
+End If
+'--------------
+
+aifInsert "Planner", plannerName, firstColBold:=True
+
+
 aifInsert "Mark Code", Nz(rsPI!partMarkCode), firstColBold:=True
 aifInsert "Customer", DLookup("CUSTOMER_NAME", "APPS_XXCUS_CUSTOMERS", "CUSTOMER_ID = " & rsPI!customerId), firstColBold:=True
 
@@ -1393,7 +1406,7 @@ err_handler:
 End Function
 
 Function findDept(partNumber As String, dept As String, Optional returnMe As Boolean = False, Optional returnFullName As Boolean = False) As String
-'On Error GoTo err_handler
+On Error GoTo err_handler
 
 findDept = ""
 

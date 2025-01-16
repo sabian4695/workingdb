@@ -8,6 +8,31 @@ Declare PtrSafe Sub ChooseColor Lib "msaccess.exe" Alias "#53" (ByVal hwnd As Lo
 Declare PtrSafe Function LoadCursorFromFile Lib "user32" Alias "LoadCursorFromFileA" (ByVal lpFileName As String) As Long
 Declare PtrSafe Function setCursor Lib "user32" Alias "SetCursor" (ByVal hCursor As Long) As Long
 
+Function doStuff1()
+
+'dbExecute ("UPDATE tblPartSteps SET stepActionId = 27 WHERE stepType = 'Upload WI in Q-Pulse' AND status <> 'Closed'")
+
+End Function
+
+Function doStuff()
+
+Dim db As Database
+Set db = CurrentDb()
+
+Dim rs1 As Recordset
+Set rs1 = db.OpenRecordset("")
+
+Do While Not rs1.EOF
+    
+
+    rs1.MoveNext
+Loop
+
+
+Set db = Nothing
+
+End Function
+
 Function setCustomCursor()
 Dim lngRet As Long
 lngRet = LoadCursorFromFile("\\data\mdbdata\WorkingDB\Pictures\Theme_Pictures\cursor.cur")
