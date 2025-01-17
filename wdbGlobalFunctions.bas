@@ -1078,7 +1078,7 @@ Set db = CurrentDb()
 Dim rsAnalytics As Recordset, rsRefreshReports As Recordset, rsSummaryEmail As Recordset
 
 Set rsAnalytics = db.OpenRecordset("SELECT max(dateUsed) as anaDate from tblAnalytics WHERE module = 'firstTimeRun'")
-If Not Format(rsAnalytics!anaDate, "mm/dd/yyyy") >= Format(Date, "mm/dd/yyyy") Then
+If Not DateSerial(Year(rsAnalytics!anaDate), Month(rsAnalytics!anaDate), Day(rsAnalytics!anaDate)) >= Date Then
     'if max date is today, then this has already ran.
     Call checkProgramEvents
     Call scanSteps("all", "firstTimeRun")
@@ -1086,10 +1086,10 @@ If Not Format(rsAnalytics!anaDate, "mm/dd/yyyy") >= Format(Date, "mm/dd/yyyy") T
 End If
 
 Set rsRefreshReports = db.OpenRecordset("SELECT max(dateUsed) as anaDate from tblAnalytics WHERE module = 'refreshReports'")
-If Not Format(rsRefreshReports!anaDate, "mm/dd/yyyy") >= Format(Date, "mm/dd/yyyy") Then Call openPath("\\data\mdbdata\WorkingDB\build\Commands\Misc_Commands\refreshReports.vbs")
+If Not DateSerial(Year(rsRefreshReports!anaDate), Month(rsRefreshReports!anaDate), Day(rsRefreshReports!anaDate)) >= Date Then Call openPath("\\data\mdbdata\WorkingDB\build\Commands\Misc_Commands\refreshReports.vbs")
 
 Set rsSummaryEmail = db.OpenRecordset("SELECT max(dateUsed) as anaDate from tblAnalytics WHERE module = 'summaryEmail'")
-If Not Format(rsSummaryEmail!anaDate, "mm/dd/yyyy") >= Format(Date, "mm/dd/yyyy") Then Call openPath("\\data\mdbdata\WorkingDB\build\Commands\Misc_Commands\summaryEmail.vbs")
+If Not DateSerial(Year(rsSummaryEmail!anaDate), Month(rsSummaryEmail!anaDate), Day(rsSummaryEmail!anaDate)) >= Date Then Call openPath("\\data\mdbdata\WorkingDB\build\Commands\Misc_Commands\summaryEmail.vbs")
 
 On Error Resume Next
 rsAnalytics.Close: Set rsAnalytics = Nothing
