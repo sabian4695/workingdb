@@ -24,6 +24,66 @@ Public gstrDesignerName As String
 Public gstrNFDesigner As String
 Public glstProhibitCharacter() As String
 
+'Migrated from modMain
+Public gstrSendToPath As String
+Public gstrServerName As String
+Public gstrUserName As String
+Public gstrPassword As String
+Public gstrDBName As String
+Public gstrOldServerName As String
+Public gstrOldUserName As String
+Public gstrOldPassword As String
+Public gstrOldDBName As String
+Public gstrExcelPassword As String
+Public gstr3dexCacheDir As String
+Public gstrInputCheck As String
+Public gstrSaveAsNewName As String
+Public gstrAutoInput As String
+Public gstrUnsetMaterialGrade As String
+
+Public Function fncReadSettings() As Boolean
+fncReadSettings = False
+    On Error GoTo 0
+    
+    Dim rs1 As Recordset
+    Dim db As Database
+    Dim I As Integer
+    Set db = CurrentDb()
+    Set rs1 = db.OpenRecordset("tblPLMsettings", dbOpenSnapshot)
+    
+For I = 1 To 10
+    Select Case I
+        Case 1
+            gstrSendToPath = rs1("Value")
+        Case 2
+            gstrServerName = rs1("Value")
+        Case 3
+            gstrUserName = rs1("Value")
+        Case 4
+            gstrPassword = rs1("Value")
+        Case 5
+            gstrDBName = rs1("Value")
+        Case 6
+            gstr3dexCacheDir = rs1("Value")
+        Case 7
+            gstrInputCheck = rs1("Value")
+        Case 8
+            gstrSaveAsNewName = rs1("Value")
+        Case 9
+            gstrAutoInput = rs1("Value")
+        Case 10
+            gstrUnsetMaterialGrade = rs1("Value")
+    End Select
+    rs1.MoveNext
+Next I
+
+rs1.Close
+Set rs1 = Nothing
+Set db = Nothing
+    
+fncReadSettings = True
+End Function
+
 Public Sub Init()
     ReDim glstProhibitCharacter(18)
     glstProhibitCharacter(1) = "/"
@@ -48,7 +108,7 @@ End Sub
 
 Private Sub ManualLock()
     Call fncInitExcel
-    Call modSetting.fncRead
+    Call modMain.fncReadSettings
     Call Terminate
 End Sub
 
@@ -100,9 +160,9 @@ Public Sub subLoadModelBase(ByVal iblnLoad2dText As Boolean)
         Exit Sub
     End If
 
-    Call ClearDeletePropertyCheckBox
+    dbExecute "UPDATE [tblPLM] SET [Sel] = False"
     Call fncSetSelCheckBox(False)
-    MsgBox "All done!", vbInformation, "Yo"
+    Call snackBox("success", "Process Complete", "Well done.", "frmPLM")
     Call Terminate
 End Sub
 
@@ -113,7 +173,7 @@ Public Sub cmdClrSheetClick()
     End If
     
     Call clearSheet
-    MsgBox "All done!", vbInformation, "Yo"
+    Call snackBox("success", "Process Complete", "Well done.", "frmPLM")
     Call Terminate
 End Sub
 
@@ -155,10 +215,10 @@ Public Sub cmdNumberingClick()
         Call modMessage.Show("W003")
     End If
     
-    Call ClearDeletePropertyCheckBox
+    dbExecute "UPDATE [tblPLM] SET [Sel] = False"
     Call cmdOffClick
     Call fncSetSelCheckBox(False)
-    MsgBox "All done!", vbInformation, "Yo"
+    Call snackBox("success", "Process Complete", "Well done.", "frmPLM")
     
     If Not objExcelData Is Nothing Then
         Set objExcelData = Nothing
@@ -279,10 +339,10 @@ Public Sub cmdSetPropertyClick()
         End If
     End If
     
-    Call ClearDeletePropertyCheckBox
+    dbExecute "UPDATE [tblPLM] SET [Sel] = False"
     Call cmdOffClick
     Call fncSetSelCheckBox(False)
-    MsgBox "All done!", vbInformation, "Yo"
+    Call snackBox("success", "Process Complete", "Well done.", "frmPLM")
     Call Terminate
 End Sub
 
@@ -349,7 +409,7 @@ Public Sub cmdSetTitleBlock()
 
     Call cmdOffClick
     Call fncSetSelCheckBox(False)
-    MsgBox "All done!", vbInformation, "Yo"
+    Call snackBox("success", "Process Complete", "Well done.", "frmPLM")
     Call Terminate
 End Sub
 
@@ -427,10 +487,10 @@ Public Sub cmdDataMoveClick()
         Exit Sub
     End If
     
-    Call ClearDeletePropertyCheckBox
+    dbExecute "UPDATE [tblPLM] SET [Sel] = False"
     Call cmdOffClick
     Call fncSetSelCheckBox(False)
-    MsgBox "All done!", vbInformation, "Yo"
+    Call snackBox("success", "Process Complete", "Well done.", "frmPLM")
     Call Terminate
 End Sub
 
@@ -471,7 +531,7 @@ Private Sub cmdClrModelIDClick()
         Exit Sub
     End If
     
-    Call ClearDeletePropertyCheckBox
+    dbExecute "UPDATE [tblPLM] SET [Sel] = False"
     Call cmdOffClick
     Call fncSetSelCheckBox(False)
     Call Terminate
@@ -483,38 +543,13 @@ Private Function fncInitExcel() As Boolean
 
     Call modMain.Init
 
-    If modSetting.fncRead() = False Then
+    If modMain.fncReadSettings() = False Then
         Call modMessage.Show("E001")
-        Exit Function
-    End If
-
-    If modSetting.fncCheck() = False Then
-        Call modMessage.Show("E002")
         Exit Function
     End If
 
     If modMain.fncReadTitle() = False Then
         Call modMessage.Show("E001")
-        Exit Function
-    End If
-    
-    If modDefineDevelopment.fncRead() = False Then
-        Call modMessage.Show("E001")
-        Exit Function
-    End If
-    
-    strErrID = modDefineDevelopment.fncCheck()
-    If strErrID <> "" Then
-        Call modMessage.Show(strErrID)
-        Exit Function
-    End If
-    
-    If modDefineDrawing.fncRead() = False Then
-        Exit Function
-    End If
-    
-    If modDefineDrawing.fncCheck1() = False Then
-        Call modMessage.Show("E016")
         Exit Function
     End If
 
@@ -532,10 +567,7 @@ Dim rs1 As Recordset
 Set db = CurrentDb()
 Set rs1 = db.OpenRecordset("tblPLM", dbOpenSnapshot)
 Dim fld As DAO.Field
-Dim I As Integer
-Dim intCnt As Integer
-Dim startIt As Boolean
-I = 0
+Dim intCnt As Integer, startIt As Boolean
 intCnt = 0
 startIt = False
 
@@ -545,9 +577,7 @@ For Each fld In rs1.Fields
         ReDim Preserve gcurMainProperty(intCnt)
             gcurMainProperty(intCnt) = fld.name
     End If
-    If fld.name = "File_Data_Name" Then
-        startIt = True
-    End If
+    If fld.name = "File_Data_Name" Then startIt = True
 Next
 Set fld = Nothing
 Set db = Nothing
@@ -557,13 +587,7 @@ End Function
 
 Public Sub Terminate()
     ReDim gcurMainProperty(0)
-    gstrNFDesigner = ""
-    gstrDesignerName = ""
-    
     Call modCatia.Terminate
-    Call modDefineDevelopment.Terminate
-    Call modDefineDrawing.Terminate
-    Call modSetting.Terminate
 End Sub
 
 Private Function fncIsSheetWritten(ByRef iobjExcelData As CATIAPropertyTable) As Boolean
@@ -591,7 +615,6 @@ Private Sub clearSheet()
     
     dbExecute "DELETE FROM tblPLM"
     Form_frmPLM.Requery
-    Form_sfrmPLM.Requery
 End Sub
 
 Private Function fncWriteExcel(ByRef iobjRecords As CATIAPropertyTable, _
@@ -607,12 +630,14 @@ Private Function fncWriteExcel(ByRef iobjRecords As CATIAPropertyTable, _
     Dim lngColCnt As Long
     lngColCnt = UBound(gcurMainProperty) + 12
     
-    On Error GoTo 0
+    On Error Resume Next
     Form_frmPLM.Recordset.MoveFirst
+    On Error GoTo 0
 
     Dim I As Long
     For I = 1 To lngRecCnt
             If I > 1 Then
+                Form_frmPLM.Dirty = False
                 Form_frmPLM.Recordset.addNew
             End If
         Dim typRecord As Record
@@ -736,8 +761,8 @@ Private Function fncWriteExcelForUpdate(ByRef iobjRecords As CATIAPropertyTable)
             
             Dim strReq As String
             Dim strDataType As String
-            strReq = modDefineDrawing.fncGetInputRequired(strPropName)
-            strDataType = modDefineDrawing.fncGetDataType(strPropName)
+            strReq = getPLMpropRequired(strPropName)
+            strDataType = 0
             
             Dim strDummyValue As String
             If strDataType = "0" Then
@@ -757,7 +782,6 @@ Private Function fncWriteExcelForUpdate(ByRef iobjRecords As CATIAPropertyTable)
                 
                 db.Execute "UPDATE tblPLM SET [" & gcurMainProperty(j) & "] = '" & strValue & "' WHERE [ID] = " & rs1![ID]
                 Form_frmPLM.Form.Dirty = False
-                Form_sfrmPLM.Dirty = False
             End If
         Next j
         rs1.MoveNext
@@ -767,7 +791,6 @@ Private Function fncWriteExcelForUpdate(ByRef iobjRecords As CATIAPropertyTable)
     Set rs1 = Nothing
     Set db = Nothing
     Form_frmPLM.Dirty = False
-    Form_sfrmPLM.Dirty = False
     fncWriteExcelForUpdate = True
 End Function
 
@@ -828,10 +851,6 @@ Form_frmPLM.Controls(istrCheckBoxName).Value = iblnChecked
 End If
 fncSetCheckBox = True
 End Function
-
-Private Sub ClearDeletePropertyCheckBox()
-dbExecute "UPDATE [tblPLM] SET [Sel] = False"
-End Sub
 
 Private Function fncGetProperty() As CATIAPropertyTable
     Set fncGetProperty = New CATIAPropertyTable
@@ -1168,37 +1187,21 @@ Private Function fncNumberingForDrawing(ByRef iobjRecords As CATIAPropertyTable,
 End Function
 
 Private Function fncGetConnectString() As String
-    fncGetConnectString = ""
-    
-    Dim DBServ As String, DBName As String, DBUser As String, DBPass As String
-    DBServ = modSetting.gstrServerName
-    DBName = modSetting.gstrDBName
-    DBUser = modSetting.gstrUserName
-    DBPass = modSetting.gstrPassword
-    
     fncGetConnectString = "Provider=Sqloledb;" & _
-                            "Data Source=" & DBServ & ";" & _
-                            "Initial Catalog=" & DBName & ";" & _
+                            "Data Source=" & modMain.gstrServerName & ";" & _
+                            "Initial Catalog=" & modMain.gstrDBName & ";" & _
                             "Connect Timeout=10;" & _
-                            "user id=" & DBUser & ";" & _
-                            "password=" & DBPass
+                            "user id=" & modMain.gstrUserName & ";" & _
+                            "password=" & modMain.gstrPassword
 End Function
 
 Private Function fncGetOldConnectString() As String
-    fncGetOldConnectString = ""
-    
-    Dim DBServ As String, DBName As String, DBUser As String, DBPass As String
-    DBServ = modSetting.gstrOldServerName
-    DBName = modSetting.gstrOldDBName
-    DBUser = modSetting.gstrOldUserName
-    DBPass = modSetting.gstrOldPassword
-    
     fncGetOldConnectString = "Provider=Sqloledb;" & _
-                            "Data Source=" & DBServ & ";" & _
-                            "Initial Catalog=" & DBName & ";" & _
+                            "Data Source=" & modMain.gstrOldServerName & ";" & _
+                            "Initial Catalog=" & modMain.gstrOldDBName & ";" & _
                             "Connect Timeout=10;" & _
-                            "user id=" & DBUser & ";" & _
-                            "password=" & DBPass
+                            "user id=" & modMain.gstrOldUserName & ";" & _
+                            "password=" & modMain.gstrOldPassword
 End Function
 
 Private Function fncNumberingDesignNo(ByRef con As ADODB.Connection, ByVal I As Long) As String
@@ -1206,8 +1209,8 @@ Private Function fncNumberingDesignNo(ByRef con As ADODB.Connection, ByVal I As 
         
     Dim lRec As ADODB.Recordset
     Dim devCode As String, tblName As String, lSql As String
-    devCode = modDefineDevelopment.gstrOfficeCode
-    tblName = modDefineDevelopment.gstrNumberingTable
+    devCode = 30
+    tblName = "DEVELOPNO_TABLE30"
 
     On Error GoTo Error
     lSql = "INSERT INTO [dbo].[" & tblName & "] ([CREATEDATE],[OSUSER])" & _
@@ -1258,9 +1261,9 @@ Public Function fncGetPropertyFromDB(ByRef ilstModelID() As String, _
     'ModelID
     On Error GoTo Finally
     Dim lSql As String
-    lSql = "SELECT T3.ATTRNAME, T2.ATTRVALUE, T1.MODELID FROM " & modSetting.gstrOldDBName & ".dbo.CATIAMODEL T1 " & _
-           "INNER JOIN " & modSetting.gstrOldDBName & ".dbo.CATIA_ATTR_VALUE T2 ON T1.MODELID = T2.MODELID " & _
-           "INNER JOIN " & modSetting.gstrOldDBName & ".dbo.CATIA_ATTR_NAME T3 ON T3.ATTR_ID = T2.ATTR_ID " & _
+    lSql = "SELECT T3.ATTRNAME, T2.ATTRVALUE, T1.MODELID FROM " & modMain.gstrOldDBName & ".dbo.CATIAMODEL T1 " & _
+           "INNER JOIN " & modMain.gstrOldDBName & ".dbo.CATIA_ATTR_VALUE T2 ON T1.MODELID = T2.MODELID " & _
+           "INNER JOIN " & modMain.gstrOldDBName & ".dbo.CATIA_ATTR_NAME T3 ON T3.ATTR_ID = T2.ATTR_ID " & _
            "WHERE T1.modelID = "
     
     Dim I As Long
@@ -1292,7 +1295,7 @@ Public Function fncCreateSaveDir(ByRef iobjCatiaData As CATIAPropertyTable) As S
     lngFileName = modMain.fncGetIndex("File_Data_Name") + 1
     strFileName = typTopRecord.Properties(lngFileName)
     If strFileName = "" Then Exit Function
-    strSaveDir = modSetting.gstrSendToPath & "\" & strFileName
+    strSaveDir = modMain.gstrSendToPath & "\" & strFileName
     MkDir (strSaveDir)
     
     On Error Resume Next
@@ -1319,4 +1322,16 @@ Public Function fncGetAttrVal(ByRef iobjRecord As ADODB.Recordset, ByVal istrMod
         On Error GoTo 0
     Loop
 CATCH:
+End Function
+
+Function getPLMpropRequired(propertyName As String) As String
+getPLMpropRequired = ""
+
+Select Case propertyName
+    Case "Revision_No", "Product_Name", "Current_Status", "Process", "Classification"
+        getPLMpropRequired = "1"
+    Case Else
+        getPLMpropRequired = "0"
+End Select
+
 End Function

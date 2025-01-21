@@ -7,6 +7,7 @@ Public gstrNotFoundText() As String
 Public gstrNoLinkDoc() As String
 Public gstrNotFoundModelID() As String
 Public gstrNotSavedFile() As String
+Dim rsPLMprops As Recordset
 
 Public Function fncInit()
     fncInit = False
@@ -16,18 +17,20 @@ Public Function fncInit()
     ReDim gstrNotFoundText(0)
     ReDim gstrNoLinkDoc(0)
     ReDim gstrNotFoundModelID(0)
+    
+    Set rsPLMprops = CurrentDb().OpenRecordset("tblPLMproperties")
 
     On Error Resume Next
     Set mobjCATIA = GetObject(, "CATIA.Application")
     On Error GoTo 0
 
     If mobjCATIA Is Nothing Then
-        MsgBox "Catia isn't running!", vbCritical, "Error"
+        Call snackBox("error", "Uh oh!", "Catia isn't running!", "frmPLM")
         Exit Function
     End If
 
     If mobjCATIA.Windows.count = 0 Then
-        MsgBox "No Catia files found", vbCritical, "Error"
+        Call snackBox("error", "Uh oh!", "No Catia files found", "frmPLM")
         Exit Function
     End If
     
@@ -60,6 +63,9 @@ Public Sub Terminate()
     ReDim gstrNoLinkDoc(0)
     ReDim gstrNotFoundModelID(0)
     ReDim gstrNotSavedFile(0)
+    On Error Resume Next
+    rsPLMprops.Close
+    Set rsPLMprops = Nothing
 End Sub
 
 Public Function fncGetProperty(Optional ByVal iblnLoad2dText As Boolean = True) As CATIAPropertyTable
@@ -262,7 +268,6 @@ Private Function fncGetPropertyFromDrawing(ByRef iobjDrawDoc As Object, _
                                            ByVal ilngParentIndex As Long, _
                                            ByRef oobjCatiaData As CATIAPropertyTable, _
                                            ByVal iblnLoad2dText As Boolean) As Boolean
-
     fncGetPropertyFromDrawing = False
     If iobjDrawDoc Is Nothing Then Exit Function
     
@@ -270,7 +275,7 @@ Private Function fncGetPropertyFromDrawing(ByRef iobjDrawDoc As Object, _
     strParamName = ""
     strFilePath = iobjDrawDoc.fullName
     strFileName = fncSplitFileName(iobjDrawDoc.name)
-    strParamName = modDefineDrawing.fncGetDrawingParamName("ModelID/DrawingID")
+    strParamName = getPLMpropertyData("Drawing_Parameter_Name", "Form_Name", "ModelID/DrawingID")
     strDrawingID = fncGetDrawingParam(iobjDrawDoc, strParamName)
     strDrawLinkTo = fncGetDrawingLink(iobjDrawDoc)
 
@@ -425,7 +430,6 @@ End Function
 Private Function fncGetExtendPropertiesFromDraw(ByRef iobjDrawDoc As Object, _
                                                 ByRef ostrProperties() As String, _
                                                 ByVal iblnLoad2dText As Boolean) As Boolean
-
     fncGetExtendPropertiesFromDraw = False
     Dim strTextName As String
     Dim strParamName As String
@@ -452,9 +456,9 @@ Private Function fncGetExtendPropertiesFromDraw(ByRef iobjDrawDoc As Object, _
             strTemp = "CATDrawing"
         Else
             If iblnLoad2dText = True Then
-                strTextName = modDefineDrawing.fncGetDrawingTextName(modMain.gcurMainProperty(I))
+                strTextName = getPLMpropertyData("Drawing_Text_Name", "Form_Name", modMain.gcurMainProperty(I))
             Else
-                strParamName = modDefineDrawing.fncGetDrawingParamName(modMain.gcurMainProperty(I))
+                strParamName = getPLMpropertyData("Drawing_Parameter_Name", "Form_Name", modMain.gcurMainProperty(I))
             End If
             Dim blnGetText As Boolean: blnGetText = False
             If strTextName <> "" And iblnLoad2dText = True Then
@@ -536,7 +540,7 @@ Private Function fncGetExtendPropertiesFromDraw(ByRef iobjDrawDoc As Object, _
         strSectionCode = ""
         strSectionCode = Left(strDesignNo, 2)
         On Error GoTo 0
-        strSection = modDefineDevelopment.fncGetSectionFromOfficeCode(strSectionCode)
+        strSection = getSectionData("Section", "Office_Code", strSectionCode)
         If strSection <> "" Then
             '/Section/DesignNo
             On Error Resume Next
@@ -549,7 +553,7 @@ Private Function fncGetExtendPropertiesFromDraw(ByRef iobjDrawDoc As Object, _
             strSectionCode = ""
             strSectionCode = Left(strDesignNo, 1)
             On Error GoTo 0
-            strSection = modDefineDevelopment.fncGetSectionFromOfficeCode(strSectionCode)
+            strSection = getSectionData("Section", "Office_Code", strSectionCode)
             If strSection <> "" Then
                 '/Section/DesignNo
                 On Error Resume Next
@@ -631,14 +635,13 @@ Private Function fncGetExtendPropertiesFromDraw(ByRef iobjDrawDoc As Object, _
     strDesigner = ostrProperties(lngIndex_Designer)
     
     Dim strAliasName As String
-    If modDefineDrawing.fncGetDesignerName(strDesigner, strAliasName) = True Then ostrProperties(lngIndex_Designer) = strAliasName
+    ostrProperties(lngIndex_Designer) = strDesigner
     fncGetExtendPropertiesFromDraw = True
 End Function
 
 Private Function fncGetPropertyFromProduct(ByRef iobjProduct As Object, ByVal iintLevel As Integer, _
                                            ByVal ilngParentIndex As Long, _
                                            ByRef oobjCatiaData As CATIAPropertyTable) As Boolean
-
     fncGetPropertyFromProduct = False
     
     If iobjProduct Is Nothing Then Exit Function
@@ -651,7 +654,7 @@ Private Function fncGetPropertyFromProduct(ByRef iobjProduct As Object, ByVal ii
     strFileName = fncSplitFileName(strFileName)
     strPartNumber = iobjProduct.partNumber
     strInstanceName = iobjProduct.name
-    strPropName = modDefineDrawing.fncGetPropertyName("ModelID/DrawingID")
+    strPropName = getPLMpropertyData("Property_Name", "Form_Name", "ModelID/DrawingID")
     strModelID = fncGetUserRefProperty(iobjProduct, strPropName)
     
     Dim strProperties() As String
@@ -682,7 +685,6 @@ Private Function fncGetPropertyFromProduct(ByRef iobjProduct As Object, ByVal ii
 End Function
 
 Private Function fncGetDocType(ByRef iobjProduct As Object, ByRef ostrDocType As String) As Boolean
-
     fncGetDocType = False
     ostrDocType = ""
     
@@ -726,7 +728,6 @@ Private Function fncGetDocType(ByRef iobjProduct As Object, ByRef ostrDocType As
 End Function
 
 Private Function fncGetDocPath(ByRef iobjProduct As Object, ByRef ostrDocPath As String) As Boolean
-
     fncGetDocPath = False
     ostrDocPath = ""
     
@@ -756,7 +757,6 @@ Private Function fncGetDocPath(ByRef iobjProduct As Object, ByRef ostrDocPath As
 End Function
 
 Private Function fncGetDocName(ByRef iobjProduct As Object, ByRef ostrDocName As String) As Boolean
-
     fncGetDocName = False
     ostrDocName = ""
     
@@ -786,7 +786,6 @@ Private Function fncGetDocName(ByRef iobjProduct As Object, ByRef ostrDocName As
 End Function
 
 Private Function fncGetUserRefProperties(ByRef iobjProduct As Object, ByRef ostrProperties() As String) As Boolean
-
     fncGetUserRefProperties = False
     Dim strTemp As String
         
@@ -800,7 +799,7 @@ Private Function fncGetUserRefProperties(ByRef iobjProduct As Object, ByRef ostr
     For I = 1 To lngCnt
         
         Dim strPropName As String
-        strPropName = modDefineDrawing.fncGetPropertyName(modMain.gcurMainProperty(I))
+        strPropName = getPLMpropertyData("Property_Name", "Form_Name", modMain.gcurMainProperty(I))
 
         If modMain.gcurMainProperty(I) = "File_Data_Type" Then
             If fncGetDocType(iobjProduct, strTemp) = False Then Exit Function
@@ -958,7 +957,7 @@ Private Function fncSetPropertyToDrawing(ByRef iobjDrawDoc As Object, _
     strParamName = ""
 
     '/ DrawingID
-    strParamName = modDefineDrawing.fncGetDrawingParamName("ModelID/DrawingID")
+    strParamName = getPLMpropertyData("Drawing_Parameter_Name", "Form_Name", "ModelID/DrawingID")
     Call fncDeleteParam(iobjDrawDoc, strParamName)
     Call fncSetExtendPropertiesFromDraw(iobjDrawDoc, iobjRecord.Properties)
     
@@ -1019,7 +1018,7 @@ Private Function fncSetExtendPropertiesFromDraw(ByRef iobjDrawDoc As Object, _
     Dim I As Long
     For I = 1 To lngCnt
         strParamName = ""
-        strParamName = modDefineDrawing.fncGetDrawingParamName(modMain.gcurMainProperty(I))
+        strParamName = getPLMpropertyData("Drawing_Parameter_Name", "Form_Name", modMain.gcurMainProperty(I))
         If strParamName <> "" Then Call fncSetDrawingParam(iobjDrawDoc, strParamName, istrProperties(I))
     Next I
     
@@ -1049,7 +1048,7 @@ Private Function fncSetPropertyToTitleBlock(ByRef iobjDrawDoc As Object, _
     Dim I As Long
     For I = 1 To lngCnt
         strTextName = ""
-        strTextName = modDefineDrawing.fncGetDrawingTextName(modMain.gcurMainProperty(I)) 'gets name of text field on actual drawing
+        strTextName = getPLMpropertyData("Drawing_Text_Name", "Form_Name", modMain.gcurMainProperty(I))
         
         Dim strValue As String
         strValue = Replace(iobjRecord.Properties(I), vbLf, " ")
@@ -1140,7 +1139,7 @@ Private Function fncSetPropertyToProduct(ByRef iobjProduct As Object, _
     If iobjProduct Is Nothing Then Exit Function
     
     Dim strPropName As String
-    strPropName = modDefineDrawing.fncGetPropertyName("ModelID/DrawingID")
+    strPropName = getPLMpropertyData("Property_Name", "Form_Name", "ModelID/DrawingID")
     Call fncDeleteUserRefProperty(iobjProduct, strPropName)
     Call fncSetUserRefProperties(iobjProduct, itypRecord.Properties)
     
@@ -1157,7 +1156,7 @@ Private Function fncSetUserRefProperties(ByRef iobjProduct As Object, ByRef istr
     Dim I As Long
     For I = 1 To lngCnt
         Dim strPropName As String
-        strPropName = modDefineDrawing.fncGetPropertyName(modMain.gcurMainProperty(I))
+        strPropName = getPLMpropertyData("Property_Name", "Form_Name", modMain.gcurMainProperty(I))
         Call fncSetUserRefProperty(iobjProduct, strPropName, istrProperties(I))
     Next I
     
@@ -1223,13 +1222,12 @@ Public Function fncDeleteProperty(ByRef iobjCatiaData As CATIAPropertyTable) As 
 End Function
 
 Private Function fncDeletePropertyOnDrawing(ByRef iobjDrawDoc As Object) As Boolean
-
     fncDeletePropertyOnDrawing = False
     
     If iobjDrawDoc Is Nothing Then Exit Function
     
     Dim strParamName As String
-    strParamName = modDefineDrawing.fncGetDrawingParamName("ModelID/DrawingID")
+    strParamName = getPLMpropertyData("Drawing_Parameter_Name", "Form_Name", "ModelID/DrawingID")
     If strParamName <> "" Then Call fncDeleteParam(iobjDrawDoc, strParamName)
     
     Call fncDeleteDrawingParameters(iobjDrawDoc)
@@ -1297,7 +1295,7 @@ Private Function fncDeleteDrawingParameters(ByRef iobjDrawDoc As Object) As Bool
         Dim strPropertyName As String
         strPropertyName = modMain.gcurMainProperty(I)
         Dim strParamName As String
-        strParamName = modDefineDrawing.fncGetDrawingParamName(strPropertyName)
+        strParamName = getPLMpropertyData("Drawing_Parameter_Name", "Form_Name", strPropertyName)
         If strParamName <> "" Then Call fncDeleteParam(iobjDrawDoc, strParamName)
     Next I
     
@@ -1309,7 +1307,7 @@ Private Function fncDeletePropertyOnProduct(ByRef iobjProduct As Object) As Bool
     
     If iobjProduct Is Nothing Then Exit Function
     Dim strPropertyName As String
-    strPropertyName = modDefineDrawing.fncGetPropertyName("ModelID/DrawingID")
+    strPropertyName = getPLMpropertyData("Property_Name", "Form_Name", "ModelID/DrawingID")
     
     Call fncDeleteUserRefProperty(iobjProduct, strPropertyName)
     Call fncDeleteUserRefProperties(iobjProduct)
@@ -1357,7 +1355,7 @@ Private Function fncDeleteUserRefProperties(ByRef iobjProduct As Object) As Bool
     Dim I As Long
     For I = 1 To lngCnt
         Dim strPropName As String
-        strPropName = modDefineDrawing.fncGetPropertyName(modMain.gcurMainProperty(I))
+        strPropName = getPLMpropertyData("Property_Name", "Form_Name", modMain.gcurMainProperty(I))
         Call fncDeleteUserRefProperty(iobjProduct, strPropName)
     Next I
     
@@ -1410,7 +1408,7 @@ Public Function fncSaveData(ByRef iobjCatiaData As CATIAPropertyTable, _
             '/ SaveAsNewName
             '/ Reference,SubProduct,Layout
             If blnIn3DEX = True And _
-                Trim(modSetting.gstrSaveAsNewName) = "0" And _
+                Trim(modMain.gstrSaveAsNewName) = "0" And _
                 (strClassification = "Reference" Or _
                  strClassification = "SubProduct" Or _
                  strClassification = "LayOut") Then
@@ -1433,7 +1431,7 @@ Public Function fncSavedIn3dex(ByVal istrPath As String) As Boolean
     fncSavedIn3dex = False
     
     Dim lngIndex As Long
-    lngIndex = InStr(UCase(istrPath), UCase(modSetting.gstr3dexCacheDir))
+    lngIndex = InStr(UCase(istrPath), UCase(modMain.gstr3dexCacheDir))
     
     If 0 < lngIndex Then fncSavedIn3dex = True
 End Function
@@ -1468,7 +1466,7 @@ Private Function fncSaveAs(ByRef itypCATIARecord As Record, ByVal istrSaveDir As
     strClassification = itypExcelRecord.Properties(lngClassificationIndex)
     
     Dim strFileName As String
-    If Trim(modSetting.gstrSaveAsNewName) = "0" And _
+    If Trim(modMain.gstrSaveAsNewName) = "0" And _
       (strClassification = "Reference" Or _
        strClassification = "SubProduct" Or _
        strClassification = "LayOut") Then
@@ -1498,11 +1496,11 @@ Private Function fncSaveAs(ByRef itypCATIARecord As Record, ByVal istrSaveDir As
 'R50-MODELID
     If itypCATIARecord.Properties(lngFileTypeIndex) = "CATDrawing" Then
         Dim strParamName As String
-        strParamName = modDefineDrawing.fncGetDrawingParamName("ModelID/DrawingID")
+        strParamName = getPLMpropertyData("Drawing_Parameter_Name", "Form_Name", "ModelID/DrawingID")
         If Trim(strParamName) <> "" Then Call fncDeleteParam(itypCATIARecord.CatiaObject, strParamName)
     Else
         Dim strPropName As String
-        strPropName = modDefineDrawing.fncGetPropertyName("ModelID/DrawingID")
+        strPropName = getPLMpropertyData("Property_Name", "Form_Name", "ModelID/DrawingID")
         If Trim(strPropName) <> "" Then Call fncDeleteUserRefProperty(itypCATIARecord.CatiaObject, strPropName)
     End If
     
@@ -1561,7 +1559,7 @@ Public Function fncCheckBeforeSave(ByRef iobjExcelData As CATIAPropertyTable) As
         Dim strFileName As String
         Dim strClassification As String
         strClassification = typExcelRecord.Properties(lngClassification)
-        If Trim(modSetting.gstrSaveAsNewName) = "0" And _
+        If Trim(modMain.gstrSaveAsNewName) = "0" And _
            (strClassification = "Reference" Or _
             strClassification = "SubProduct" Or _
             strClassification = "LayOut") Then
@@ -1585,7 +1583,7 @@ Public Function fncCheckBeforeSave(ByRef iobjExcelData As CATIAPropertyTable) As
             Dim strTempFileName As String
             Dim strTempClassification As String
             strTempClassification = typTemp.Properties(lngClassification)
-            If Trim(modSetting.gstrSaveAsNewName) = "0" And _
+            If Trim(modMain.gstrSaveAsNewName) = "0" And _
                (strTempClassification = "Reference" Or _
                 strTempClassification = "SubProduct" Or _
                 strTempClassification = "LayOut") Then
@@ -1633,4 +1631,36 @@ Public Function fncSplitFileName(ByVal istrFileName As String) As String
     For I = 0 To lngSize - 1
         fncSplitFileName = fncSplitFileName & lstSplit(I)
     Next I
+End Function
+
+Public Function getSectionData(outColumnName As String, inColumnName As String, matchVal As String) As String
+    getSectionData = ""
+    If matchVal = "" Then Exit Function
+    If inColumnName = "" Then Exit Function
+    If outColumnName = "" Then Exit Function
+    
+    Dim db As Database
+    Dim rsPLMsections As Recordset
+    Set db = CurrentDb()
+    Set rsPLMsections = db.OpenRecordset("SELECT * FROM tblPLMsection WHERE " & inColumnName & " = '" & matchVal & "'")
+    
+    getSectionData = rsPLMsections(outColumnName)
+    
+    rsPLMsections.Close
+    Set rsPLMsections = Nothing
+    Set db = Nothing
+
+End Function
+
+Public Function getPLMpropertyData(outColumnName As String, inColumnName As String, matchVal As String) As String
+    getPLMpropertyData = ""
+    If matchVal = "" Then Exit Function
+    If inColumnName = "" Then Exit Function
+    If outColumnName = "" Then Exit Function
+    
+    rsPLMprops.FindFirst inColumnName & " = '" & matchVal & "'"
+    
+    If rsPLMprops.NoMatch Then Exit Function
+    
+    getPLMpropertyData = Nz(rsPLMprops(outColumnName), "")
 End Function

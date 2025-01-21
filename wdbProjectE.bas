@@ -49,9 +49,47 @@ GoTo exit_handler
 theCorrectFellow:
 
 If IsNull(rsStep!closeDate) = False Then errorText = "This is already closed - what's the point in closing again?"
-If getAttachmentsCount(rsStep!recordId) = 0 And IsNull(rsStep!documentType) = False Then errorText = "This step requires a file to be added to close it"
-If getAttachmentsCount(rsStep!recordId) < Nz(getAttachmentsCountReq(rsStep!recordId, Nz(rsStep!documentType, 0), rsStep!partProjectId), 0) Then errorText = "This step requires a file per related part number to be added to close it"
 If getApprovalsComplete(rsStep!recordId, rsStep!partNumber) < getTotalApprovals(rsStep!recordId, rsStep!partNumber) Then errorText = "I spy with my little eye: open approval(s) on this step!"
+
+'IF DOCUMENT REQUIRED, CHECK FOR DOCUMENTS
+If Nz(rsStep!documentType, 0) <> 0 Then
+    'First, check if any files are added. error out if not
+    Dim countAttach As Long
+    countAttach = DCount("ID", "tblPartAttachmentsSP", "partStepId = " & rsStep!recordId)
+    If countAttach = 0 Then
+        errorText = "This step required a file to be added to close it"
+        GoTo errorOut
+    End If
+    
+    Dim rsAttach As Recordset, rsAttStd As Recordset, rsProjPNs As Recordset
+    Set rsAttach = db.OpenRecordset("SELECT * FROM tblPartAttachmentsSP WHERE partStepId = " & rsStep!recordId)
+    Set rsAttStd = db.OpenRecordset("SELECT uniqueFile FROM tblPartAttachmentStandards WHERE recordId = " & rsStep!documentType)
+    Set rsProjPNs = db.OpenRecordset("SELECT * from tblPartProjectPartNumbers WHERE projectId = " & rsStep!partProjectId)
+    
+    'If unique files are needed AND there is more than one part number, then check for an attachment for EACH part number
+    If rsAttStd!uniqueFile And rsProjPNs.RecordCount > 0 Then
+        'first, check primary PN
+        rsAttach.FindFirst "partNumber = '" & rsStep!partNumber & "'"
+        If rsAttach.NoMatch Then
+            errorText = "This step requires a file per related part number to be added to close it"
+            GoTo errorOut
+        End If
+        
+        'then, check every childPartNumber
+        Do While Not rsProjPNs.EOF
+            rsAttach.FindFirst "partNumber = '" & rsProjPNs!childPartNumber & "'"
+            If rsAttach.NoMatch Then
+                errorText = "This step requires a file per related part number to be added to close it"
+                GoTo errorOut
+            End If
+            rsProjPNs.MoveNext
+        Loop
+    End If
+    
+    rsAttach.Close: Set rsAttach = Nothing
+    rsAttStd.Close: Set rsAttStd = Nothing
+    rsProjPNs.Close: Set rsProjPNs = Nothing
+End If
 
 If errorText <> "" Then GoTo errorOut
 
@@ -319,7 +357,7 @@ If checkAIFfields(partNumber) Then
         fld.LoadFromFile (currentLoc)
         rsPartAttChild.Update
         
-        rsPartAtt!partNumber = Form_frmPartDashboard.partNumber
+        rsPartAtt!partNumber = partNumber
         rsPartAtt!testId = Null
         rsPartAtt!partStepId = rsStep!recordId
         rsPartAtt!partProjectId = Form_frmPartDashboard.recordId
@@ -344,7 +382,7 @@ If checkAIFfields(partNumber) Then
         rsDocType.Close: Set rsDocType = Nothing
         Set db = Nothing
         
-        Call registerPartUpdates("tblPartAttachmentsSP", Null, "Step Attachment", attachName, "Uploaded", Form_frmPartDashboard.partNumber, rsStep!stepType, Form_frmPartDashboard.recordId)
+        Call registerPartUpdates("tblPartAttachmentsSP", Null, "Step Attachment", attachName, "Uploaded", partNumber, rsStep!stepType, Form_frmPartDashboard.recordId)
     End If
 End If
 

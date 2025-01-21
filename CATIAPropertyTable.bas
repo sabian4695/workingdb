@@ -54,10 +54,7 @@ Public Function fncItem(ByVal ilngIndex As Long, ByRef otypRecord As Record) As 
     Dim lngCnt As Long
     lngCnt = Me.fncCount()
     
-    If lngCnt < ilngIndex Then
-        Exit Function
-    End If
-
+    If lngCnt < ilngIndex Then Exit Function
     otypRecord = mRecords(ilngIndex)
     
     fncItem = True
@@ -130,7 +127,6 @@ Public Function fncIsSameStructure(ByRef iobjData As CATIAPropertyTable, _
     
     Dim I As Long
     For I = 1 To lngDataSize
-    
         Dim typData As Record
         Dim typMyData As Record
         If iobjData.fncItem(I, typData) = False Then
@@ -143,7 +139,6 @@ Public Function fncIsSameStructure(ByRef iobjData As CATIAPropertyTable, _
             fncIsSameStructure = True
             oblnIsSame = False
         End If
-
     Next I
 
     fncIsSameStructure = True
@@ -160,16 +155,14 @@ Public Function fncGetLastLevel() As Long
     For I = 1 To lngCnt
         Dim typRecord As Record
         typRecord = mRecords(I)
-        If fncGetLastLevel < typRecord.Level Then
-            fncGetLastLevel = typRecord.Level
-        End If
+        If fncGetLastLevel < typRecord.Level Then fncGetLastLevel = typRecord.Level
     Next I
 End Function
 
 Public Function fncCheckBlank(ByRef ostrPropertyName As String) As String
     fncCheckBlank = ""
 
-    If modSetting.gstrInputCheck <> "1" Then
+    If modMain.gstrInputCheck <> "1" Then
         Exit Function
     End If
 
@@ -239,7 +232,7 @@ Public Function fncCheckBlank(ByRef ostrPropertyName As String) As String
             strPropName = modMain.gcurMainProperty(j)
             
             Dim strReq As String
-            strReq = modDefineDrawing.fncGetInputRequired(strPropName)
+            strReq = getPLMpropRequired(strPropName)
             
             If strReq = "1" Then
                 strValue = typRecord.Properties(j)
@@ -333,9 +326,8 @@ Public Sub UpdateModelID(ByVal ilngIndex As Long, ByVal istrValue As String)
     Dim lngRecCnt As Long
     lngRecCnt = Me.fncCount
     
-    If 0 < ilngIndex And ilngIndex <= lngRecCnt Then
-        mRecords(ilngIndex).ModelDrawingID = istrValue
-    End If
+    If 0 < ilngIndex And ilngIndex <= lngRecCnt Then mRecords(ilngIndex).ModelDrawingID = istrValue
+    
 End Sub
 
 Public Function fncReplaceProhibitCharacter() As Boolean
@@ -382,15 +374,10 @@ Public Sub ClearModelID()
     
     Dim I As Long
     For I = 1 To lngRecCnt
-    
         Dim strSel As String
         strSel = mRecords(I).Sel
-        If Trim(strSel) <> True Then
-            GoTo continue
-        End If
-        
+        If Trim(strSel) <> True Then GoTo continue
         mRecords(I).ModelDrawingID = ""
-
 continue:
     Next I
 End Sub
@@ -443,9 +430,7 @@ Public Sub SetDefaultDesinerSection()
     
     Dim I As Long
     For I = 1 To lngRecCnt
-        If mRecords(I).IsChildInstance = True Then
-            GoTo continue
-        End If
+        If mRecords(I).IsChildInstance = True Then GoTo continue
     
         Dim strDesigner As String
         strDesigner = mRecords(I).Properties(lngIndex_Designer)
@@ -457,14 +442,14 @@ Public Sub SetDefaultDesinerSection()
         Dim strSection As String
         strSection = mRecords(I).Properties(lngIndex_Section)
         If Trim(strSection) = "" Then
-            mRecords(I).Properties(lngIndex_Section) = modDefineDevelopment.gstrSection
-            strSection = modDefineDevelopment.gstrSection
+            mRecords(I).Properties(lngIndex_Section) = "NAM"
+            strSection = "NAM"
         End If
         
         Dim strClassification As String
         strClassification = mRecords(I).Properties(lngIndex_Classification)
         
-        If modSetting.gstrInputCheck <> "1" Then
+        If modMain.gstrInputCheck <> "1" Then
             blnNoCheckFlag = True
             blnSetFileName = True
         ElseIf mRecords(I).Level <= 1 Then
@@ -487,17 +472,9 @@ Public Sub SetDefaultDesinerSection()
         
         Dim strSel As String
         strSel = mRecords(I).Sel
-        If Trim(strSel) <> True Then
-            GoTo continue
-        End If
-        
-        If Trim(modSetting.gstrUnsetMaterialGrade) = "1" And strClassification = "Submission data" Then
-            mRecords(I).Properties(lngIndex_MaterialGrade) = "Unset"
-        End If
-        
-        If Trim(modSetting.gstrAutoInput) = "0" Then
-            GoTo continue
-        End If
+        If Trim(strSel) <> True Then GoTo continue
+        If Trim(modMain.gstrUnsetMaterialGrade) = "1" And strClassification = "Submission data" Then mRecords(I).Properties(lngIndex_MaterialGrade) = "Unset"
+        If Trim(modMain.gstrAutoInput) = "0" Then GoTo continue
         
         Dim strDesignNo As String
         strDesignNo = Trim(mRecords(I).Properties(lngIndex_DesignNo))
@@ -537,7 +514,7 @@ Public Sub SetDefaultDesinerSection()
             strOfficeCode = strBuff1
             strDesignNo = Mid(strDesignNo, 2)
         Else
-            strOfficeCode = modDefineDevelopment.fncGetOfficeCodeFromSection(strSection)
+            strOfficeCode = getSectionData("Office_Code", "Section", strSection)
             If blnNoCheckFlag = False And Trim(strOfficeCode) = "" Then
                 On Error Resume Next
                 Dim lngSectCnt As Long
@@ -580,8 +557,6 @@ Public Sub SetDefaultDesinerSection()
         Dim strStatusCode As String
         If strClassification = "Customer approved data" Then
             strStatusCode = "C"
-'        ElseIf strClassification = "Reference" Then
-'            strStatusCode = "R"
         Else
             If blnOldSection = False Then
                 If strStatus = "Mass production" Then
@@ -765,7 +740,7 @@ CONTINUE2:
 
 continue:
         
-        If Trim(modSetting.gstrAutoInput) <> "0" And blnSetFileName = True And Trim(mRecords(I).Properties(lngIndex_DesignNo)) = "" Then
+        If Trim(modMain.gstrAutoInput) <> "0" And blnSetFileName = True And Trim(mRecords(I).Properties(lngIndex_DesignNo)) = "" Then
             
             Dim strLoadFileName As String
             strLoadFileName = mRecords(I).FileName
@@ -842,9 +817,7 @@ CONTINUE6:
         intIncrement2 = 1
 
         For k = 1 To lngRecCnt
-            If strName & strType <> mRecords(k).Properties(lngIndex_FileDataName) & mRecords(k).Properties(lngIndex_FileDataType) Then
-                GoTo CONTINUE4
-            End If
+            If strName & strType <> mRecords(k).Properties(lngIndex_FileDataName) & mRecords(k).Properties(lngIndex_FileDataType) Then GoTo CONTINUE4
             
             Do
                 Dim blnSameName2 As Boolean
@@ -867,12 +840,9 @@ CONTINUE6:
 CONTINUE5:
                 Next l
 
-                If blnSameName2 = False Then
-                    Exit Do
-                End If
+                If blnSameName2 = False Then Exit Do
                 
                 intIncrement2 = intIncrement2 + 1
-                
             Loop While True
             
             mRecords(k).Properties(lngIndex_FileDataName) = strNewName
@@ -904,8 +874,8 @@ Public Sub SetDummyBlank()
             
             Dim strReq As String
             Dim strDataType As String
-            strReq = modDefineDrawing.fncGetInputRequired(strPropName)
-            strDataType = modDefineDrawing.fncGetDataType(strPropName)
+            strReq = getPLMpropRequired(strPropName)
+            strDataType = 0
             
             Dim strValue As String
             strValue = mRecords(I).Properties(j)
@@ -960,7 +930,7 @@ Public Function fncSetPropertyFromDB(ByRef ilstModelID() As String, _
         Dim j As Long
         For j = 1 To lngPropCnt
             Dim strAttrName As String
-            strAttrName = modDefineDrawing.fncGetOldDBAttrName(modMain.gcurMainProperty(j))
+            strAttrName = ""
             If strAttrName = "" Then
                 lstProperties(j) = ""
             Else
@@ -1008,25 +978,18 @@ Public Function fncSetPropertyFromDB(ByRef ilstModelID() As String, _
             If modMain.gcurMainProperty(j) = "Design_No" Then
                 Dim strDesignNo As String
                 strDesignNo = lstProperties(j)
-                
                 If 7 = Len(strDesignNo) And _
-                   IsNumeric(Left(strDesignNo, 2)) = True Then
-                    
+                    IsNumeric(Left(strDesignNo, 2)) = True Then
                     lstProperties(j) = Right(strDesignNo, 5)
-                    
                 ElseIf 8 <= Len(strDesignNo) And _
-                   IsNumeric(Left(strDesignNo, 2)) = True Then
-                    
+                    IsNumeric(Left(strDesignNo, 2)) = True Then
                     lstProperties(j) = Right(strDesignNo, 6)
-                    
                 End If
-            
             End If
             
         Next j
     
         If blnNotFound = True Then
-            
             On Error Resume Next
             Dim lngNotFoundCnt As Long
             lngNotFoundCnt = 0
@@ -1042,9 +1005,7 @@ Public Function fncSetPropertyFromDB(ByRef ilstModelID() As String, _
         typRecord.FromDB = True
         typRecord.Properties = lstProperties
         
-        If Me.fncReplaceRecord(typRecord) = False Then
-            Exit Function
-        End If
+        If Me.fncReplaceRecord(typRecord) = False Then Exit Function
         
 continue:
     Next I
@@ -1060,10 +1021,7 @@ Public Function fncReplaceRecord(ByRef iRecord As modMain.Record) As Boolean
     
     Dim I As Long
     For I = 1 To lngRecCnt
-    
-        If mRecords(I).ModelDrawingID <> iRecord.ModelDrawingID Then
-            GoTo continue
-        End If
+        If mRecords(I).ModelDrawingID <> iRecord.ModelDrawingID Then GoTo continue
         
         mRecords(I).FromDB = iRecord.FromDB
         
@@ -1086,7 +1044,6 @@ continue:
 End Function
 
 Public Function fncSetLinkID() As Boolean
-
     fncSetLinkID = False
 
     Dim lngRecCnt As Long
@@ -1094,11 +1051,7 @@ Public Function fncSetLinkID() As Boolean
     
     Dim I As Long
     For I = 1 To lngRecCnt
-        
-        If mRecords(I).LinkID <> "" Then
-            GoTo continue
-        End If
-        
+        If mRecords(I).LinkID <> "" Then GoTo continue
         If mRecords(I).LinkTo = "" And mRecords(I).LinkID = "" Then
             mRecords(I).LinkID = "-"
             GoTo continue
@@ -1109,12 +1062,10 @@ Public Function fncSetLinkID() As Boolean
         
         mRecords(I).LinkID = mRecords(lngIndex).ID
         mRecords(lngIndex).LinkID = mRecords(I).ID
-        
 continue:
     Next I
     fncSetLinkID = True
 End Function
-
 
 Public Function fncCountSlected() As Long
     fncCountSlected = 0
@@ -1138,18 +1089,13 @@ Public Sub SortDrawing()
     
     Dim blnSorted As Boolean
     Do
-    
         blnSorted = False
         
         Dim I As Long
         For I = 1 To lngRecCnt - 1
-            
-            If mRecords(I + 1).Properties(lngIndex_Type) <> "CATDrawing" Then
-                Exit For
-            End If
+            If mRecords(I + 1).Properties(lngIndex_Type) <> "CATDrawing" Then Exit For
             
             If val(mRecords(I).LinkID) > val(mRecords(I + 1).LinkID) Then
-
                 blnSorted = True
                 Dim buf As Record
                 buf = mRecords(I)
