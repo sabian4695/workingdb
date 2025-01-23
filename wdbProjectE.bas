@@ -948,52 +948,6 @@ Set rs1 = Nothing
 Set db = Nothing
 End Function
 
-Public Function getAttachmentsCount(stepId As Long) As Long
-On Error GoTo err_handler
-
-getAttachmentsCount = 0
-Dim db As Database
-Set db = CurrentDb()
-Dim rs1 As Recordset
-Set rs1 = db.OpenRecordset("SELECT count(ID) as countIt from tblPartAttachmentsSP WHERE [partStepId] = " & stepId)
-
-getAttachmentsCount = Nz(rs1!countIt, 0)
-
-rs1.Close
-Set rs1 = Nothing
-Set db = Nothing
-
-err_handler:
-End Function
-
-Public Function getAttachmentsCountReq(stepId As Long, docType As Long, projectId As Long) As Long
-On Error GoTo err_handler
-
-getAttachmentsCountReq = 0
-If Nz(docType) = "" Then Exit Function 'no document required
-
-Dim db As Database
-Set db = CurrentDb()
-Dim rsAttStd As Recordset
-Set rsAttStd = db.OpenRecordset("SELECT uniqueFile FROM tblPartAttachmentStandards WHERE recordId = " & docType)
-
-If rsAttStd!uniqueFile Then
-    Dim rsRelated As Recordset
-    Set rsRelated = db.OpenRecordset("SELECT count(recordId) as countIt FROM tblPartProjectPartNumbers WHERE projectId = " & projectId)
-    getAttachmentsCountReq = rsRelated!countIt + 1 'count of all related parts on this project + 1 for master
-    rsRelated.Close
-    Set rsRelated = Nothing
-Else
-    getAttachmentsCountReq = 1 'just one file for all the parts is OK
-End If
-
-rsAttStd.Close
-Set rsAttStd = Nothing
-Set db = Nothing
-
-err_handler:
-End Function
-
 Function trialScheduleEmail(Title As String, data() As Variant, columns, rows) As String
 On Error GoTo err_handler
 
