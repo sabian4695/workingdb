@@ -15,9 +15,9 @@ y2 As Long
 End Type
 
 Private Declare PtrSafe Function GetDesktopWindow Lib "user32" () As Long
-Private Declare PtrSafe Function GetWindowRect Lib "user32" (ByVal hwnd As Long, R As RECT) As Long
+Private Declare PtrSafe Function GetWindowRect Lib "user32" (ByVal hwnd As Long, r As RECT) As Long
 Public Declare PtrSafe Function IsZoomed Lib "user32" (ByVal hwnd As Long) As Long
-Private Declare PtrSafe Function moveWindow Lib "user32" Alias "MoveWindow" (ByVal hwnd As Long, ByVal x As Long, ByVal Y As Long, ByVal dx As Long, ByVal dy As Long, ByVal fRepaint As Long) As Long
+Private Declare PtrSafe Function moveWindow Lib "user32" Alias "MoveWindow" (ByVal hwnd As Long, ByVal X As Long, ByVal Y As Long, ByVal dx As Long, ByVal dy As Long, ByVal fRepaint As Long) As Long
 Private Declare PtrSafe Function ShowWindow Lib "user32" (ByVal hwnd As Long, ByVal nCmdShow As Long) As Long
 
 Dim AppX As Long, AppY As Long, AppTop As Long, AppLeft As Long, WinRECT As RECT
@@ -205,7 +205,7 @@ Sub maximizeAccess()
 On Error GoTo err_handler
 
 Dim h As Long
-Dim R As RECT
+Dim r As RECT
 
 On Error Resume Next
 
@@ -223,7 +223,7 @@ On Error GoTo err_handler
 'Set size of Access and center on Desktop
 
 Dim h As Long
-Dim R As RECT
+Dim r As RECT
 
 On Error Resume Next
 
@@ -232,16 +232,16 @@ h = Application.hWndAccessApp
 If (IsZoomed(h)) Then ShowWindow h, SW_RESTORE
 '
 'Get available Desktop size
-GetWindowRect GetDesktopWindow(), R
-If ((R.x2 - R.x1) - dx) < 0 Or ((R.y2 - R.y1) - dy) < 0 Then
+GetWindowRect GetDesktopWindow(), r
+If ((r.x2 - r.x1) - dx) < 0 Or ((r.y2 - r.y1) - dy) < 0 Then
 'Desktop smaller than requested size
 'so size to Desktop
-moveWindow h, R.x1, R.y1, R.x2, R.y2, True
+moveWindow h, r.x1, r.y1, r.x2, r.y2, True
 Else
 'Adjust to requested size and center
 moveWindow h, _
-R.x1 + ((R.x2 - R.x1) - dx) \ 2, _
-R.y1 + ((R.y2 - R.y1) - dy) \ 2, _
+r.x1 + ((r.x2 - r.x1) - dx) \ 2, _
+r.y1 + ((r.y2 - r.y1) - dy) \ 2, _
 dx, dy, True
 End If
 

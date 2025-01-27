@@ -1324,9 +1324,9 @@ err_handler:
     Call handleError("wdbGlobalFunctions", "getEmail", Err.DESCRIPTION, Err.number)
 End Function
 
-Function splitString(a, B, c) As String
+Function splitString(a, b, c) As String
     On Error GoTo errorCatch
-    splitString = Split(a, B)(c)
+    splitString = Split(a, b)(c)
     Exit Function
 errorCatch:
     splitString = ""
