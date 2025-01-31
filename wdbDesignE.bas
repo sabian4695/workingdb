@@ -94,7 +94,7 @@ Do While Not rsUsers.EOF
             'If rsHolidays.RecordCount > 0 Then GoTo nextDate
             
             rsHolidays.FindFirst "holidayDate = #" & forDate & "#"
-            If Not rsHolidays.NoMatch Then GoTo nextDate
+            If Not rsHolidays.noMatch Then GoTo nextDate
             
             If Weekday(forDate) = 7 Or Weekday(forDate) = 1 Then GoTo nextDate
             
@@ -139,7 +139,7 @@ Set rs1 = db.OpenRecordset("tblDnumbers", dbOpenSnapshot)
 Dim dNum
 
 rs1.FindFirst "dNumber = 9999"
-If rs1.NoMatch Then
+If rs1.noMatch Then
     rs1.filter = "dNumber < 10000"
     Set rs1 = rs1.OpenRecordset
 End If

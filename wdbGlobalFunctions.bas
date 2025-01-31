@@ -597,7 +597,11 @@ End Function
 Function checkTime(whatIsHappening As String)
 
 DoEvents
-Debug.Print Format$((Timer - TempVars!tStamp) * 100!, "0.00 " & whatIsHappening)
+
+Dim tTime
+tTime = Format$((Timer - TempVars!tStamp) * 100!, "0.00")
+
+Debug.Print tTime & " " & whatIsHappening
 TempVars.Add "tStamp", Timer
 
 End Function
@@ -623,7 +627,7 @@ Do While daysLeft > 0
     End If
     
     rsHolidays.FindFirst "holidayDate = #" & testDate & "#"
-    If Not rsHolidays.NoMatch Then GoTo skipDate ' IF HOLIDAY -> skip to next da
+    If Not rsHolidays.noMatch Then GoTo skipDate ' IF HOLIDAY -> skip to next da
 
      daysLeft = daysLeft - 1
 skipDate:

@@ -1660,7 +1660,7 @@ Public Function getPLMpropertyData(outColumnName As String, inColumnName As Stri
     
     rsPLMprops.FindFirst inColumnName & " = '" & matchVal & "'"
     
-    If rsPLMprops.NoMatch Then Exit Function
+    If rsPLMprops.noMatch Then Exit Function
     
     getPLMpropertyData = Nz(rsPLMprops(outColumnName), "")
 End Function

@@ -70,7 +70,7 @@ If Nz(rsStep!documentType, 0) <> 0 Then
     If rsAttStd!uniqueFile And rsProjPNs.RecordCount > 0 Then
         'first, check primary PN
         rsAttach.FindFirst "partNumber = '" & rsStep!partNumber & "'"
-        If rsAttach.NoMatch Then
+        If rsAttach.noMatch Then
             errorText = "This step requires a file per related part number to be added to close it"
             GoTo errorOut
         End If
@@ -78,7 +78,7 @@ If Nz(rsStep!documentType, 0) <> 0 Then
         'then, check every childPartNumber
         Do While Not rsProjPNs.EOF
             rsAttach.FindFirst "partNumber = '" & rsProjPNs!childPartNumber & "'"
-            If rsAttach.NoMatch Then
+            If rsAttach.noMatch Then
                 errorText = "This step requires a file per related part number to be added to close it"
                 GoTo errorOut
             End If
@@ -1494,80 +1494,87 @@ End Function
 Function scanSteps(partNum As String, routineName As String, Optional identifier As Variant = "notFound") As Boolean
 On Error GoTo err_handler
 
+TempVars.Add "tStamp", Timer
+
 scanSteps = False
 'this scans to see if there is a step that needs to be deleted or closed per its step action requirements
 
-Dim rsSteps As Recordset, rsStepActions As Recordset, dFilt As String, eFilt As String, db As Database
+Dim rsSteps As Recordset, dFilt As String, eFilt As String, db As Database
 Set db = CurrentDb()
 'grab all steps that match this partNum and routine name, and are not closed
 dFilt = "SELECT * FROM tblPartSteps WHERE stepActionId IN (SELECT recordId FROM tblPartStepActions WHERE whenToRun = '" & routineName & "') AND status <> 'Closed'"
 eFilt = ""
 If partNum <> "all" Then eFilt = " AND partNumber = '" & partNum & "'"
+
 Set rsSteps = db.OpenRecordset(dFilt & eFilt)
 
 If rsSteps.RecordCount = 0 Then Exit Function 'no steps have actions attached!
 
+Dim rsPI As Recordset, rsPMI As Recordset, rsStepActions As Recordset, rsMasterSetups As Recordset, rsPartAssemblyGates As Recordset, rsCostDocs As Recordset, rsECOrev As Recordset, rsLookItUp As Recordset
+Dim pnId As String, matches As Boolean, matchingCol As String, meetsCriteria As Boolean, noMatch As Boolean
+
+Set rsStepActions = db.OpenRecordset("tblPartStepActions")
+Set rsPI = db.OpenRecordset("tblPartInfo")
+Set rsPMI = db.OpenRecordset("tblPartMoldingInfo")
+
 Do While Not rsSteps.EOF
-    Set rsStepActions = db.OpenRecordset("SELECT * FROM tblPartStepActions WHERE recordId = " & rsSteps!stepActionId)
-    If Nz(rsStepActions!whenToRun, "") <> routineName Then GoTo nextOne 'check if this is the right time to run this actions step
+    If Nz(rsSteps!partNumber) = "" Then GoTo nextOne
     
-    Dim matches, rsLookItUp As Recordset, matchingCol As String, meetsCriteria As Boolean
+    rsStepActions.FindFirst "recordId = " & rsSteps!stepActionId
+    If rsStepActions.noMatch Then GoTo nextOne
+    
     matchingCol = "partNumber"
     If identifier = "notFound" Then identifier = "'" & partNum & "'"
     If routineName = "frmPartMoldingInfo_save" Then matchingCol = "recordId"
     
     'Check for types of actions based on table name
+    'these are actions that don't fit the exact mold of the Compare Table stuff - which is maybe most of them :')
     Select Case rsStepActions!compareTable
         Case "INV_MTL_EAM_ASSET_ATTR_VALUES"
-            Dim rsPI As Recordset, rsPMI As Recordset
-            Set rsPI = db.OpenRecordset("SELECT moldInfoId FROM tblPartInfo WHERE partNumber = '" & rsSteps!partNumber & "'")
-            If rsPI.RecordCount = 0 Then GoTo nextOne
+            rsPI.FindFirst "partNumber = '" & rsSteps!partNumber & "'"
+            
+            If rsPI.noMatch Then GoTo nextOne
             If Nz(rsPI!moldInfoId) = "" Then GoTo nextOne
-            Set rsPMI = db.OpenRecordset("SELECT toolNumber FROM tblPartMoldingInfo WHERE recordId = " & rsPI!moldInfoId)
+            rsPMI.FindFirst "recordId = " & rsPI!moldInfoId
             identifier = "'" & rsPMI!toolNumber & "'"
             matchingCol = "SERIAL_NUMBER" 'toolnumber column in this table
-            rsPI.Close
-            Set rsPI = Nothing
-            rsPMI.Close
-            Set rsPMI = Nothing
         Case "ENG_ENG_ENGINEERING_CHANGES"
-            Dim rsECOrev As Recordset 'find the transfer ECO
-            If Nz(rsSteps!partNumber) = "" Then GoTo nextOne
-            Dim pnId As String
             pnId = idNAM(rsSteps!partNumber, "NAM")
             If pnId = "" Then GoTo nextOne
             Set rsECOrev = db.OpenRecordset("select CHANGE_NOTICE from ENG_ENG_ENGINEERING_CHANGES " & _
                 "where CHANGE_NOTICE IN (select CHANGE_NOTICE from ENG_ENG_REVISED_ITEMS where REVISED_ITEM_ID = " & pnId & " ) " & _
                 "AND IMPLEMENTATION_DATE is not null AND REASON_CODE = 'TRANSFER'")
+                
             If rsECOrev.RecordCount = 0 Then GoTo nextOne
-            rsECOrev.Close
-            Set rsECOrev = Nothing
             GoTo performAction 'transfer ECO found!
         Case "Cost Documents" 'Checking SP site for documents
-            If Nz(rsSteps!partNumber) = "" Then GoTo nextOne
-            Dim rsCostDocs As Recordset
             Set rsCostDocs = db.OpenRecordset("SELECT * FROM [" & rsStepActions!compareTable & "] WHERE " & _
                 "[Part Number] = '" & rsSteps!partNumber & "' AND [" & rsStepActions!compareColumn & "] = '" & rsStepActions!compareData & "' AND [Document Type] = 'Custom Item Cost Sheet'")
+                
             If rsCostDocs.RecordCount = 0 Then GoTo nextOne
             GoTo performAction 'Custom Item Cost Sheet Found!
         Case "Master Setups" 'checking for master setup
-            If Nz(rsSteps!partNumber) = "" Then GoTo nextOne
-            Dim rsMasterSetups As Recordset
-            Set rsMasterSetups = db.OpenRecordset("SELECT * FROM [" & rsStepActions!compareTable & "] WHERE [Part Number] = '" & rsSteps!partNumber & "'")
+            Set rsMasterSetups = db.OpenRecordset("SELECT ID FROM [" & rsStepActions!compareTable & "] WHERE [Part Number] = '" & rsSteps!partNumber & "'")
+            
             If rsMasterSetups.RecordCount = 0 Then GoTo nextOne
             GoTo performAction 'Master Setup Sheet Found!
         Case "tblPartAssemblyGates"
-            If Nz(rsSteps!partNumber) = "" Then GoTo nextOne
-            Dim rsPartAssemblyGates As Recordset
-            Set rsPartAssemblyGates = db.OpenRecordset("SELECT * FROM " & rsStepActions!compareTable & " WHERE projectId = " & rsSteps!partProjectId & " AND " & rsStepActions!compareColumn & " = " & rsStepActions!compareData & " AND gateStatus = 3")
-            If rsPartAssemblyGates.RecordCount = 0 Then GoTo nextOne
+            Set rsPartAssemblyGates = db.OpenRecordset("SELECT recordId FROM " & rsStepActions!compareTable & " WHERE projectId = " & rsSteps!partProjectId & _
+                " AND " & rsStepActions!compareColumn & " = " & rsStepActions!compareData & " AND gateStatus = 3")
+                
+            noMatch = rsPartAssemblyGates.RecordCount = 0
+            rsPartAssemblyGates.Close
+            Set rsPartAssemblyGates = Nothing
+            If noMatch Then GoTo nextOne
             GoTo performAction 'Automation gate is complete!
     End Select
     
+    If Nz(rsStepActions!compareColumn, "") = "" And Nz(rsStepActions!compareTable, "") = "" Then GoTo performAction 'assuming this is just wanting me to do an action no matter what
+    
     Set rsLookItUp = db.OpenRecordset("SELECT " & rsStepActions!compareColumn & " FROM " & rsStepActions!compareTable & " WHERE " & matchingCol & " = " & identifier)
+    If rsLookItUp.RecordCount = 0 Then GoTo nextOne
     
     meetsCriteria = False
-    If rsLookItUp.RecordCount = 0 Then GoTo nextOne
     
     If InStr(rsStepActions!compareData, ",") > 0 Then 'check for multiple values - always seen as an OR command, not AND
         'make an array of the values and check if any match
@@ -1582,6 +1589,7 @@ Do While Not rsSteps.EOF
         If matches Then meetsCriteria = True
     End If
     
+    'if the action is not equal to what we actually have, skip it!
     If meetsCriteria <> rsStepActions!compareAction Then GoTo nextOne
     
 performAction:
@@ -1621,6 +1629,8 @@ nextOne:
 Loop
 
 On Error Resume Next
+rsECOrev.Close
+Set rsECOrev = Nothing
 rsPI.Close
 Set rsPI = Nothing
 rsPMI.Close
@@ -1643,6 +1653,8 @@ Set rsPartAssemblyGates = Nothing
 Set db = Nothing
 
 scanSteps = True
+
+checkTime ("WHOLE FUNCTION")
 
 Exit Function
 err_handler:
