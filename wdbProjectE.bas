@@ -1494,8 +1494,6 @@ End Function
 Function scanSteps(partNum As String, routineName As String, Optional identifier As Variant = "notFound") As Boolean
 On Error GoTo err_handler
 
-TempVars.Add "tStamp", Timer
-
 scanSteps = False
 'this scans to see if there is a step that needs to be deleted or closed per its step action requirements
 
@@ -1653,8 +1651,6 @@ Set rsPartAssemblyGates = Nothing
 Set db = Nothing
 
 scanSteps = True
-
-checkTime ("WHOLE FUNCTION")
 
 Exit Function
 err_handler:
