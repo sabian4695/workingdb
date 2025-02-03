@@ -1415,6 +1415,31 @@ err_handler:
     Call handleError("wdbGlobalFunctions", "getDescriptionFromId", Err.DESCRIPTION, Err.number)
 End Function
 
+Function getStatusFromId(inventId As Long) As String
+On Error GoTo err_handler
+
+Dim db As Database
+Set db = CurrentDb()
+Dim rs1 As Recordset
+
+getStatusFromId = ""
+If IsNull(inventId) Then Exit Function
+On Error Resume Next
+
+Set rs1 = db.OpenRecordset("SELECT INVENTORY_ITEM_STATUS_CODE FROM APPS_MTL_SYSTEM_ITEMS WHERE INVENTORY_ITEM_ID = " & inventId, dbOpenSnapshot)
+If rs1.RecordCount = 0 Then GoTo exitFunction
+getStatusFromId = rs1("INVENTORY_ITEM_STATUS_CODE")
+
+exitFunction:
+rs1.Close
+Set rs1 = Nothing
+Set db = Nothing
+
+Exit Function
+err_handler:
+    Call handleError("wdbGlobalFunctions", "getStatusFromId", Err.DESCRIPTION, Err.number)
+End Function
+
 Public Function StrQuoteReplace(strValue)
 On Error GoTo err_handler
 
