@@ -39,6 +39,49 @@ lngRet = LoadCursorFromFile("\\data\mdbdata\WorkingDB\Pictures\Theme_Pictures\cu
 lngRet = setCursor(lngRet)
 End Function
 
+Function dueDay(dueDate, completedDate) As String
+On Error Resume Next
+
+If IsNull(dueDate) Then
+    dueDay = "N/A"
+    Exit Function
+End If
+
+If IsNull(completedDate) Then
+    Select Case dueDate
+        Case Date
+            dueDay = "Today"
+        Case Date + 1
+            dueDay = "Tomorrow"
+        Case Is < Date
+            dueDay = "Overdue"
+        Case Is < Date + 7
+            dueDay = WeekdayName(Weekday(dueDate))
+        Case Date + 7
+            dueDay = "1 Week"
+        Case Is < Date + 14
+            dueDay = "<2 Weeks"
+        Case Date + 14
+            dueDay = "2 Weeks"
+        Case Is < Date + 21
+            dueDay = "<3 Weeks"
+        Case Date + 21
+            dueDay = "3 Weeks"
+        Case Is < Date + 28
+            dueDay = "<4 Weeks"
+        Case Date + 28
+            dueDay = "4 Weeks"
+        Case Is > Date + 28
+            dueDay = ">4 Weeks"
+        Case Else
+            dueDay = dueDate
+    End Select
+Else
+    dueDay = "Complete"
+End If
+
+End Function
+
 Public Function setTheme(setForm As Form)
 On Error Resume Next
 

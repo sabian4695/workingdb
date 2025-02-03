@@ -230,7 +230,7 @@ err_handler:
     Call handleError("wdbProjectE", "closeProjectStep", Err.DESCRIPTION, Err.number)
 End Function
 
-Public Function getAttachmentsCountReq(stepId As Long, docType As Long, projectId As Long) As Long
+Public Function getAttachmentsCountReq(stepId As Long, docType, projectId As Long) As Long
 On Error GoTo err_handler
 
 getAttachmentsCountReq = 0
