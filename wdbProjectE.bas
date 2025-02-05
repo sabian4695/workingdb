@@ -1275,7 +1275,6 @@ Do While Not rsGateTemplate.EOF
         db.Execute strInsert, dbFailOnError
         
         '--ADD APPROVALS FOR THIS STEP
-        If Not rsStepTemplate![approvalRequired] Then GoTo nextStep
         TempVars.Add "stepId", db.OpenRecordset("SELECT @@identity")(0).Value
         Set rsApprovalsTemplate = db.OpenRecordset("SELECT * FROM tblPartStepTemplateApprovals WHERE [stepTemplateId] = " & rsStepTemplate![recordId], dbOpenSnapshot)
         
