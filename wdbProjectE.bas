@@ -230,6 +230,23 @@ err_handler:
     Call handleError("wdbProjectE", "closeProjectStep", Err.DESCRIPTION, Err.number)
 End Function
 
+Public Function daysSinceLastNudge(stepId As Long)
+On Error GoTo err_handler
+
+Dim lastNudgeDate
+lastNudgeDate = DLookup("updatedDate", "tblPartUpdateTracking", "tableRecordId = " & stepId & " AND columnName = 'Nudge'")
+
+If Nz(lastNudgeDate, 0) = 0 Then
+    daysSinceLastNudge = "N/A"
+Else
+    daysSinceLastNudge = Date - lastNudgeDate
+End If
+
+Exit Function
+err_handler:
+    Call handleError("wdbProjectE", "daysSinceLastNudge", Err.DESCRIPTION, Err.number)
+End Function
+
 Public Function getAttachmentsCountReq(stepId As Long, docType, projectId As Long) As Long
 On Error GoTo err_handler
 
