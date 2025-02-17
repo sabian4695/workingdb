@@ -47,12 +47,12 @@ fncReadSettings = False
     
     Dim rs1 As Recordset
     Dim db As Database
-    Dim I As Integer
+    Dim i As Integer
     Set db = CurrentDb()
     Set rs1 = db.OpenRecordset("tblPLMsettings", dbOpenSnapshot)
     
-For I = 1 To 10
-    Select Case I
+For i = 1 To 10
+    Select Case i
         Case 1
             gstrSendToPath = rs1("Value")
         Case 2
@@ -75,7 +75,7 @@ For I = 1 To 10
             gstrUnsetMaterialGrade = rs1("Value")
     End Select
     rs1.MoveNext
-Next I
+Next i
 
 rs1.Close
 Set rs1 = Nothing
@@ -597,17 +597,17 @@ Private Function fncIsSheetWritten(ByRef iobjExcelData As CATIAPropertyTable) As
     
     Dim lngCnt As Long
     lngCnt = iobjExcelData.fncCount()
-    Dim I As Long
-    For I = 1 To lngCnt
+    Dim i As Long
+    For i = 1 To lngCnt
     
         Dim typRecord As Record
-        Call iobjExcelData.fncItem(I, typRecord)
+        Call iobjExcelData.fncItem(i, typRecord)
         
         If fncIsBlankRecord(typRecord) = False Then
             fncIsSheetWritten = True
             Exit Function
         End If
-    Next I
+    Next i
 End Function
 
 Private Sub clearSheet()
@@ -634,14 +634,14 @@ Private Function fncWriteExcel(ByRef iobjRecords As CATIAPropertyTable, _
     Form_frmPLM.Recordset.MoveFirst
     On Error GoTo 0
 
-    Dim I As Long
-    For I = 1 To lngRecCnt
-            If I > 1 Then
+    Dim i As Long
+    For i = 1 To lngRecCnt
+            If i > 1 Then
                 Form_frmPLM.Dirty = False
                 Form_frmPLM.Recordset.addNew
             End If
         Dim typRecord As Record
-        If iobjRecords.fncItem(I, typRecord) = False Then
+        If iobjRecords.fncItem(i, typRecord) = False Then
             Exit Function
         End If
         Form_frmPLM.FileName.Value = typRecord.FileName
@@ -691,13 +691,13 @@ startIt = False
     Next
     Form_frmPLM.Dirty = False
 Set fld = Nothing
-        If I <> lngRecCnt Then
+        If i <> lngRecCnt Then
             Dim typNextRecord As Record
-            If iobjRecords.fncItem(I + 1, typNextRecord) = False Then
+            If iobjRecords.fncItem(i + 1, typNextRecord) = False Then
                 Exit Function
             End If
         End If
-    Next I
+    Next i
 Set db = Nothing
 fncWriteExcel = True
 End Function
@@ -716,13 +716,13 @@ Private Function fncWriteExcelForUpdate(ByRef iobjRecords As CATIAPropertyTable)
     lngRecCnt = iobjRecords.fncCount
     
     '/ Excel
-    Dim I As Long
-    For I = 1 To lngRecCnt
+    Dim i As Long
+    For i = 1 To lngRecCnt
         Dim typRecord As Record
-        If I > 1 Then
+        If i > 1 Then
             Form_frmPLM.Recordset.MoveNext
         End If
-        If iobjRecords.fncItem(I, typRecord) = False Then
+        If iobjRecords.fncItem(i, typRecord) = False Then
             Exit Function
         End If
         
@@ -785,7 +785,7 @@ Private Function fncWriteExcelForUpdate(ByRef iobjRecords As CATIAPropertyTable)
             End If
         Next j
         rs1.MoveNext
-    Next I
+    Next i
     
     rs1.Close
     Set rs1 = Nothing
@@ -801,11 +801,11 @@ Private Function fncWriteExcelForDataMove(ByRef iobjRecords As CATIAPropertyTabl
     Dim lngRecCnt As Long
     lngRecCnt = iobjRecords.fncCount
     
-    Dim I As Long
-    For I = 1 To lngRecCnt
+    Dim i As Long
+    For i = 1 To lngRecCnt
         Dim typRecord As Record
-        If iobjRecords.fncItem(I, typRecord) = False Then Exit Function
-    Next I
+        If iobjRecords.fncItem(i, typRecord) = False Then Exit Function
+    Next i
     
     fncWriteExcelForDataMove = True
 End Function
@@ -860,8 +860,8 @@ Private Function fncGetProperty() As CATIAPropertyTable
     Set db = CurrentDb()
     Set rs1 = db.OpenRecordset("tblPLM", dbOpenSnapshot)
 
-    Dim I As Long
-    For I = 1 To DCount("[ID]", "[tblPLM]")
+    Dim i As Long
+    For i = 1 To DCount("[ID]", "[tblPLM]")
         On Error Resume Next
         Dim lngCnt As Long
         lngCnt = UBound(modMain.gcurMainProperty)
@@ -913,7 +913,7 @@ Private Function fncGetProperty() As CATIAPropertyTable
             Call fncGetProperty.fncAddRecord(typRecord)
         End If
         rs1.MoveNext
-    Next I
+    Next i
     rs1.Close
     Set rs1 = Nothing
     Set db = Nothing
@@ -930,15 +930,15 @@ Private Function fncGetColumn(ByVal istrPropertyName As String) As Long
 Dim db As Database, rs1 As Recordset, fld As DAO.Field
 Set db = CurrentDb()
 Set rs1 = db.OpenRecordset("tblPLM", dbOpenSnapshot)
-Dim I As Integer
-I = 0
+Dim i As Integer
+i = 0
 
 For Each fld In rs1.Fields
     If fld.name = istrPropertyName Then
-        fncGetColumn = I
+        fncGetColumn = i
         Exit Function
     End If
-    I = I + 1
+    i = i + 1
 Next
 Set fld = Nothing
 Set db = Nothing
@@ -960,10 +960,10 @@ Private Function fncIsBlankRecord(ByRef itypRecord As Record) As Boolean
     lngCnt = UBound(itypRecord.Properties)
     On Error GoTo 0
     
-    Dim I As Long
-    For I = 1 To lngCnt
-        If itypRecord.Properties(I) <> "" Then Exit Function
-    Next I
+    Dim i As Long
+    For i = 1 To lngCnt
+        If itypRecord.Properties(i) <> "" Then Exit Function
+    Next i
 
     fncIsBlankRecord = True
 End Function
@@ -971,16 +971,16 @@ End Function
 Private Function fncClrModelID(ByRef iExcelData As CATIAPropertyTable) As Boolean
     fncClrModelID = False
     
-    Dim I As Long
-    For I = 1 To iExcelData.fncCount
+    Dim i As Long
+    For i = 1 To iExcelData.fncCount
         Dim typRecord As Record
-        Call iExcelData.fncItem(I, typRecord)
+        Call iExcelData.fncItem(i, typRecord)
         
         If Trim(typRecord.Sel) = True Then
             Dim lngCol As Long
             lngCol = fncGetColumn("ModelID/DrawingID")
         End If
-    Next I
+    Next i
     
     fncClrModelID = True
 End Function
@@ -996,13 +996,13 @@ Private Function fncCheckBeforeNumbering(ByRef iobjRecords As CATIAPropertyTable
     If blnDuplicateDesignNo = True Then
         Dim lngRecCnt As Long
         lngRecCnt = iobjRecords.fncCount
-        Dim I As Long
+        Dim i As Long
         
-        For I = 1 To lngRecCnt
-            If fncCheckNumberingRow(iobjRecords, I) = False Then GoTo CONTINUE_FNCCHECK
+        For i = 1 To lngRecCnt
+            If fncCheckNumberingRow(iobjRecords, i) = False Then GoTo CONTINUE_FNCCHECK
     
             Dim typRecord As Record
-            If iobjRecords.fncItem(I, typRecord) = False Then GoTo CONTINUE_FNCCHECK
+            If iobjRecords.fncItem(i, typRecord) = False Then GoTo CONTINUE_FNCCHECK
             
             Dim lngTypeIndex As Long
             lngTypeIndex = modMain.fncGetIndex("File_Data_Type")
@@ -1037,7 +1037,7 @@ Private Function fncCheckBeforeNumbering(ByRef iobjRecords As CATIAPropertyTable
             End If
     
 CONTINUE_FNCCHECK:
-        Next I
+        Next i
     End If
 End Function
 
@@ -1061,12 +1061,12 @@ Private Function fncNumbering(ByRef iobjRecords As CATIAPropertyTable, ByRef obl
     
     Dim isNumbering As Boolean
     isNumbering = False
-    Dim I As Long
-    For I = 1 To lngRecCnt
+    Dim i As Long
+    For i = 1 To lngRecCnt
     
-        If fncCheckNumberingRow(iobjRecords, I) = False Then GoTo continue
+        If fncCheckNumberingRow(iobjRecords, i) = False Then GoTo continue
         
-        fncNumbering = fncNumberingRow(iobjRecords, I)
+        fncNumbering = fncNumberingRow(iobjRecords, i)
 
         If fncNumbering <> "" Then Exit Function
         
@@ -1075,12 +1075,12 @@ Private Function fncNumbering(ByRef iobjRecords As CATIAPropertyTable, ByRef obl
         lngNumberedCnt = UBound(curNumberedRow)
         On Error GoTo 0
         ReDim Preserve curNumberedRow(lngNumberedCnt + 1) As Long
-        curNumberedRow(lngNumberedCnt + 1) = I
+        curNumberedRow(lngNumberedCnt + 1) = i
         
         isNumbering = True
         
 continue:
-    Next I
+    Next i
     
     Dim blnDuplicateChkBox As Boolean
     blnDuplicateChkBox = False
@@ -1091,12 +1091,12 @@ continue:
         lngRecCnt = 0
         lngRecCnt = UBound(curNumberedRow)
         On Error GoTo 0
-        For I = 1 To lngRecCnt
+        For i = 1 To lngRecCnt
             
-            fncNumbering = fncNumberingForDrawing(iobjRecords, curNumberedRow(I))
+            fncNumbering = fncNumberingForDrawing(iobjRecords, curNumberedRow(i))
             If fncNumbering <> "" Then Exit Function
         
-        Next I
+        Next i
     End If
     
     If oblnBlank3D = False And isNumbering = False Then
@@ -1104,11 +1104,11 @@ continue:
     End If
 End Function
 
-Private Function fncCheckNumberingRow(ByRef iobjRecords As CATIAPropertyTable, ByVal I As Long) As Boolean
+Private Function fncCheckNumberingRow(ByRef iobjRecords As CATIAPropertyTable, ByVal i As Long) As Boolean
     fncCheckNumberingRow = False
         
     Dim typRecord As Record
-    If iobjRecords.fncItem(I, typRecord) = False Then Exit Function
+    If iobjRecords.fncItem(i, typRecord) = False Then Exit Function
     
     If Trim(typRecord.Sel) <> True Then Exit Function
     
@@ -1123,12 +1123,12 @@ Private Function fncCheckNumberingRow(ByRef iobjRecords As CATIAPropertyTable, B
     fncCheckNumberingRow = True
 End Function
 
-Private Function fncNumberingRow(ByRef iobjRecords As CATIAPropertyTable, ByVal I As Long) As String
+Private Function fncNumberingRow(ByRef iobjRecords As CATIAPropertyTable, ByVal i As Long) As String
 
     fncNumberingRow = ""
     
     Dim typRecord As Record
-    If iobjRecords.fncItem(I, typRecord) = False Then Exit Function
+    If iobjRecords.fncItem(i, typRecord) = False Then Exit Function
 
     Dim strType As String
     Dim strLinkID As String
@@ -1149,7 +1149,7 @@ Private Function fncNumberingRow(ByRef iobjRecords As CATIAPropertyTable, ByVal 
     
     If strType = "CATDrawing" And blnDuplicateChkBox = True Then
     Else
-        fncNumberingRow = fncNumberingDesignNo(con, I)
+        fncNumberingRow = fncNumberingDesignNo(con, i)
         If fncNumberingRow <> "" Then GoTo Finally
     End If
     
@@ -1164,12 +1164,12 @@ Finally:
     End If
 End Function
 
-Private Function fncNumberingForDrawing(ByRef iobjRecords As CATIAPropertyTable, ByVal I As Long) As String
+Private Function fncNumberingForDrawing(ByRef iobjRecords As CATIAPropertyTable, ByVal i As Long) As String
 
     fncNumberingForDrawing = ""
 
     Dim typRecord As Record
-    If iobjRecords.fncItem(I, typRecord) = False Then Exit Function
+    If iobjRecords.fncItem(i, typRecord) = False Then Exit Function
 
     Dim strType As String
     strType = typRecord.Properties(modMain.fncGetIndex("File_Data_Type"))
@@ -1204,7 +1204,7 @@ Private Function fncGetOldConnectString() As String
                             "password=" & modMain.gstrOldPassword
 End Function
 
-Private Function fncNumberingDesignNo(ByRef con As ADODB.Connection, ByVal I As Long) As String
+Private Function fncNumberingDesignNo(ByRef con As ADODB.Connection, ByVal i As Long) As String
     fncNumberingDesignNo = ""
         
     Dim lRec As ADODB.Recordset
@@ -1266,11 +1266,11 @@ Public Function fncGetPropertyFromDB(ByRef ilstModelID() As String, _
            "INNER JOIN " & modMain.gstrOldDBName & ".dbo.CATIA_ATTR_NAME T3 ON T3.ATTR_ID = T2.ATTR_ID " & _
            "WHERE T1.modelID = "
     
-    Dim I As Long
-    For I = 1 To lngCnt
-        If I <> 1 Then lSql = lSql & " Or T1.modelID = "
-        lSql = lSql & ilstModelID(I)
-    Next I
+    Dim i As Long
+    For i = 1 To lngCnt
+        If i <> 1 Then lSql = lSql & " Or T1.modelID = "
+        lSql = lSql & ilstModelID(i)
+    Next i
     
     Dim objRecord As ADODB.Recordset
     Set objRecord = con.Execute(lSql)

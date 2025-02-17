@@ -73,10 +73,10 @@ Public Function fncAddRecord(ByRef itypRecord As Record) As Long
         fncAddRecord = 0
         Exit Function
     Else
-        Dim I As Integer
-        For I = 1 To lngCnt
-            If mRecords(I).FilePath = itypRecord.FilePath Then
-                mRecords(I).Amount = mRecords(I).Amount + 1
+        Dim i As Integer
+        For i = 1 To lngCnt
+            If mRecords(i).FilePath = itypRecord.FilePath Then
+                mRecords(i).Amount = mRecords(i).Amount + 1
                 itypRecord.IsChildInstance = True
                 itypRecord.Amount = "-"
                 itypRecord.InstanceName = ""
@@ -96,7 +96,7 @@ Public Function fncAddRecord(ByRef itypRecord As Record) As Long
                 
                 Exit For
             End If
-        Next I
+        Next i
 
         itypRecord.ID = lngCnt + 1
             
@@ -125,13 +125,13 @@ Public Function fncIsSameStructure(ByRef iobjData As CATIAPropertyTable, _
         oblnIsSame = False
     End If
     
-    Dim I As Long
-    For I = 1 To lngDataSize
+    Dim i As Long
+    For i = 1 To lngDataSize
         Dim typData As Record
         Dim typMyData As Record
-        If iobjData.fncItem(I, typData) = False Then
+        If iobjData.fncItem(i, typData) = False Then
             Exit Function
-        ElseIf Me.fncItem(I, typMyData) = False Then
+        ElseIf Me.fncItem(i, typMyData) = False Then
             Exit Function
         End If
         
@@ -139,7 +139,7 @@ Public Function fncIsSameStructure(ByRef iobjData As CATIAPropertyTable, _
             fncIsSameStructure = True
             oblnIsSame = False
         End If
-    Next I
+    Next i
 
     fncIsSameStructure = True
     oblnIsSame = True
@@ -151,12 +151,12 @@ Public Function fncGetLastLevel() As Long
     Dim lngCnt As Long
     lngCnt = Me.fncCount()
     
-    Dim I As Integer
-    For I = 1 To lngCnt
+    Dim i As Integer
+    For i = 1 To lngCnt
         Dim typRecord As Record
-        typRecord = mRecords(I)
+        typRecord = mRecords(i)
         If fncGetLastLevel < typRecord.Level Then fncGetLastLevel = typRecord.Level
-    Next I
+    Next i
 End Function
 
 Public Function fncCheckBlank(ByRef ostrPropertyName As String) As String
@@ -172,11 +172,11 @@ Public Function fncCheckBlank(ByRef ostrPropertyName As String) As String
     Dim blnNoCheckFlag As Boolean
     blnNoCheckFlag = False
     
-    Dim I As Long
-    For I = 1 To lngCnt
+    Dim i As Long
+    For i = 1 To lngCnt
     
         Dim typRecord As Record
-        If Me.fncItem(I, typRecord) = False Then
+        If Me.fncItem(i, typRecord) = False Then
             GoTo continue
         End If
         
@@ -246,7 +246,7 @@ Public Function fncCheckBlank(ByRef ostrPropertyName As String) As String
         Next j
         
 continue:
-    Next I
+    Next i
 End Function
 
 Private Function fncIsDateFormat(ByVal strVal As String) As Boolean
@@ -297,29 +297,29 @@ Public Function fncSearchFromFilePath(ByVal istrFilePath As String) As Long
     Dim lngRecCnt As Long
     lngRecCnt = Me.fncCount
     
-    Dim I As Long
-    For I = 1 To lngRecCnt
-        If mRecords(I).FilePath = istrFilePath Then
-            fncSearchFromFilePath = I
+    Dim i As Long
+    For i = 1 To lngRecCnt
+        If mRecords(i).FilePath = istrFilePath Then
+            fncSearchFromFilePath = i
             Exit For
         End If
-    Next I
+    Next i
 End Function
 
 Public Sub UpdatePath(ByVal istrOldPath As String, ByVal istrNewPath As String, ByVal istrNewName As String)
     Dim lngRecCnt As Long
     lngRecCnt = Me.fncCount
     
-    Dim I As Long
-    For I = 1 To lngRecCnt
-        If mRecords(I).FilePath = istrOldPath Then
-            mRecords(I).FilePath = istrNewPath
-            mRecords(I).FileName = istrNewName
+    Dim i As Long
+    For i = 1 To lngRecCnt
+        If mRecords(i).FilePath = istrOldPath Then
+            mRecords(i).FilePath = istrNewPath
+            mRecords(i).FileName = istrNewName
         End If
-        If mRecords(I).LinkTo = istrOldPath Then
-            mRecords(I).LinkTo = istrNewPath
+        If mRecords(i).LinkTo = istrOldPath Then
+            mRecords(i).LinkTo = istrNewPath
         End If
-    Next I
+    Next i
 End Sub
 
 Public Sub UpdateModelID(ByVal ilngIndex As Long, ByVal istrValue As String)
@@ -341,45 +341,45 @@ Public Function fncReplaceProhibitCharacter() As Boolean
     Dim lngRecCnt As Long
     lngRecCnt = Me.fncCount
     
-    Dim I As Long
-    For I = 1 To lngRecCnt
+    Dim i As Long
+    For i = 1 To lngRecCnt
     
         Dim strSel As String
-        strSel = mRecords(I).Sel
+        strSel = mRecords(i).Sel
         If Trim(strSel) <> True Then
             GoTo continue
         End If
         
         Dim strBuf As String
-        strBuf = mRecords(I).Properties(lngIndex_FileDataName)
+        strBuf = mRecords(i).Properties(lngIndex_FileDataName)
         Call ReplaceString(strBuf)
-        If strBuf <> mRecords(I).Properties(lngIndex_FileDataName) Then
-            mRecords(I).Properties(lngIndex_FileDataName) = strBuf
+        If strBuf <> mRecords(i).Properties(lngIndex_FileDataName) Then
+            mRecords(i).Properties(lngIndex_FileDataName) = strBuf
             fncReplaceProhibitCharacter = True
         End If
         
-        strBuf = mRecords(I).Properties(lngIndex_FullDesignNo)
+        strBuf = mRecords(i).Properties(lngIndex_FullDesignNo)
         Call ReplaceString(strBuf)
-        If strBuf <> mRecords(I).Properties(lngIndex_FullDesignNo) Then
-            mRecords(I).Properties(lngIndex_FullDesignNo) = strBuf
+        If strBuf <> mRecords(i).Properties(lngIndex_FullDesignNo) Then
+            mRecords(i).Properties(lngIndex_FullDesignNo) = strBuf
             fncReplaceProhibitCharacter = True
         End If
 continue:
-    Next I
+    Next i
 End Function
 
 Public Sub ClearModelID()
     Dim lngRecCnt As Long
     lngRecCnt = Me.fncCount
     
-    Dim I As Long
-    For I = 1 To lngRecCnt
+    Dim i As Long
+    For i = 1 To lngRecCnt
         Dim strSel As String
-        strSel = mRecords(I).Sel
+        strSel = mRecords(i).Sel
         If Trim(strSel) <> True Then GoTo continue
-        mRecords(I).ModelDrawingID = ""
+        mRecords(i).ModelDrawingID = ""
 continue:
-    Next I
+    Next i
 End Sub
 
 Private Sub ReplaceString(ByRef ostrString As String)
@@ -388,12 +388,12 @@ Private Sub ReplaceString(ByRef ostrString As String)
     lngSize = UBound(modMain.glstProhibitCharacter)
     On Error GoTo 0
 
-    Dim I As Long
-    For I = 1 To lngSize
+    Dim i As Long
+    For i = 1 To lngSize
         Dim strFind As String
-        strFind = modMain.glstProhibitCharacter(I)
+        strFind = modMain.glstProhibitCharacter(i)
         ostrString = Replace(ostrString, strFind, " ")
-    Next I
+    Next i
 End Sub
 
 Public Sub SetDefaultDesinerSection()
@@ -428,31 +428,31 @@ Public Sub SetDefaultDesinerSection()
     Dim lngRecCnt As Long
     lngRecCnt = Me.fncCount
     
-    Dim I As Long
-    For I = 1 To lngRecCnt
-        If mRecords(I).IsChildInstance = True Then GoTo continue
+    Dim i As Long
+    For i = 1 To lngRecCnt
+        If mRecords(i).IsChildInstance = True Then GoTo continue
     
         Dim strDesigner As String
-        strDesigner = mRecords(I).Properties(lngIndex_Designer)
+        strDesigner = mRecords(i).Properties(lngIndex_Designer)
         If Trim(strDesigner) = "" Then
-            mRecords(I).Properties(lngIndex_Designer) = modMain.gstrNFDesigner
+            mRecords(i).Properties(lngIndex_Designer) = modMain.gstrNFDesigner
             strDesigner = modMain.gstrNFDesigner
         End If
         
         Dim strSection As String
-        strSection = mRecords(I).Properties(lngIndex_Section)
+        strSection = mRecords(i).Properties(lngIndex_Section)
         If Trim(strSection) = "" Then
-            mRecords(I).Properties(lngIndex_Section) = "NAM"
+            mRecords(i).Properties(lngIndex_Section) = "NAM"
             strSection = "NAM"
         End If
         
         Dim strClassification As String
-        strClassification = mRecords(I).Properties(lngIndex_Classification)
+        strClassification = mRecords(i).Properties(lngIndex_Classification)
         
         If modMain.gstrInputCheck <> "1" Then
             blnNoCheckFlag = True
             blnSetFileName = True
-        ElseIf mRecords(I).Level <= 1 Then
+        ElseIf mRecords(i).Level <= 1 Then
             If strClassification = "2K mould (CATPart)" Or _
                strClassification = "SubProduct" Or _
                strClassification = "Reference" Or _
@@ -471,23 +471,23 @@ Public Sub SetDefaultDesinerSection()
         End If
         
         Dim strSel As String
-        strSel = mRecords(I).Sel
+        strSel = mRecords(i).Sel
         If Trim(strSel) <> True Then GoTo continue
-        If Trim(modMain.gstrUnsetMaterialGrade) = "1" And strClassification = "Submission data" Then mRecords(I).Properties(lngIndex_MaterialGrade) = "Unset"
+        If Trim(modMain.gstrUnsetMaterialGrade) = "1" And strClassification = "Submission data" Then mRecords(i).Properties(lngIndex_MaterialGrade) = "Unset"
         If Trim(modMain.gstrAutoInput) = "0" Then GoTo continue
         
         Dim strDesignNo As String
-        strDesignNo = Trim(mRecords(I).Properties(lngIndex_DesignNo))
+        strDesignNo = Trim(mRecords(i).Properties(lngIndex_DesignNo))
         If blnNoCheckFlag = False And Trim(strDesignNo) = "" Then
-            mRecords(I).Properties(lngIndex_FileDataName) = ""
-            mRecords(I).Properties(lngIndex_FullDesignNo) = ""
+            mRecords(i).Properties(lngIndex_FileDataName) = ""
+            mRecords(i).Properties(lngIndex_FullDesignNo) = ""
             GoTo continue
         End If
         
         If blnNoCheckFlag = False And Trim(strSection) = "" Then
             gBlankSection = True
-            mRecords(I).Properties(lngIndex_FileDataName) = ""
-            mRecords(I).Properties(lngIndex_FullDesignNo) = ""
+            mRecords(i).Properties(lngIndex_FileDataName) = ""
+            mRecords(i).Properties(lngIndex_FullDesignNo) = ""
             GoTo continue
         End If
         
@@ -522,8 +522,8 @@ Public Sub SetDefaultDesinerSection()
                 ReDim Preserve gUnknownSection(lngSectCnt + 1) As String
                 gUnknownSection(lngSectCnt + 1) = strSection
                 On Error GoTo 0
-                mRecords(I).Properties(lngIndex_FileDataName) = ""
-                mRecords(I).Properties(lngIndex_FullDesignNo) = ""
+                mRecords(i).Properties(lngIndex_FileDataName) = ""
+                mRecords(i).Properties(lngIndex_FullDesignNo) = ""
                 GoTo continue
             End If
             If IsNumeric(strOfficeCode) = True Then
@@ -534,11 +534,11 @@ Public Sub SetDefaultDesinerSection()
         End If
 
         Dim strStatus As String
-        strStatus = mRecords(I).Properties(lngIndex_Status)
+        strStatus = mRecords(i).Properties(lngIndex_Status)
         If blnNoCheckFlag = False And Trim(strStatus) = "" Then
             gBlankStatus = True
-            mRecords(I).Properties(lngIndex_FileDataName) = ""
-            mRecords(I).Properties(lngIndex_FullDesignNo) = ""
+            mRecords(i).Properties(lngIndex_FileDataName) = ""
+            mRecords(i).Properties(lngIndex_FullDesignNo) = ""
             GoTo continue
         End If
         
@@ -549,8 +549,8 @@ Public Sub SetDefaultDesinerSection()
             ReDim Preserve gUnknownStatus(lngStatusCnt + 1) As String
             gUnknownStatus(lngStatusCnt + 1) = strStatus
             On Error GoTo 0
-            mRecords(I).Properties(lngIndex_FileDataName) = ""
-            mRecords(I).Properties(lngIndex_FullDesignNo) = ""
+            mRecords(i).Properties(lngIndex_FileDataName) = ""
+            mRecords(i).Properties(lngIndex_FullDesignNo) = ""
             GoTo continue
         End If
         
@@ -573,7 +573,7 @@ Public Sub SetDefaultDesinerSection()
             End If
         End If
         Dim strRevisionNo As String
-        strRevisionNo = mRecords(I).Properties(lngIndex_RevisionNo)
+        strRevisionNo = mRecords(i).Properties(lngIndex_RevisionNo)
         If blnOldSection = False And Len(strDesignNo) < 6 Then
             Dim strAddZero As String
             strAddZero = Right(String(6, "0") & Trim(strDesignNo), 6)
@@ -593,7 +593,7 @@ Public Sub SetDefaultDesinerSection()
         End If
 
         Dim strOldFullDesignNo As String
-        strOldFullDesignNo = mRecords(I).Properties(lngIndex_FullDesignNo)
+        strOldFullDesignNo = mRecords(i).Properties(lngIndex_FullDesignNo)
         
         Dim strOldFullDesignNoSplit() As String
         strOldFullDesignNoSplit = Split(strOldFullDesignNo, "&")
@@ -611,7 +611,7 @@ Public Sub SetDefaultDesinerSection()
             Next m
         End If
 
-        mRecords(I).Properties(lngIndex_FullDesignNo) = strFullDesignNo
+        mRecords(i).Properties(lngIndex_FullDesignNo) = strFullDesignNo
         
         Dim strEndChar As String
         strEndChar = ""
@@ -708,14 +708,14 @@ Public Sub SetDefaultDesinerSection()
                 Dim j As Long
                 For j = 1 To lngRecCnt
                 
-                    If j = I Then
+                    If j = i Then
                         GoTo CONTINUE2
-                    ElseIf I < j And Trim(mRecords(j).Sel) = True Then
+                    ElseIf i < j And Trim(mRecords(j).Sel) = True Then
                         GoTo CONTINUE2
                     End If
                     
                     Dim strFileDataType As String
-                    strFileDataType = mRecords(I).Properties(lngIndex_FileDataType)
+                    strFileDataType = mRecords(i).Properties(lngIndex_FileDataType)
                     If mRecords(j).Properties(lngIndex_FileDataName) & mRecords(j).Properties(lngIndex_FileDataType) = _
                        strTempName & strFileDataType Then
                         blnSameName = True
@@ -736,27 +736,27 @@ CONTINUE2:
             strFileDataName = strFileDataName & "-" & strEndChar
         End If
         
-        mRecords(I).Properties(lngIndex_FileDataName) = strFileDataName
+        mRecords(i).Properties(lngIndex_FileDataName) = strFileDataName
 
 continue:
         
-        If Trim(modMain.gstrAutoInput) <> "0" And blnSetFileName = True And Trim(mRecords(I).Properties(lngIndex_DesignNo)) = "" Then
+        If Trim(modMain.gstrAutoInput) <> "0" And blnSetFileName = True And Trim(mRecords(i).Properties(lngIndex_DesignNo)) = "" Then
             
             Dim strLoadFileName As String
-            strLoadFileName = mRecords(I).FileName
-            mRecords(I).Properties(lngIndex_FileDataName) = strLoadFileName
+            strLoadFileName = mRecords(i).FileName
+            mRecords(i).Properties(lngIndex_FileDataName) = strLoadFileName
             
         End If
         
-    Next I
+    Next i
     
-    For I = 1 To lngRecCnt
+    For i = 1 To lngRecCnt
         
-        If mRecords(I).IsChildInstance = True Then
+        If mRecords(i).IsChildInstance = True Then
             GoTo CONTINUE3
         End If
         
-        If Trim(mRecords(I).Sel) <> True Then
+        If Trim(mRecords(i).Sel) <> True Then
             GoTo CONTINUE3
         End If
 
@@ -765,10 +765,10 @@ continue:
         Dim strLastChar2 As String
         Dim strClassification2 As String
         Dim strRevisionNo2 As String
-        strName = mRecords(I).Properties(lngIndex_FileDataName)
-        strType = mRecords(I).Properties(lngIndex_FileDataType)
-        strClassification2 = mRecords(I).Properties(lngIndex_Classification)
-        strRevisionNo2 = mRecords(I).Properties(lngIndex_RevisionNo)
+        strName = mRecords(i).Properties(lngIndex_FileDataName)
+        strType = mRecords(i).Properties(lngIndex_FileDataType)
+        strClassification2 = mRecords(i).Properties(lngIndex_Classification)
+        strRevisionNo2 = mRecords(i).Properties(lngIndex_RevisionNo)
         If Right(strName, 2) = "-S" Then
             strLastChar2 = "S"
         ElseIf Right(strName, 2) = "-U" Then
@@ -788,7 +788,7 @@ continue:
         Dim k As Long
         For k = 1 To lngRecCnt
         
-            If k = I Then
+            If k = i Then
                 GoTo CONTINUE6
             End If
         
@@ -800,7 +800,7 @@ CONTINUE6:
 
         If lngCnt <= 0 Then
             If strClassification2 = "2K mould (CATPart)" And Right(strName, 2) = "-S" Then
-                mRecords(I).Properties(lngIndex_FileDataName) = Left(strName, Len(strName) - 2) & "-1" & strLastChar2
+                mRecords(i).Properties(lngIndex_FileDataName) = Left(strName, Len(strName) - 2) & "-1" & strLastChar2
 
             End If
             GoTo CONTINUE3
@@ -851,7 +851,7 @@ CONTINUE4:
         Next k
         
 CONTINUE3:
-    Next I
+    Next i
     
 End Sub
 
@@ -860,8 +860,8 @@ Public Sub SetDummyBlank()
     Dim lngCnt As Long
     lngCnt = Me.fncCount()
     
-    Dim I As Long
-    For I = 1 To lngCnt
+    Dim i As Long
+    For i = 1 To lngCnt
         
         Dim lngPropCnt As Long
         On Error Resume Next
@@ -878,7 +878,7 @@ Public Sub SetDummyBlank()
             strDataType = 0
             
             Dim strValue As String
-            strValue = mRecords(I).Properties(j)
+            strValue = mRecords(i).Properties(j)
             
             If strReq = "0" And Trim(strValue) = "" Then
                 
@@ -888,12 +888,12 @@ Public Sub SetDummyBlank()
                 Else
                     strDummyValue = "999"
                 End If
-                mRecords(I).Properties(j) = strDummyValue
+                mRecords(i).Properties(j) = strDummyValue
                     
             End If
         Next j
     
-    Next I
+    Next i
     
 End Sub
 
@@ -907,12 +907,12 @@ Public Function fncSetPropertyFromDB(ByRef ilstModelID() As String, _
     lngReplaceCnt = UBound(ilstModelID)
     On Error GoTo 0
 
-    Dim I As Integer
-    For I = 1 To lngReplaceCnt
+    Dim i As Integer
+    For i = 1 To lngReplaceCnt
         On Error Resume Next
         Dim strModelID As String
         strModelID = ""
-        strModelID = ilstModelID(I)
+        strModelID = ilstModelID(i)
         On Error GoTo 0
     
         Dim typRecord As modMain.Record
@@ -1008,7 +1008,7 @@ Public Function fncSetPropertyFromDB(ByRef ilstModelID() As String, _
         If Me.fncReplaceRecord(typRecord) = False Then Exit Function
         
 continue:
-    Next I
+    Next i
     fncSetPropertyFromDB = True
 End Function
 
@@ -1019,11 +1019,11 @@ Public Function fncReplaceRecord(ByRef iRecord As modMain.Record) As Boolean
     Dim lngRecCnt As Long
     lngRecCnt = Me.fncCount
     
-    Dim I As Long
-    For I = 1 To lngRecCnt
-        If mRecords(I).ModelDrawingID <> iRecord.ModelDrawingID Then GoTo continue
+    Dim i As Long
+    For i = 1 To lngRecCnt
+        If mRecords(i).ModelDrawingID <> iRecord.ModelDrawingID Then GoTo continue
         
-        mRecords(I).FromDB = iRecord.FromDB
+        mRecords(i).FromDB = iRecord.FromDB
         
         Dim lngPropCnt As Long
         On Error Resume Next
@@ -1033,13 +1033,13 @@ Public Function fncReplaceRecord(ByRef iRecord As modMain.Record) As Boolean
         Dim j As Long
         For j = 1 To lngPropCnt
             On Error Resume Next
-            mRecords(I).Properties(j) = iRecord.Properties(j)
+            mRecords(i).Properties(j) = iRecord.Properties(j)
             On Error GoTo 0
         Next j
         
         fncReplaceRecord = True
 continue:
-    Next I
+    Next i
     
 End Function
 
@@ -1049,21 +1049,21 @@ Public Function fncSetLinkID() As Boolean
     Dim lngRecCnt As Long
     lngRecCnt = Me.fncCount
     
-    Dim I As Long
-    For I = 1 To lngRecCnt
-        If mRecords(I).LinkID <> "" Then GoTo continue
-        If mRecords(I).LinkTo = "" And mRecords(I).LinkID = "" Then
-            mRecords(I).LinkID = "-"
+    Dim i As Long
+    For i = 1 To lngRecCnt
+        If mRecords(i).LinkID <> "" Then GoTo continue
+        If mRecords(i).LinkTo = "" And mRecords(i).LinkID = "" Then
+            mRecords(i).LinkID = "-"
             GoTo continue
         End If
         
         Dim lngIndex As Long
-        lngIndex = Me.fncSearchFromFilePath(mRecords(I).LinkTo)
+        lngIndex = Me.fncSearchFromFilePath(mRecords(i).LinkTo)
         
-        mRecords(I).LinkID = mRecords(lngIndex).ID
-        mRecords(lngIndex).LinkID = mRecords(I).ID
+        mRecords(i).LinkID = mRecords(lngIndex).ID
+        mRecords(lngIndex).LinkID = mRecords(i).ID
 continue:
-    Next I
+    Next i
     fncSetLinkID = True
 End Function
 
@@ -1073,12 +1073,12 @@ Public Function fncCountSlected() As Long
     Dim lngRecCnt As Long
     lngRecCnt = Me.fncCount
     
-    Dim I As Long
-    For I = 1 To lngRecCnt
-        If Trim(mRecords(I).Sel) = True Then
+    Dim i As Long
+    For i = 1 To lngRecCnt
+        If Trim(mRecords(i).Sel) = True Then
             fncCountSlected = fncCountSlected + 1
         End If
-    Next I
+    Next i
 End Function
 
 Public Sub SortDrawing()
@@ -1091,18 +1091,18 @@ Public Sub SortDrawing()
     Do
         blnSorted = False
         
-        Dim I As Long
-        For I = 1 To lngRecCnt - 1
-            If mRecords(I + 1).Properties(lngIndex_Type) <> "CATDrawing" Then Exit For
+        Dim i As Long
+        For i = 1 To lngRecCnt - 1
+            If mRecords(i + 1).Properties(lngIndex_Type) <> "CATDrawing" Then Exit For
             
-            If val(mRecords(I).LinkID) > val(mRecords(I + 1).LinkID) Then
+            If val(mRecords(i).LinkID) > val(mRecords(i + 1).LinkID) Then
                 blnSorted = True
                 Dim buf As Record
-                buf = mRecords(I)
-                mRecords(I) = mRecords(I + 1)
-                mRecords(I + 1) = buf
+                buf = mRecords(i)
+                mRecords(i) = mRecords(i + 1)
+                mRecords(i + 1) = buf
             End If
-        Next I
+        Next i
     Loop While blnSorted = True
 End Sub
 
@@ -1118,21 +1118,21 @@ Public Function fncIs2DNumbered() As Boolean
     Dim lngRecCnt As Long
     lngRecCnt = Me.fncCount
 
-    Dim I As Long
-    For I = 1 To lngRecCnt
+    Dim i As Long
+    For i = 1 To lngRecCnt
 
         Dim strType As String
-        strType = mRecords(I).Properties(lngIndex_Type)
+        strType = mRecords(i).Properties(lngIndex_Type)
 
         Dim str3DDesignNo As String
-        str3DDesignNo = mRecords(I).Properties(lngIndex_DesignNo)
+        str3DDesignNo = mRecords(i).Properties(lngIndex_DesignNo)
         
         Dim typRecord As Record
-        If mRecords(I).Sel = True And mRecords(I).LinkID <> "-" And str3DDesignNo = "" _
+        If mRecords(i).Sel = True And mRecords(i).LinkID <> "-" And str3DDesignNo = "" _
                                     And (strType = "CATPart" Or strType = "CATProduct") Then
             
             Dim lngLinkID As Long
-            lngLinkID = mRecords(I).LinkID
+            lngLinkID = mRecords(i).LinkID
             
             Dim str2DDesignNo As String
             str2DDesignNo = mRecords(lngLinkID).Properties(lngIndex_DesignNo)
@@ -1142,7 +1142,7 @@ Public Function fncIs2DNumbered() As Boolean
                 Exit Function
             End If
         End If
-    Next I
+    Next i
 End Function
 
 Public Sub CorrectOrName()
@@ -1153,21 +1153,21 @@ Public Sub CorrectOrName()
     lngIndex_Section = modMain.fncGetIndex("Section")
     lngIndex_CurrentStatus = modMain.fncGetIndex("Current_Status")
     
-    Dim I As Long
-    For I = 1 To lngRecCnt
+    Dim i As Long
+    For i = 1 To lngRecCnt
         Dim strSection As String
-        strSection = mRecords(I).Properties(lngIndex_Section)
+        strSection = mRecords(i).Properties(lngIndex_Section)
         If UCase("FCS") = UCase(Trim(strSection)) Then
-            mRecords(I).Properties(lngIndex_Section) = "FCS"
+            mRecords(i).Properties(lngIndex_Section) = "FCS"
         ElseIf 0 < InStr(UCase(strSection), UCase("PWR")) Then
-            mRecords(I).Properties(lngIndex_Section) = "FCS"
+            mRecords(i).Properties(lngIndex_Section) = "FCS"
         End If
         
         Dim strCurrentStatus As String
-        strCurrentStatus = mRecords(I).Properties(lngIndex_CurrentStatus)
+        strCurrentStatus = mRecords(i).Properties(lngIndex_CurrentStatus)
         If UCase("Prototype") = UCase(Trim(strCurrentStatus)) Or _
            UCase("Study") = UCase(Trim(strCurrentStatus)) Then
-            mRecords(I).Properties(lngIndex_CurrentStatus) = "Prototype/Study"
+            mRecords(i).Properties(lngIndex_CurrentStatus) = "Prototype/Study"
         End If
-    Next I
+    Next i
 End Sub

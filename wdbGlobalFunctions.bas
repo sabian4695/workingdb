@@ -654,7 +654,7 @@ On Error GoTo err_handler
 
 Dim db As Database
 Set db = CurrentDb()
-Dim I As Long, testDate As Date, daysLeft As Long, rsHolidays As Recordset, intDirection
+Dim i As Long, testDate As Date, daysLeft As Long, rsHolidays As Recordset, intDirection
 testDate = dateInput
 daysLeft = Abs(daysToAdd)
 intDirection = 1
@@ -868,20 +868,20 @@ tblHeading = "<table style=""width: 100%; margin: 0 auto; padding: 2em 2em 1em 2
                             "</tbody>" & _
                         "</table>"
                         
-Dim I As Long, lateTable As String, todayTable As String, nextTable As String, varStr As String, varStr1 As String, seeMore As String
+Dim i As Long, lateTable As String, todayTable As String, nextTable As String, varStr As String, varStr1 As String, seeMore As String
 seeMore = "<tr style=""border-collapse: collapse;""><td style=""padding: .1em 2em; font-style: italic;"" colspan=""3"">see the rest in the workingdb...</td></tr>"
-I = 0
+i = 0
 tblStepOverview = ""
 
 varStr = ""
 varStr1 = ""
 If lates(0) <> "" Then
-    For I = 0 To UBound(lates)
+    For i = 0 To UBound(lates)
         lateTable = lateTable & "<tr style=""border-collapse: collapse;"">" & _
-                                                "<td style=""padding: .1em 2em;"">" & Split(lates(I), ",")(0) & "</td>" & _
-                                                "<td style=""padding: .1em 2em;"">" & Split(lates(I), ",")(1) & "</td>" & _
-                                                "<td style=""padding: .1em 2em;  color: rgb(255,195,195);"">" & Split(lates(I), ",")(2) & "</td></tr>"
-    Next I
+                                                "<td style=""padding: .1em 2em;"">" & Split(lates(i), ",")(0) & "</td>" & _
+                                                "<td style=""padding: .1em 2em;"">" & Split(lates(i), ",")(1) & "</td>" & _
+                                                "<td style=""padding: .1em 2em;  color: rgb(255,195,195);"">" & Split(lates(i), ",")(2) & "</td></tr>"
+    Next i
     If lateCount > 1 Then varStr = "s"
     If lateCount > 15 Then varStr1 = seeMore
     tblStepOverview = tblStepOverview & "<table style=""width: 100%; margin: 0 auto; background: #2b2b2b; color: rgb(255,255,255);""><tr><th style=""padding: 1em; font-size: 20px; color: rgb(255,150,150); display: table-header-group;"" colspan=""3"">You have " & _
@@ -892,12 +892,12 @@ End If
 varStr = ""
 varStr1 = ""
 If todays(0) <> "" Then
-    For I = 0 To UBound(todays)
+    For i = 0 To UBound(todays)
         todayTable = todayTable & "<tr style=""border-collapse: collapse;"">" & _
-                                                "<td style=""padding: .1em 2em;"">" & Split(todays(I), ",")(0) & "</td>" & _
-                                                "<td style=""padding: .1em 2em;"">" & Split(todays(I), ",")(1) & "</td>" & _
-                                                "<td style=""padding: .1em 2em;"">" & Split(todays(I), ",")(2) & "</td></tr>"
-    Next I
+                                                "<td style=""padding: .1em 2em;"">" & Split(todays(i), ",")(0) & "</td>" & _
+                                                "<td style=""padding: .1em 2em;"">" & Split(todays(i), ",")(1) & "</td>" & _
+                                                "<td style=""padding: .1em 2em;"">" & Split(todays(i), ",")(2) & "</td></tr>"
+    Next i
     If todayCount > 1 Then varStr = "s"
     If todayCount > 15 Then varStr1 = seeMore
     tblStepOverview = tblStepOverview & "<table style=""width: 100%; margin: 0 auto; background: #2b2b2b; color: rgb(255,255,255);""><tr><th style=""padding: 1em; font-size: 20px; color: rgb(235,200,200); display: table-header-group;"" colspan=""3"">You have " & _
@@ -908,12 +908,12 @@ End If
 varStr = ""
 varStr1 = ""
 If nexts(0) <> "" Then
-    For I = 0 To UBound(nexts)
+    For i = 0 To UBound(nexts)
         nextTable = nextTable & "<tr style=""border-collapse: collapse;"">" & _
-                                                "<td style=""padding: .1em 2em;"">" & Split(nexts(I), ",")(0) & "</td>" & _
-                                                "<td style=""padding: .1em 2em;"">" & Split(nexts(I), ",")(1) & "</td>" & _
-                                                "<td style=""padding: .1em 2em;"">" & Split(nexts(I), ",")(2) & "</td></tr>"
-    Next I
+                                                "<td style=""padding: .1em 2em;"">" & Split(nexts(i), ",")(0) & "</td>" & _
+                                                "<td style=""padding: .1em 2em;"">" & Split(nexts(i), ",")(1) & "</td>" & _
+                                                "<td style=""padding: .1em 2em;"">" & Split(nexts(i), ",")(2) & "</td></tr>"
+    Next i
     If nextCount > 1 Then varStr = "s"
     If nextCount > 15 Then varStr1 = seeMore
     tblStepOverview = tblStepOverview & "<table style=""width: 100%; margin: 0 auto; background: #2b2b2b; color: rgb(255,255,255);""><tr><th style=""padding: 1em; font-size: 20px; color: rgb(235,235,235); display: table-header-group;"" colspan=""3"">You have " & _

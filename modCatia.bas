@@ -34,10 +34,10 @@ Public Function fncInit()
         Exit Function
     End If
     
-    Dim lngDrawCnt As Long, lngProdCnt As Long, I As Long, objDoc As Object
-    For I = 1 To mobjCATIA.Windows.count
+    Dim lngDrawCnt As Long, lngProdCnt As Long, i As Long, objDoc As Object
+    For i = 1 To mobjCATIA.Windows.count
         On Error Resume Next
-        Set objDoc = mobjCATIA.Windows.ITEM(I).Parent
+        Set objDoc = mobjCATIA.Windows.ITEM(i).Parent
         On Error GoTo 0
         If Not objDoc Is Nothing Then
             If TypeName(objDoc) = "DrawingDocument" Then
@@ -51,7 +51,7 @@ Public Function fncInit()
                 Set mlstProdDoc(lngProdCnt) = objDoc
             End If
         End If
-    Next I
+    Next i
     fncInit = True
 End Function
 
@@ -79,26 +79,26 @@ Public Function fncGetProperty(Optional ByVal iblnLoad2dText As Boolean = True) 
     lngCnt = UBound(mlstDrawDoc)
     On Error GoTo 0
     
-    Dim I As Long
-    For I = 1 To lngCnt
-        If Not mlstDrawDoc(I) Is Nothing Then
-            If fncGetPropertyFromDrawing(mlstDrawDoc(I), lngParentIndex, fncGetProperty, iblnLoad2dText) = False Then
-                Call modMessage.Show("E006", mlstDrawDoc(I).name)
+    Dim i As Long
+    For i = 1 To lngCnt
+        If Not mlstDrawDoc(i) Is Nothing Then
+            If fncGetPropertyFromDrawing(mlstDrawDoc(i), lngParentIndex, fncGetProperty, iblnLoad2dText) = False Then
+                Call modMessage.Show("E006", mlstDrawDoc(i).name)
                 Set fncGetProperty = Nothing
                 Exit Function
             End If
             lngParentIndex = lngParentIndex + 1
         End If
-    Next I
+    Next i
     
     On Error Resume Next
     lngCnt = 0
     lngCnt = UBound(mlstProdDoc)
     On Error GoTo 0
     
-    For I = 1 To lngCnt
+    For i = 1 To lngCnt
         Dim objRootProd As Object
-        Set objRootProd = mlstProdDoc(I).Product
+        Set objRootProd = mlstProdDoc(i).Product
         If objRootProd Is Nothing Then
             Call modMessage.Show("E006")
             Set fncGetProperty = Nothing
@@ -112,7 +112,7 @@ Public Function fncGetProperty(Optional ByVal iblnLoad2dText As Boolean = True) 
             Exit Function
         End If
         
-    Next I
+    Next i
 
     Dim strErrID As String
     strErrID = fncGetOldNumberingProperty(fncGetProperty)
@@ -141,10 +141,10 @@ Private Function fncGetDrawingLink(ByRef iobjDrawDoc As Object) As String
         Exit Function
     End If
 
-    Dim I As Long
-    For I = 1 To iobjDrawDoc.Sheets.count
+    Dim i As Long
+    For i = 1 To iobjDrawDoc.Sheets.count
         Dim objSheet As Object
-        Set objSheet = iobjDrawDoc.Sheets.ITEM(I)
+        Set objSheet = iobjDrawDoc.Sheets.ITEM(i)
         Dim j As Long
         For j = 1 To objSheet.Views.count
             Dim objView As Object
@@ -181,7 +181,7 @@ Private Function fncGetDrawingLink(ByRef iobjDrawDoc As Object) As String
             End If
 continue:
         Next j
-    Next I
+    Next i
 End Function
 
 Private Function fncIsInTree(ByRef iobjProduct As Object, ByVal istrFullPath As String) As Boolean
@@ -198,15 +198,15 @@ Private Function fncIsInTree(ByRef iobjProduct As Object, ByVal istrFullPath As 
         Exit Function
     End If
     
-    Dim I As Long
-    For I = 1 To iobjProduct.Products.count
+    Dim i As Long
+    For i = 1 To iobjProduct.Products.count
         Dim objChildProd As Object
-        Set objChildProd = iobjProduct.Products.ITEM(I)
+        Set objChildProd = iobjProduct.Products.ITEM(i)
         If fncIsInTree(objChildProd, istrFullPath) = True Then
             fncIsInTree = True
             Exit Function
         End If
-    Next I
+    Next i
 End Function
 
 Private Function fncGetOldNumberingProperty(ByRef iobjTable As CATIAPropertyTable) As String
@@ -216,10 +216,10 @@ Private Function fncGetOldNumberingProperty(ByRef iobjTable As CATIAPropertyTabl
     lngCnt = iobjTable.fncCount
     Dim lstModelID() As String
     ReDim lstModelID(0)
-    Dim I As Long
-    For I = 1 To lngCnt
+    Dim i As Long
+    For i = 1 To lngCnt
         Dim typRecord As modMain.Record
-        If iobjTable.fncItem(I, typRecord) = False Then
+        If iobjTable.fncItem(i, typRecord) = False Then
             fncGetOldNumberingProperty = "E035"
             Exit Function
         End If
@@ -242,7 +242,7 @@ Private Function fncGetOldNumberingProperty(ByRef iobjTable As CATIAPropertyTabl
             lstModelID(lngIndex + 1) = typRecord.ModelDrawingID
         End If
 continue:
-    Next I
+    Next i
     
     On Error Resume Next
     lngCnt = 0
@@ -307,9 +307,9 @@ Private Function fncGetDrawingText(ByRef ilstDrawText() As Object, ByVal istrTex
     
     ReDim lstTargetText(0)
     
-    Dim I As Long
-    For I = 1 To lngSize
-        Set objText = ilstDrawText(I)
+    Dim i As Long
+    For i = 1 To lngSize
+        Set objText = ilstDrawText(i)
         If Not objText Is Nothing Then
             If fncIsNumberedName(objText.name, istrTextName) Then
                 On Error Resume Next
@@ -320,7 +320,7 @@ Private Function fncGetDrawingText(ByRef ilstDrawText() As Object, ByVal istrTex
                 Set lstTargetText(lngCnt + 1) = objText
             End If
         End If
-    Next I
+    Next i
     
     Call SortTextObject(lstTargetText)
     
@@ -350,10 +350,10 @@ Private Sub SortTextObject(ByRef ilstText() As Object)
     lngI = UBound(ilstText)
     On Error GoTo 0
     
-    Dim I As Long
-    For I = lngI To 1 Step -1
+    Dim i As Long
+    For i = lngI To 1 Step -1
         Dim j As Long
-        For j = 1 To I - 1
+        For j = 1 To i - 1
             If ilstText(j).name > ilstText(j + 1).name Then
                 Dim objSwap As Object
                 Set objSwap = ilstText(j)
@@ -361,7 +361,7 @@ Private Sub SortTextObject(ByRef ilstText() As Object)
                 Set ilstText(j + 1) = objSwap
             End If
         Next j
-    Next I
+    Next i
 End Sub
 
 Private Function fncIsNumberedName(ByVal istrName As String, ByVal istrKeyWord As String) As Boolean
@@ -385,11 +385,11 @@ Private Function fncIsNumberedName(ByVal istrName As String, ByVal istrKeyWord A
     Dim strSuffix As String
     strSuffix = Right(istrName, lngNameLength - lngKeyWordLength)
     
-    Dim I As Long
-    For I = 1 To Len(strSuffix)
+    Dim i As Long
+    For i = 1 To Len(strSuffix)
         Dim strBuff As String
         strBuff = ""
-        strBuff = Mid(strSuffix, I, 1)
+        strBuff = Mid(strSuffix, i, 1)
         If strBuff = "0" Then
         ElseIf strBuff = "1" Then
         ElseIf strBuff = "2" Then
@@ -403,7 +403,7 @@ Private Function fncIsNumberedName(ByVal istrName As String, ByVal istrKeyWord A
         Else
             Exit Function
         End If
-    Next I
+    Next i
     
     fncIsNumberedName = True
 End Function
@@ -446,25 +446,25 @@ Private Function fncGetExtendPropertiesFromDraw(ByRef iobjDrawDoc As Object, _
     Dim blnDesignNoFromText As Boolean
     blnDesignNoFromText = False
     
-    Dim I As Long
-    For I = 1 To lngCnt
+    Dim i As Long
+    For i = 1 To lngCnt
         strTemp = ""
         strTextName = ""
         strParamName = ""
         '/ TITLE_FILEDATATYP-Text Parameter
-        If modMain.gcurMainProperty(I) = "File_Data_Type" Then
+        If modMain.gcurMainProperty(i) = "File_Data_Type" Then
             strTemp = "CATDrawing"
         Else
             If iblnLoad2dText = True Then
-                strTextName = getPLMpropertyData("Drawing_Text_Name", "Form_Name", modMain.gcurMainProperty(I))
+                strTextName = getPLMpropertyData("Drawing_Text_Name", "Form_Name", modMain.gcurMainProperty(i))
             Else
-                strParamName = getPLMpropertyData("Drawing_Parameter_Name", "Form_Name", modMain.gcurMainProperty(I))
+                strParamName = getPLMpropertyData("Drawing_Parameter_Name", "Form_Name", modMain.gcurMainProperty(i))
             End If
             Dim blnGetText As Boolean: blnGetText = False
             If strTextName <> "" And iblnLoad2dText = True Then
                 blnGetText = fncGetDrawingText(lstDrawText, strTextName, strTemp)
                 strTemp = Replace(strTemp, vbLf, " ")
-                If modMain.gcurMainProperty(I) = "Full_Design_No" Then blnDesignNoFromText = True
+                If modMain.gcurMainProperty(i) = "Full_Design_No" Then blnDesignNoFromText = True
             ElseIf strParamName <> "" And iblnLoad2dText = False Then
                 strTemp = fncGetDrawingParam(iobjDrawDoc, strParamName)
             Else
@@ -472,9 +472,9 @@ Private Function fncGetExtendPropertiesFromDraw(ByRef iobjDrawDoc As Object, _
             End If
         End If
         
-        ReDim Preserve ostrProperties(I)
-        ostrProperties(I) = strTemp
-    Next I
+        ReDim Preserve ostrProperties(i)
+        ostrProperties(i) = strTemp
+    Next i
     
     If blnDesignNoFromText = True Then
         Dim lngIndex_FullDesignNo As Long
@@ -506,9 +506,9 @@ Private Function fncGetExtendPropertiesFromDraw(ByRef iobjDrawDoc As Object, _
             strDesignNo = strSplit(0)
             ostrProperties(lngIndex_DesignNo) = strSplit(0)
             strBranchNo = strSplit(1)
-            For I = 2 To lngSize
-                strBranchNo = strBranchNo & "-" & strSplit(I)
-            Next I
+            For i = 2 To lngSize
+                strBranchNo = strBranchNo & "-" & strSplit(i)
+            Next i
             ostrProperties(lngIndex_BranchNo) = strBranchNo
         End If
         
@@ -677,10 +677,10 @@ Private Function fncGetPropertyFromProduct(ByRef iobjProduct As Object, ByVal ii
     If lngParentIndex = 0 Then lngParentIndex = ilngParentIndex
     
     '/ Product
-    Dim I As Long
-    For I = 1 To iobjProduct.Products.count
-        If fncGetPropertyFromProduct(iobjProduct.Products.ITEM(I), iintLevel + 1, lngParentIndex, oobjCatiaData) = False Then Exit Function
-    Next I
+    Dim i As Long
+    For i = 1 To iobjProduct.Products.count
+        If fncGetPropertyFromProduct(iobjProduct.Products.ITEM(i), iintLevel + 1, lngParentIndex, oobjCatiaData) = False Then Exit Function
+    Next i
     fncGetPropertyFromProduct = True
 End Function
 
@@ -795,22 +795,22 @@ Private Function fncGetUserRefProperties(ByRef iobjProduct As Object, ByRef ostr
     lngCnt = UBound(modMain.gcurMainProperty)
     On Error GoTo 0
     
-    Dim I As Long
-    For I = 1 To lngCnt
+    Dim i As Long
+    For i = 1 To lngCnt
         
         Dim strPropName As String
-        strPropName = getPLMpropertyData("Property_Name", "Form_Name", modMain.gcurMainProperty(I))
+        strPropName = getPLMpropertyData("Property_Name", "Form_Name", modMain.gcurMainProperty(i))
 
-        If modMain.gcurMainProperty(I) = "File_Data_Type" Then
+        If modMain.gcurMainProperty(i) = "File_Data_Type" Then
             If fncGetDocType(iobjProduct, strTemp) = False Then Exit Function
         Else
             strTemp = ""
             strTemp = fncGetUserRefProperty(iobjProduct, strPropName)
         End If
         
-        ReDim Preserve ostrProperties(I)
-        ostrProperties(I) = strTemp
-    Next I
+        ReDim Preserve ostrProperties(i)
+        ostrProperties(i) = strTemp
+    Next i
     
     fncGetUserRefProperties = True
 End Function
@@ -861,16 +861,16 @@ Private Function fncCountInstance(ByRef iobjProduct As Object) As Long
     Dim strFilePath As String
     If fncGetDocPath(iobjProduct, strFilePath) = False Then Exit Function
     
-    Dim I As Long
-    For I = 1 To objProducts.count
+    Dim i As Long
+    For i = 1 To objProducts.count
         '/ Product
         Dim objChild As Object
-        Set objChild = objProducts.ITEM(I)
+        Set objChild = objProducts.ITEM(i)
         Dim strChildPath As String
         If fncGetDocPath(objChild, strChildPath) = True Then
             If strFilePath = strChildPath Then fncCountInstance = fncCountInstance + 1
         End If
-    Next I
+    Next i
 End Function
 
 Private Sub AddNotFoundTextList(ByVal istrTextName As String)
@@ -883,10 +883,10 @@ Private Sub AddNotFoundTextList(ByVal istrTextName As String)
     '/ Text
     Dim blnExist As Boolean
     blnExist = False
-    Dim I As Integer
-    For I = 1 To lngCnt
-        If gstrNotFoundText(I) = istrTextName Then blnExist = True
-    Next I
+    Dim i As Integer
+    For i = 1 To lngCnt
+        If gstrNotFoundText(i) = istrTextName Then blnExist = True
+    Next i
     
     If blnExist = True Then Exit Sub
     
@@ -905,14 +905,14 @@ Public Function fncSetProperty(ByRef iobjCatiaData As CATIAPropertyTable, _
     Dim lngCnt As Long
     lngCnt = iobjCatiaData.fncCount()
     
-    Dim I As Long
-    For I = 1 To lngCnt
+    Dim i As Long
+    For i = 1 To lngCnt
         
         Dim typCATIARecord As Record
         Dim typExcelRecord As Record
-        If iobjCatiaData.fncItem(I, typCATIARecord) = False Then
+        If iobjCatiaData.fncItem(i, typCATIARecord) = False Then
             Exit Function
-        ElseIf iobjExcelData.fncItem(I, typExcelRecord) = False Then
+        ElseIf iobjExcelData.fncItem(i, typExcelRecord) = False Then
             Exit Function
         End If
         
@@ -933,14 +933,14 @@ Public Function fncSetProperty(ByRef iobjCatiaData As CATIAPropertyTable, _
             End If
         End If
         
-    Next I
+    Next i
     
     If iblnDrawingUpdate = True Then
-        For I = 1 To lngCnt
+        For i = 1 To lngCnt
             Dim typRecord As Record
-            If iobjCatiaData.fncItem(I, typRecord) = False Then Exit Function
+            If iobjCatiaData.fncItem(i, typRecord) = False Then Exit Function
             If typRecord.Properties(modMain.fncGetIndex("File_Data_Type")) = "CATDrawing" Then Call typRecord.CatiaObject.Update
-        Next I
+        Next i
     End If
     
     fncSetProperty = True
@@ -1015,12 +1015,12 @@ Private Function fncSetExtendPropertiesFromDraw(ByRef iobjDrawDoc As Object, _
     lngCnt = UBound(modMain.gcurMainProperty)
     On Error GoTo 0
     
-    Dim I As Long
-    For I = 1 To lngCnt
+    Dim i As Long
+    For i = 1 To lngCnt
         strParamName = ""
-        strParamName = getPLMpropertyData("Drawing_Parameter_Name", "Form_Name", modMain.gcurMainProperty(I))
-        If strParamName <> "" Then Call fncSetDrawingParam(iobjDrawDoc, strParamName, istrProperties(I))
-    Next I
+        strParamName = getPLMpropertyData("Drawing_Parameter_Name", "Form_Name", modMain.gcurMainProperty(i))
+        If strParamName <> "" Then Call fncSetDrawingParam(iobjDrawDoc, strParamName, istrProperties(i))
+    Next i
     
     fncSetExtendPropertiesFromDraw = True
 End Function
@@ -1045,16 +1045,16 @@ Private Function fncSetPropertyToTitleBlock(ByRef iobjDrawDoc As Object, _
     lngCnt = UBound(modMain.gcurMainProperty)
     On Error GoTo 0
     
-    Dim I As Long
-    For I = 1 To lngCnt
+    Dim i As Long
+    For i = 1 To lngCnt
         strTextName = ""
-        strTextName = getPLMpropertyData("Drawing_Text_Name", "Form_Name", modMain.gcurMainProperty(I))
+        strTextName = getPLMpropertyData("Drawing_Text_Name", "Form_Name", modMain.gcurMainProperty(i))
         
         Dim strValue As String
-        strValue = Replace(iobjRecord.Properties(I), vbLf, " ")
+        strValue = Replace(iobjRecord.Properties(i), vbLf, " ")
 
         If strTextName <> "" Then Call fncSetDrawingText(lstDrawText, strTextName, strValue)
-    Next I
+    Next i
     
     fncSetPropertyToTitleBlock = True
 End Function
@@ -1063,10 +1063,10 @@ Private Sub GetDrawText(ByRef iobjDrawDoc As Object, ByRef olstDrawText() As Obj
     ReDim olstDrawText(0)
     Dim objSheet As Object
     Set objSheet = iobjDrawDoc.DrawingRoot.ActiveSheet
-    Dim I As Long
-    For I = 1 To objSheet.Views.count
+    Dim i As Long
+    For i = 1 To objSheet.Views.count
         Dim objView As Object
-        Set objView = objSheet.Views.ITEM(I)
+        Set objView = objSheet.Views.ITEM(i)
         Dim j As Long
         For j = 1 To objView.Texts.count
             On Error Resume Next
@@ -1076,7 +1076,7 @@ Private Sub GetDrawText(ByRef iobjDrawDoc As Object, ByRef olstDrawText() As Obj
             ReDim Preserve olstDrawText(lngSize + 1)
             Set olstDrawText(lngSize + 1) = objView.Texts.ITEM(j)
         Next j
-    Next I
+    Next i
 End Sub
 
 Private Function fncSetDrawingText(ByRef ilstDrawText() As Object, ByVal istrTextName As String, _
@@ -1090,10 +1090,10 @@ Private Function fncSetDrawingText(ByRef ilstDrawText() As Object, ByVal istrTex
     On Error GoTo 0
     Dim lstTargetText() As Object
     ReDim lstTargetText(0)
-    Dim I As Long
-    For I = 1 To lngSize
+    Dim i As Long
+    For i = 1 To lngSize
         Dim objText As Object
-        Set objText = ilstDrawText(I)
+        Set objText = ilstDrawText(i)
         If Not objText Is Nothing Then
             If fncIsNumberedName(objText.name, istrTextName) = True Then
                 On Error Resume Next
@@ -1104,7 +1104,7 @@ Private Function fncSetDrawingText(ByRef ilstDrawText() As Object, ByVal istrTex
                 Set lstTargetText(lngCnt + 1) = objText
             End If
         End If
-    Next I
+    Next i
     
     Call SortTextObject(lstTargetText)
     Dim lstSplit As Variant
@@ -1153,12 +1153,12 @@ Private Function fncSetUserRefProperties(ByRef iobjProduct As Object, ByRef istr
     lngCnt = UBound(modMain.gcurMainProperty)
     On Error GoTo 0
     
-    Dim I As Long
-    For I = 1 To lngCnt
+    Dim i As Long
+    For i = 1 To lngCnt
         Dim strPropName As String
-        strPropName = getPLMpropertyData("Property_Name", "Form_Name", modMain.gcurMainProperty(I))
-        Call fncSetUserRefProperty(iobjProduct, strPropName, istrProperties(I))
-    Next I
+        strPropName = getPLMpropertyData("Property_Name", "Form_Name", modMain.gcurMainProperty(i))
+        Call fncSetUserRefProperty(iobjProduct, strPropName, istrProperties(i))
+    Next i
     
     fncSetUserRefProperties = True
 End Function
@@ -1205,18 +1205,18 @@ Public Function fncDeleteProperty(ByRef iobjCatiaData As CATIAPropertyTable) As 
     Dim lngCnt As Long
     lngCnt = iobjCatiaData.fncCount()
     
-    Dim I As Long
-    For I = 1 To lngCnt
+    Dim i As Long
+    For i = 1 To lngCnt
         
         Dim typCATIARecord As Record
-        If iobjCatiaData.fncItem(I, typCATIARecord) = False Then Exit Function
+        If iobjCatiaData.fncItem(i, typCATIARecord) = False Then Exit Function
         
         If typCATIARecord.Properties(modMain.fncGetIndex("File_Data_Type") - 1) = "CATDrawing" Then
             If fncDeletePropertyOnDrawing(typCATIARecord.CatiaObject) = False Then Exit Function
         Else
             If fncDeletePropertyOnProduct(typCATIARecord.CatiaObject) = False Then Exit Function
         End If
-    Next I
+    Next i
     
     fncDeleteProperty = True
 End Function
@@ -1290,14 +1290,14 @@ Private Function fncDeleteDrawingParameters(ByRef iobjDrawDoc As Object) As Bool
     lngCnt = UBound(modMain.gcurMainProperty)
     On Error GoTo 0
     
-    Dim I As Long
-    For I = 1 To lngCnt
+    Dim i As Long
+    For i = 1 To lngCnt
         Dim strPropertyName As String
-        strPropertyName = modMain.gcurMainProperty(I)
+        strPropertyName = modMain.gcurMainProperty(i)
         Dim strParamName As String
         strParamName = getPLMpropertyData("Drawing_Parameter_Name", "Form_Name", strPropertyName)
         If strParamName <> "" Then Call fncDeleteParam(iobjDrawDoc, strParamName)
-    Next I
+    Next i
     
     fncDeleteDrawingParameters = True
 End Function
@@ -1352,12 +1352,12 @@ Private Function fncDeleteUserRefProperties(ByRef iobjProduct As Object) As Bool
     lngCnt = UBound(modMain.gcurMainProperty)
     On Error GoTo 0
     
-    Dim I As Long
-    For I = 1 To lngCnt
+    Dim i As Long
+    For i = 1 To lngCnt
         Dim strPropName As String
-        strPropName = getPLMpropertyData("Property_Name", "Form_Name", modMain.gcurMainProperty(I))
+        strPropName = getPLMpropertyData("Property_Name", "Form_Name", modMain.gcurMainProperty(i))
         Call fncDeleteUserRefProperty(iobjProduct, strPropName)
-    Next I
+    Next i
     
     fncDeleteUserRefProperties = True
 End Function
@@ -1373,8 +1373,8 @@ Public Function fncSaveData(ByRef iobjCatiaData As CATIAPropertyTable, _
     
     Dim lngCnt As Long
     lngCnt = iobjExcelData.fncCount()
-    Dim I As Long
-    For I = lndLastLevel To 0 Step -1
+    Dim i As Long
+    For i = lndLastLevel To 0 Step -1
         
         Dim j As Long
         For j = 1 To lngCnt
@@ -1385,7 +1385,7 @@ Public Function fncSaveData(ByRef iobjCatiaData As CATIAPropertyTable, _
             
             If typExcelRecord.IsChildInstance = True Then GoTo continue
             If typExcelRecord.Sel <> True Then GoTo continue
-            If typExcelRecord.Level <> I Then GoTo continue
+            If typExcelRecord.Level <> i Then GoTo continue
                 
             Dim strOldPath As String
             strOldPath = typExcelRecord.FilePath
@@ -1423,7 +1423,7 @@ Public Function fncSaveData(ByRef iobjCatiaData As CATIAPropertyTable, _
             
 continue:
         Next j
-    Next I
+    Next i
     fncSaveData = True
 End Function
 
@@ -1527,11 +1527,11 @@ Public Function fncCheckBeforeSave(ByRef iobjExcelData As CATIAPropertyTable) As
     Dim lngSaveCnt As Long
     lngSaveCnt = 0
     
-    Dim I As Long
-    For I = 1 To lngCnt
+    Dim i As Long
+    For i = 1 To lngCnt
         
         Dim typExcelRecord As Record
-        If iobjExcelData.fncItem(I, typExcelRecord) = False Then
+        If iobjExcelData.fncItem(i, typExcelRecord) = False Then
             fncCheckBeforeSave = "E013"
             Exit Function
         End If
@@ -1569,7 +1569,7 @@ Public Function fncCheckBeforeSave(ByRef iobjExcelData As CATIAPropertyTable) As
         End If
         
         Dim j As Long
-        For j = I + 1 To lngCnt
+        For j = i + 1 To lngCnt
         
             Dim typTemp As Record
             If iobjExcelData.fncItem(j, typTemp) = False Then
@@ -1603,7 +1603,7 @@ CONTINUE2:
         Next j
         lngSaveCnt = lngSaveCnt + 1
 CONTINUE1:
-    Next I
+    Next i
     If lngSaveCnt = 0 Then
         fncCheckBeforeSave = "E048"
         Exit Function
@@ -1627,10 +1627,10 @@ Public Function fncSplitFileName(ByVal istrFileName As String) As String
         Exit Function
     End If
     
-    Dim I As Long
-    For I = 0 To lngSize - 1
-        fncSplitFileName = fncSplitFileName & lstSplit(I)
-    Next I
+    Dim i As Long
+    For i = 0 To lngSize - 1
+        fncSplitFileName = fncSplitFileName & lstSplit(i)
+    Next i
 End Function
 
 Public Function getSectionData(outColumnName As String, inColumnName As String, matchVal As String) As String
