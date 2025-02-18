@@ -25,7 +25,7 @@ err_handler:
     Call handleError("wdbCPCfunctions", "openCPCprojectFolder", Err.DESCRIPTION, Err.number)
 End Function
 
-Public Sub registerCPCUpdates(table As String, ID As Variant, column As String, oldVal As Variant, newVal As Variant, Optional tag0 As String, Optional tag1 As String)
+Public Sub registerCPCUpdates(table As String, ID As Variant, column As String, oldVal As Variant, newVal As Variant, projectId As Long, Optional tag0 As String, Optional tag1 As String)
 On Error GoTo err_handler
 
 Dim sqlColumns As String, sqlValues As String
@@ -46,9 +46,9 @@ If (IsNull(newVal)) Then
     newVal = ""
 End If
 
-sqlColumns = "(tableName,tableRecordId,updatedBy,updatedDate,columnName,previousData,newData,dataTag0"
+sqlColumns = "(tableName,tableRecordId,updatedBy,updatedDate,columnName,previousData,newData,dataTag0,projectId"
                     
-sqlValues = " values ('" & table & "', '" & ID & "', '" & Environ("username") & "', '" & Now() & "', '" & column & "', '" & StrQuoteReplace(CStr(oldVal)) & "', '" & StrQuoteReplace(CStr(newVal)) & "','" & tag0 & "'"
+sqlValues = " values ('" & table & "', '" & ID & "', '" & Environ("username") & "', '" & Now() & "', '" & column & "', '" & StrQuoteReplace(CStr(oldVal)) & "', '" & StrQuoteReplace(CStr(newVal)) & "'," & projectId & ",'" & tag0 & "'"
 
 If (IsNull(tag1)) Then
     sqlColumns = sqlColumns & ")"
