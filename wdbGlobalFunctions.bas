@@ -1024,10 +1024,12 @@ err_handler:
     Call handleError("wdbGlobalFunctions", "privilege", Err.DESCRIPTION, Err.number)
 End Function
 
-Function userData(data) As String
+Function userData(data, Optional specificUser As String = "") As String
 On Error GoTo err_handler
 
-userData = Nz(DLookup("[" & data & "]", "[tblPermissions]", "[User] = '" & Environ("username") & "'"))
+If specificUser = "" Then specificUser = Environ("username")
+
+userData = Nz(DLookup("[" & data & "]", "[tblPermissions]", "[User] = '" & specificUser & "'"))
 
 Exit Function
 err_handler:
