@@ -807,7 +807,7 @@ err_handler:
     Call handleError("wdbGlobalFunctions", "getAPI", Err.DESCRIPTION, Err.number)
 End Function
 
-Function generateHTML(Title As String, subTitle As String, primaryMessage As String, detail1 As String, detail2 As String, detail3 As String, Optional Link As String = "") As String
+Function generateHTML(Title As String, subTitle As String, primaryMessage As String, detail1 As String, detail2 As String, detail3 As String, Optional Link As String = "", Optional addLines As Boolean = False) As String
 On Error GoTo err_handler
 
 Dim tblHeading As String, tblFooter As String, strHTMLBody As String
@@ -834,11 +834,18 @@ tblFooter = "<table style=""width: 100%; margin: 0 auto; padding: 3em; backgroun
                             "<tr style=""border-collapse: collapse;""><td style=""padding: .1em 2em 1em 2em;"">" & detail3 & "</td></tr>" & _
                         "</tbody>" & _
                     "</table>"
+                    
+Dim addStuff As String
+addStuff = ""
+If addLines Then
+    addStuff = "<table style=""max-width: 600px; margin: 0 auto; padding: 3em; background: #eaeaea; color: rgba(255,255,255,.5);"">" & _
+        "<tr style=""border-collapse: collapse;""><td style=""padding: 1em;"">Extra Notes: type here...</td></tr></table>"
+End If
 
 strHTMLBody = "" & _
 "<!DOCTYPE html><html lang=""en"" xmlns=""http://www.w3.org/1999/xhtml"" xmlns:v=""urn:schemas-microsoft-com:vml"" xmlns:o=""urn:schemas-microsoft-com:office:office"">" & _
     "<head><meta charset=""utf-8""><title>Working DB Notification</title></head>" & _
-    "<body style=""margin: 0 auto; Font-family: 'Montserrat', sans-serif; font-weight: 400; font-size: 15px; line-height: 1.8;"">" & _
+    "<body style=""margin: 0 auto; Font-family: 'Montserrat', sans-serif; font-weight: 400; font-size: 15px; line-height: 1.8;"">" & addStuff & _
         "<table style=""max-width: 600px; margin: 0 auto; text-align: center; "">" & _
             "<tbody>" & _
                 "<tr><td>" & tblHeading & "</td></tr>" & _
