@@ -819,7 +819,7 @@ Select Case rsPI!partType
         End If
         
         resID = 1
-        If InStr(rsPI!resource, ",") Then
+        If Len(Trim(rsPI!resource)) > 0 Then
             resourceCSV = Split(rsPI!resource, ",")
             For Each ITEM In resourceCSV
                 aifInsert "Resource " & resID, CStr(ITEM), firstColBold:=True
@@ -844,7 +844,7 @@ Select Case rsPI!partType
         pph = Nz(rsAI!partsPerHour)
         
         resID = 1
-        If InStr(rsAI!resource, ",") Then
+        If Len(Trim(rsPI!resource)) > 0 Then
             resourceCSV = Split(rsAI!resource, ",")
             For Each ITEM In resourceCSV
                 aifInsert "Resource " & resID, CStr(ITEM), firstColBold:=True
