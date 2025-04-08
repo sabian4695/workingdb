@@ -1746,7 +1746,7 @@ Dim SendItems As New clsOutlookCreateItem               ' outlook class
     strSubject = partNum & " Sales Kickoff Meeting"
     
     Dim z As String, tempFold As String
-    tempFold = "\\data\mdbdata\WorkingDB\_docs\Temp\" & Environ("username") & "\"
+    tempFold = getTempFold
     If FolderExists(tempFold) = False Then MkDir (tempFold)
     z = tempFold & Format(Date, "YYMMDD") & "_" & partNum & "_Part_Information.pdf"
     DoCmd.OpenReport "rptPartInformation", acViewPreview, , "[partNumber]='" & partNum & "'", acHidden

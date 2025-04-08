@@ -207,7 +207,7 @@ On Error GoTo err_handler
 Dim h As Long
 Dim r As RECT
 
-On Error Resume Next
+'On Error Resume Next
 
 h = Application.hWndAccessApp
 'If maximised, restore
