@@ -20,10 +20,15 @@ Dim db As Database
 Set db = CurrentDb()
 
 Dim rs1 As Recordset
-Set rs1 = db.OpenRecordset("")
+Set rs1 = db.OpenRecordset("SELECT * FROM tblPartSteps WHERE documentType = 27")
 
 Do While Not rs1.EOF
+    rs1.Edit
     
+    rs1!stepType = "Complete Sort Log"
+    rs1!documentType = Null
+    
+    rs1.Update
 
     rs1.MoveNext
 Loop
