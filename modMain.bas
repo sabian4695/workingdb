@@ -227,10 +227,11 @@ Public Sub cmdNumberingClick()
     Call Terminate
 End Sub
 
-Public Sub cmdSetPropertyClick()
+Public Function cmdSetPropertyClick() As Boolean
+cmdSetPropertyClick = False
     If fncInitExcel = False Then
         Call Terminate
-        Exit Sub
+        Exit Function
     End If
 
     Dim blnDeleteProperty As Boolean
@@ -238,7 +239,7 @@ Public Sub cmdSetPropertyClick()
         Call modMessage.Show("E017")
         cmdOffClick
         Call Terminate
-        Exit Sub
+        Exit Function
     End If
 
     Dim blnDrawingUpdate As Boolean
@@ -246,7 +247,7 @@ Public Sub cmdSetPropertyClick()
         Call modMessage.Show("E017")
         cmdOffClick
         Call Terminate
-        Exit Sub
+        Exit Function
     End If
 
     Dim objExcelData As CATIAPropertyTable
@@ -257,7 +258,7 @@ Public Sub cmdSetPropertyClick()
     If lngSelCnt = 0 Then
         MsgBox "Please select a row.", vbInformation, "Hmm"
         Call Terminate
-        Exit Sub
+        Exit Function
     End If
 
     If blnDeleteProperty = False Then
@@ -269,11 +270,11 @@ Public Sub cmdSetPropertyClick()
         If strMsgID = "E038" Then
             MsgBox modMessage.GetMessage(strMsgID, strPropertyName), vbCritical + vbOKOnly, "Form"
             Call Terminate
-            Exit Sub
+            Exit Function
         ElseIf strMsgID <> "" Then
             Call modMessage.Show(strMsgID)
             Call Terminate
-            Exit Sub
+            Exit Function
         End If
         Call objExcelData.SetDefaultDesinerSection
         If 0 < objExcelData.fncCountUnknownSection() Then
@@ -285,7 +286,7 @@ Public Sub cmdSetPropertyClick()
         If objExcelData.fncReplaceProhibitCharacter() = True Then
             If modMessage.Show("Q003") = False Then
                 Call Terminate
-                Exit Sub
+                Exit Function
             End If
         End If
     End If
@@ -294,27 +295,27 @@ Public Sub cmdSetPropertyClick()
 
     If modCatia.fncInit() = False Then
         Call Terminate
-        Exit Sub
+        Exit Function
     End If
 
     Dim objCatiaData As CATIAPropertyTable
     Set objCatiaData = modCatia.fncGetProperty()
     If objCatiaData Is Nothing Then
         Call Terminate
-        Exit Sub
+        Exit Function
     End If
 
     Dim blnIsSame As Boolean
     If objCatiaData.fncIsSameStructure(objExcelData, blnIsSame) = False Then
         Call modMessage.Show("E012")
         Call Terminate
-        Exit Sub
+        Exit Function
     End If
     
     If blnIsSame = False Then
         Call modMessage.Show("E010")
         Call Terminate
-        Exit Sub
+        Exit Function
     End If
     
     If blnDeleteProperty = False Then
@@ -325,17 +326,17 @@ Public Sub cmdSetPropertyClick()
         If modCatia.fncSetProperty(objCatiaData, objExcelData, blnDrawingUpdate) = False Then
             Call modMessage.Show("E018")
             Call Terminate
-            Exit Sub
+            Exit Function
         End If
     Else
         If modMessage.Show("Q002") = False Then
             Call Terminate
-            Exit Sub
+            Exit Function
         End If
         If modCatia.fncDeleteProperty(objCatiaData) = False Then
             Call modMessage.Show("E018")
             Call Terminate
-            Exit Sub
+            Exit Function
         End If
     End If
     
@@ -343,8 +344,9 @@ Public Sub cmdSetPropertyClick()
     Call cmdOffClick
     Call fncSetSelCheckBox(False)
     Call snackBox("success", "Process Complete", "Well done.", "frmPLM")
+    cmdSetPropertyClick = True
     Call Terminate
-End Sub
+End Function
 
 Public Sub cmdSetTitleBlock()
     If fncInitExcel = False Then
