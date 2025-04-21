@@ -234,7 +234,7 @@ Public Function daysSinceLastNudge(stepId As Long)
 On Error GoTo err_handler
 
 Dim lastNudgeDate
-lastNudgeDate = DLookup("updatedDate", "tblPartUpdateTracking", "tableRecordId = " & stepId & " AND columnName = 'Nudge'")
+lastNudgeDate = Nz(DLookup("updatedDate", "tblPartUpdateTracking", "tableRecordId = " & stepId & " AND columnName = 'Nudge'"), 0)
 
 If Nz(lastNudgeDate, 0) = 0 Then
     daysSinceLastNudge = "N/A"
@@ -305,10 +305,7 @@ Set db = CurrentDb()
 If searchForPrimaryProj Then
     Dim projId
     projId = Nz(DLookup("projectId", "tblPartProjectPartNumbers", "childPartNumber = '" & partNum & "'"))
-    
-    If projId <> "" Then
-        partNum = DLookup("partNumber", "tblPartProject", "recordId = " & projId)
-    End If
+    If projId <> "" Then partNum = DLookup("partNumber", "tblPartProject", "recordId = " & projId)
 End If
 
 Dim rs2 As Recordset
@@ -1934,7 +1931,7 @@ emailAIFsend = False
 
 'find attachment link
 Dim attachLink As String
-attachLink = DLookup("directLink", "tblPartAttachmentsSP", "partStepId = " & stepId & " AND partNumber = '" & partNumber & "'")
+attachLink = "https://nifcoam.sharepoint.com/sites/NewModelEngineering/Part%20Info/" & DLookup("attachFullFileName", "tblPartAttachmentsSP", "partStepId = " & stepId & " AND partNumber = '" & partNumber & "'")
 
 Dim emailBody As String, subjectLine As String, strTo As String
 subjectLine = partNumber & " " & aifType & " AIF"
@@ -1948,7 +1945,7 @@ emailAIFsend = True
 
 Exit Function
 err_handler:
-    Call handleError("wdbProjectE", "emailAIFsub", Err.DESCRIPTION, Err.number)
+    Call handleError("wdbProjectE", "emailAIFsend", Err.DESCRIPTION, Err.number)
 End Function
 
 Function emailApprovedCapitalPacket(stepId As Long, partNumber As String, capitalPacketNum As String) As Boolean
