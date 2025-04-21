@@ -470,7 +470,7 @@ Dim errorArray As Collection
 Set errorArray = New Collection
 
 If findDept(partNum, "Project", True) = "" Then
-    'errorArray.Add "Project Engineer" 'TEMPORARY OVERRIDE FOR PROJECT CATCHUP - Per Noah Davidson 01/16/25
+    errorArray.Add "Project Engineer"
 End If
 
 '---Grab General Data---
@@ -726,14 +726,11 @@ classCodeFin = Right(classCodeFin, Len(classCodeFin) - 1)
 
 aifInsert "Nifco BW Item Reporting", classCodeFin, firstColBold:=True
 
-'---TEMPORARY OVERRIDE FOR PROJECT CATCHUP - Per Noah Davidson 01/16/25---
-'--------------
 Dim plannerName As String
 plannerName = findDept(partNum, "Project", True, True)
 If plannerName = "" Then
     plannerName = getFullName()
 End If
-'--------------
 
 aifInsert "Planner", plannerName, firstColBold:=True
 
