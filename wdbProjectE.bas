@@ -1962,7 +1962,7 @@ Dim emailBody As String, subjectLine As String
 subjectLine = partNumber & " Capital Packet Approval"
 emailBody = generateHTML(subjectLine, capitalPacketNum & " Capital Packet for " & partNumber & " is now Approved", "Capital Packet", "No extra details...", "", "", attachLink)
 
-Call sendNotification(grabPartTeam(partNumber), 9, 2, partNumber & " Capital Packet Approval", emailBody, "Part Project", CLng(partNumber), True)
+Call sendNotification(grabPartTeam(partNumber), 9, 2, partNumber & " Capital Packet Approval", emailBody, "Part Project", partNumber, True)
 
 emailApprovedCapitalPacket = True
 

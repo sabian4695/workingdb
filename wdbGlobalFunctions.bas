@@ -965,7 +965,7 @@ err_handler:
     Call handleError("wdbGlobalFunctions", "emailContentGen", Err.DESCRIPTION, Err.number)
 End Function
 
-Function sendNotification(sendTo As String, notType As Integer, notPriority As Integer, desc As String, emailContent As String, Optional appName As String = "", Optional appId As Long, Optional multiEmail As Boolean = False, Optional customEmail As Boolean = False) As Boolean
+Function sendNotification(sendTo As String, notType As Integer, notPriority As Integer, desc As String, emailContent As String, Optional appName As String = "", Optional appId As Variant = "", Optional multiEmail As Boolean = False, Optional customEmail As Boolean = False) As Boolean
 sendNotification = True
 
 On Error GoTo err_handler
@@ -1010,10 +1010,23 @@ Else
     sendTo = Split(sendTo, "@")(0)
 End If
 
-Dim strValues
-strValues = "'" & sendTo & "','" & strEmail & "','" & Environ("username") & "','" & getEmail(Environ("username")) & "','" & Now() & "'," & notType & "," & notPriority & ",'" & StrQuoteReplace(desc) & "','" & appName & "'," & appId & ",'" & StrQuoteReplace(emailContent) & "'"
+Set rsNotifications = db.OpenRecordset("tblNotificationsSP")
 
-db.Execute "INSERT INTO tblNotificationsSP(recipientUser,recipientEmail,senderUser,senderEmail,sentDate,notificationType,notificationPriority,notificationDescription,appName,appId,emailContent) VALUES(" & strValues & ");"
+With rsNotifications
+    .addNew
+    !recipientUser = sendTo
+    !recipientEmail = strEmail
+    !senderUser = Environ("username")
+    !senderEmail = getEmail(Environ("username"))
+    !sentDate = Now()
+    !notificationType = notType
+    !notificationPriority = notPriority
+    !notificationDescription = desc
+    !appName = appName
+    !appId = appId
+    !emailContent = emailContent
+    .Update
+End With
 
 On Error Resume Next
 rsNotifications.Close
