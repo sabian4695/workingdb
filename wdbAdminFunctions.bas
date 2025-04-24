@@ -69,7 +69,7 @@ Set rs1 = db.OpenRecordset("tblAnalytics")
 
 With rs1
     .addNew
-        !Module = modName
+        !module = modName
         !Form = formName
         !userName = Environ("username")
         !dateUsed = Now()

@@ -4,6 +4,254 @@ Option Explicit
 Dim XL As Excel.Application, WB As Excel.Workbook, WKS As Excel.Worksheet
 Dim inV As Long
 
+Function copyPartInformation(fromPN As String, toPN As String, module As String, Optional optionDept As String = "") As String
+On Error GoTo err_handler
+
+If fromPN = toPN Then
+    copyPartInformation = "Can't copy from and to the same part number, that is silly."
+    Exit Function
+End If
+
+Dim db As Database
+Set db = CurrentDb()
+Dim fld As DAO.Field
+
+'---tblPartInfo---
+Dim rsPIcopy As Recordset, rsPIpaste As Recordset
+Set rsPIcopy = db.OpenRecordset("SELECT * from tblPartInfo WHERE partNumber = '" & fromPN & "'", dbOpenSnapshot)
+
+If rsPIcopy.RecordCount = 1 Then
+    Set rsPIpaste = db.OpenRecordset("SELECT * from tblPartInfo WHERE partNumber = '" & toPN & "'") 'find paste recordset
+    rsPIpaste.Edit
+    For Each fld In rsPIcopy.Fields
+        If fld.name = "quoteInfoId" Or fld.name = "assemblyInfoId" Or fld.name = "outsourceInfoId" Or fld.name = "moldInfoId" Then GoTo nextFld
+        If Nz(rsPIpaste(fld.name)) = "" Then
+            Call registerPartUpdates("tblPartInfo", rsPIpaste!recordId, fld.name, rsPIpaste(fld.name), rsPIcopy(fld.name), toPN, module, "copyPartInformation")
+            rsPIpaste(fld.name) = rsPIcopy(fld.name)
+        End If
+nextFld:
+    Next
+    rsPIpaste.Update
+Else
+    GoTo exitThis
+End If
+
+
+'---tblPartQuoteInfo---
+Dim rsPQIcopy As Recordset, rsPQIpaste As Recordset
+Set rsPQIcopy = db.OpenRecordset("SELECT * from tblPartQuoteInfo WHERE recordId = " & Nz(rsPIcopy!quoteInfoId), dbOpenSnapshot)
+
+If rsPQIcopy.RecordCount > 0 Then
+    Set rsPQIpaste = db.OpenRecordset("SELECT * from tblPartQuoteInfo WHERE recordId = " & Nz(rsPIpaste!quoteInfoId))
+    If rsPQIpaste.RecordCount = 0 Then
+        rsPQIpaste.addNew
+    Else
+        rsPQIpaste.Edit
+    End If
+    
+    For Each fld In rsPQIcopy.Fields
+        If Nz(rsPQIpaste(fld.name)) = 0 Then
+            Call registerPartUpdates("tblPartQuoteInfo", rsPQIpaste!recordId, fld.name, rsPQIpaste(fld.name), rsPQIcopy(fld.name), toPN, module, "copyPartInformation")
+            rsPQIpaste(fld.name) = rsPQIcopy(fld.name)
+        End If
+    Next
+    rsPQIpaste.Update
+    
+    If rsPIpaste!quoteInfoId <> rsPQIpaste!recordId Then
+        rsPIpaste.Edit
+        rsPIpaste!quoteInfoId = rsPQIpaste!recordId
+        rsPIpaste.Update
+    End If
+End If
+
+'--tblPartMoldingInfo---
+Dim rsPMIcopy As Recordset, rsPMIpaste As Recordset
+Set rsPMIcopy = db.OpenRecordset("SELECT * from tblPartMoldingInfo WHERE recordId = " & Nz(rsPIcopy!moldInfoId), dbOpenSnapshot)
+
+If rsPMIcopy.RecordCount > 0 Then
+    Set rsPMIpaste = db.OpenRecordset("SELECT * from tblPartMoldingInfo WHERE recordId = " & Nz(rsPIpaste!moldInfoId))
+    If rsPMIpaste.RecordCount = 0 Then
+        rsPMIpaste.addNew
+        rsPMIpaste!toolNumber = toPN & "T"
+    Else
+        rsPMIpaste.Edit
+    End If
+    
+    For Each fld In rsPMIpaste.Fields
+        If Nz(rsPMIpaste(fld.name)) = 0 Then
+            Call registerPartUpdates("tblPartMoldingInfo", rsPMIpaste!recordId, fld.name, rsPMIpaste(fld.name), rsPMIcopy(fld.name), toPN, module, "copyPartInformation")
+            rsPMIpaste(fld.name) = rsPMIcopy(fld.name)
+        End If
+    Next
+    rsPMIpaste.Update
+    
+    If rsPIpaste!moldInfoId <> rsPMIpaste!recordId Then
+        rsPIpaste.Edit
+        rsPIpaste!moldInfoId = rsPMIpaste!recordId
+        rsPIpaste.Update
+    End If
+End If
+
+If optionDept = "Design" Then GoTo skipPackaging
+'---tblPartAssemblyInfo---
+Dim rsAIcopy As Recordset, rsAIpaste As Recordset
+If Nz(rsPIcopy!assemblyInfoId) = "" Then GoTo skipAssembly
+Set rsAIcopy = db.OpenRecordset("SELECT * from tblPartAssemblyInfo WHERE recordId = " & Nz(rsPIcopy!assemblyInfoId), dbOpenSnapshot)
+
+If rsAIcopy.RecordCount > 0 Then
+    Set rsAIpaste = db.OpenRecordset("SELECT * from tblPartAssemblyInfo WHERE recordId = " & Nz(rsPIpaste!assemblyInfoId))
+    If rsAIpaste.RecordCount = 0 Then
+        rsAIpaste.addNew
+    Else
+        rsAIpaste.Edit
+    End If
+    rsAIpaste!partNumber = toPN
+    
+    For Each fld In rsAIcopy.Fields
+        If Nz(rsAIpaste(fld.name)) = "" Then
+            Call registerPartUpdates("tblPartAssemblyInfo", rsAIpaste!recordId, fld.name, rsAIpaste(fld.name), rsAIcopy(fld.name), toPN, module, "copyPartInformation")
+            rsAIpaste(fld.name) = rsAIcopy(fld.name)
+        End If
+    Next
+    
+    rsAIpaste.Update
+    If rsPIpaste!assemblyInfoId <> rsAIpaste!recordId Then
+        rsPIpaste.Edit
+        rsPIpaste!assemblyInfoId = rsAIpaste!recordId
+        rsPIpaste.Update
+    End If
+End If
+skipAssembly:
+
+
+'---tblPartComponents---
+Dim rsCOcopy As Recordset, rsCOpaste As Recordset
+Set rsCOcopy = db.OpenRecordset("SELECT * FROM tblPartComponents WHERE assemblyNumber = '" & fromPN & "'", dbOpenSnapshot)
+
+If rsCOcopy.RecordCount > 0 Then
+    Set rsCOpaste = db.OpenRecordset("SELECT * FROM tblPartComponents WHERE assemblyNumber = '" & toPN & "'")
+    
+    Do While Not rsCOcopy.EOF 'add all components!
+        rsCOpaste.addNew
+        rsCOpaste!assemblyNumber = toPN
+        For Each fld In rsCOcopy.Fields
+            If Nz(rsCOpaste(fld.name)) = "" Then
+                Call registerPartUpdates("tblPartComponents", rsAIpaste!recordId, fld.name, rsCOpaste(fld.name), rsCOcopy(fld.name), toPN, module, "copyPartInformation")
+                rsCOpaste(fld.name) = rsCOcopy(fld.name)
+            End If
+        Next
+        rsCOpaste.Update
+        rsCOcopy.MoveNext
+    Loop
+End If
+
+
+'---tblPartOutsourceInfo---
+Dim rsOSIcopy As Recordset, rsOSIpaste As Recordset
+If Nz(rsPIcopy!outsourceInfoId) = "" Then GoTo skipOutsource
+Set rsOSIcopy = db.OpenRecordset("SELECT * from tblPartOutsourceInfo where recordId = " & Nz(rsPIcopy!outsourceInfoId), dbOpenSnapshot)
+
+If rsOSIcopy.RecordCount > 0 Then
+    Set rsOSIpaste = db.OpenRecordset("SELECT * from tblPartOutsourceInfo WHERE recordId = " & Nz(rsPIpaste!outsourceInfoId))
+    If rsOSIpaste.RecordCount = 0 Then
+        rsOSIpaste.addNew
+    Else
+        rsOSIpaste.Edit
+    End If
+    For Each fld In rsOSIcopy.Fields
+        If Nz(rsOSIpaste(fld.name), "") = "" Then
+            Call registerPartUpdates("tblPartOutsourceInfo", rsOSIpaste!recordId, fld.name, rsOSIpaste(fld.name), rsOSIcopy(fld.name), toPN, module, "copyPartInformation")
+            rsOSIpaste(fld.name) = rsOSIcopy(fld.name)
+        End If
+    Next
+    rsOSIpaste.Update
+    
+    If rsPIpaste!outsourceInfoId <> rsOSIpaste!recordId Then
+        rsPIpaste.Edit
+        rsPIpaste!outsourceInfoId = rsOSIpaste!recordId
+        rsPIpaste.Update
+    End If
+End If
+skipOutsource:
+
+
+'---tblPartPackingInfo---
+Dim rsPackIcopy As Recordset, rsPackIpaste As Recordset, rsPackIcompCopy As Recordset, rsPackIcompPaste As Recordset
+Set rsPackIcopy = db.OpenRecordset("SELECT * FROM tblPartPackagingInfo WHERE partInfoId = " & rsPIcopy!recordId, dbOpenSnapshot)
+
+If rsPackIcopy.RecordCount > 0 Then
+    Set rsPackIpaste = db.OpenRecordset("SELECT * from tblPartPackagingInfo WHERE partInfoId = " & rsPIpaste!recordId)
+    If rsPackIpaste.RecordCount > 0 Then GoTo skipPackaging
+    Do While Not rsPackIcopy.EOF
+        rsPackIpaste.addNew
+        rsPackIpaste!partInfoId = rsPIpaste!recordId
+        For Each fld In rsPackIcopy.Fields
+            If Nz(rsPackIpaste(fld.name)) = "" Then
+                Call registerPartUpdates("tblPartPackagingInfo", rsPackIpaste!recordId, fld.name, rsPackIpaste(fld.name), rsPackIcopy(fld.name), toPN, module, "copyPartInformation")
+                rsPackIpaste(fld.name) = rsPackIcopy(fld.name)
+            End If
+        Next
+        rsPackIpaste.Update
+        rsPackIpaste.MoveLast
+        
+        '---tblPartPackagingComponents---
+        Set rsPackIcompCopy = db.OpenRecordset("SELECT * from tblPartPackagingComponents WHERE packagingInfoId = " & rsPackIcopy!recordId, dbOpenSnapshot)
+        Set rsPackIcompPaste = db.OpenRecordset("SELECT * from tblPartPackagingComponents WHERE packagingInfoId = " & rsPackIpaste!recordId)
+        
+        Do While Not rsPackIcompCopy.EOF
+            rsPackIcompPaste.addNew
+            rsPackIcompPaste!packagingInfoId = rsPackIpaste!recordId
+            
+            For Each fld In rsPackIcompCopy.Fields
+                If Nz(rsPackIcompPaste(fld.name)) = "" Then
+                    Call registerPartUpdates("tblPartPackagingInfo", rsPackIcompPaste!recordId, fld.name, rsPackIcompPaste(fld.name), rsPackIcompCopy(fld.name), toPN, module, "copyPartInformation")
+                    rsPackIcompPaste(fld.name) = rsPackIcompCopy(fld.name)
+                End If
+            Next
+            rsPackIcompPaste.Update
+            rsPackIcompCopy.MoveNext
+        Loop
+
+        rsPackIcopy.MoveNext
+    Loop
+End If
+skipPackaging:
+
+exitThis:
+On Error Resume Next
+rsPIcopy.Close
+rsPIpaste.Close
+rsAIcopy.Close
+rsAIpaste.Close
+rsCOcopy.Close
+rsCOpaste.Close
+rsOSIcopy.Close
+rsOSIpaste.Close
+rsPackIcopy.Close
+rsPackIpaste.Close
+rsPackIcompCopy.Close
+rsPackIcompPaste.Close
+
+Set rsPIcopy = Nothing
+Set rsPIpaste = Nothing
+Set rsAIcopy = Nothing
+Set rsAIpaste = Nothing
+Set rsCOcopy = Nothing
+Set rsCOpaste = Nothing
+Set rsOSIcopy = Nothing
+Set rsOSIpaste = Nothing
+Set rsPackIcopy = Nothing
+Set rsPackIpaste = Nothing
+Set rsPackIcompCopy = Nothing
+Set rsPackIcompPaste = Nothing
+
+Set db = Nothing
+
+Exit Function
+err_handler:
+    Call handleError("wdbProjectE", "copyPartInformation", Err.DESCRIPTION, Err.number)
+End Function
+
 Function closeProjectStep(stepId As Long, frmActive As String) As Boolean
 On Error GoTo err_handler
 
@@ -37,6 +285,21 @@ If gateId <> rsGate!recordId Then
     GoTo errorOut
 End If
 
+'PILLARS ADDITION - check if all steps before this pillar are closed
+
+'BETA - TO BE REMOVED
+'---only check if TEST template was used---
+Dim projTempId
+projTempId = DLookup("projectTemplateId", "tblPartProject", "recordId = " & rsStep!partProjectId)
+If DLookup("projectTitle", "tblPartProjectTemplate", "recordId = " & projTempId) Like "*TEST*" Then GoTo skipPillarCheck
+'---end here---
+
+If Not IsNull(rsStep!dueDate) And DCount("recordId", "tblPartSteps", "partGateId = " & rsStep!partGateId & " AND indexOrder < " & rsStep!indexOrder & " AND [status] <> 'Closed'") > 0 Then
+    errorText = "This step is a pillar. All steps before this pillar must be closed before this step."
+    GoTo errorOut
+End If
+
+skipPillarCheck: 'BETA -TO BE REMOVED
 
 If restrict(Environ("username"), projectOwner) = False Then GoTo theCorrectFellow 'is the bro an owner?
 
@@ -1229,43 +1492,84 @@ Set db = Nothing
 
 End Function
 
-Public Function createPartProject(projId)
+Public Function createPartProject(projId, Optional opT0 As Date)
 On Error GoTo err_handler
 
 Dim db As DAO.Database
 Set db = CurrentDb()
-Dim rsProject As Recordset, rsStepTemplate As Recordset, rsApprovalsTemplate As Recordset, rsGateTemplate As Recordset
+Dim rsProject As Recordset, rsStepTemplate As Recordset, rsApprovalsTemplate As Recordset, rsGateTemplate As Recordset, rsSess As Recordset
 Dim strInsert As String, strInsert1 As String
-Dim projTempId As Long, pNum As String, runningDate As Date, G3planned As Date
+Dim projTempId As Long, pNum As String, runningDate As Date, G3planned As Date, runningDate_OLDTEMPLATE As Date
 
 Set rsProject = db.OpenRecordset("SELECT * from tblPartProject WHERE recordId = " & projId)
 
 projTempId = rsProject!projectTemplateId
 pNum = rsProject!partNumber
 runningDate = rsProject!projectStartDate
+runningDate_OLDTEMPLATE = rsProject!projectStartDate
 
 If Nz(pNum) = "" Then Exit Function 'escape possible part number null projects
 
-db.Execute "INSERT INTO tblPartTeam(partNumber,person) VALUES ('" & pNum & "','" & Environ("username") & "')", dbFailOnError 'assign project engineer
-Set rsGateTemplate = db.OpenRecordset("Select * FROM tblPartGateTemplate WHERE [projectTemplateId] = " & projTempId, dbOpenSnapshot)
+If DCount("recordId", "tblPartTeam", "partNumber = '" & pNum & "' AND person = '" & Environ("username") & "'") = 0 Then db.Execute "INSERT INTO tblPartTeam(partNumber,person) VALUES ('" & pNum & "','" & Environ("username") & "')", dbFailOnError 'assign project engineer
 
+Set rsGateTemplate = db.OpenRecordset("Select * FROM tblPartGateTemplate WHERE [projectTemplateId] = " & projTempId, dbOpenSnapshot)
+Set rsSess = db.OpenRecordset("SELECT * FROM tblSessionVariables WHERE pillarTitle is not null")
+
+'ASSUME OLD TEMPLATE IS SELECTED IF NO PILLARS FOUND IN SESS VARS
+'BETA - REMOVE ONCE PILLARS ARE FULLY IMPLEMENTED
+Dim pillarTemplate As Boolean
+pillarTemplate = rsSess.RecordCount > 0
+    
 '--GO THROUGH EACH GATE
 Do While Not rsGateTemplate.EOF
     '--ADD THIS GATE
-    db.Execute "INSERT INTO tblPartGates(projectId,partNumber,gateTitle) VALUES (" & projId & ",'" & pNum & "','" & rsGateTemplate![gateTitle] & "')", dbFailOnError
+    runningDate = addWorkdays(runningDate, rsGateTemplate![gateDuration])
+    db.Execute "INSERT INTO tblPartGates(projectId,partNumber,gateTitle,plannedDate) VALUES (" & projId & ",'" & pNum & "','" & rsGateTemplate![gateTitle] & "',#" & runningDate & "#)", dbFailOnError
     TempVars.Add "gateId", db.OpenRecordset("SELECT @@identity")(0).Value
     
     '--ADD STEPS FOR THIS GATE
     Set rsStepTemplate = db.OpenRecordset("SELECT * from tblPartStepTemplate WHERE [gateTemplateId] = " & rsGateTemplate![recordId] & " ORDER BY indexOrder Asc", dbOpenSnapshot)
     Do While Not rsStepTemplate.EOF
         If (IsNull(rsStepTemplate![Title]) Or rsStepTemplate![Title] = "") Then GoTo nextStep
-        runningDate = addWorkdays(runningDate, Nz(rsStepTemplate![duration], 1))
-        strInsert = "INSERT INTO tblPartSteps" & _
-            "(partNumber,partProjectId,partGateId,stepType,openedBy,status,openDate,lastUpdatedDate,lastUpdatedBy,stepActionId,documentType,responsible,indexOrder,duration,dueDate) VALUES"
-        strInsert = strInsert & "('" & pNum & "'," & projId & "," & TempVars!gateId & ",'" & StrQuoteReplace(rsStepTemplate![Title]) & "','" & _
-            Environ("username") & "','Not Started','" & Now() & "','" & Now() & "','" & Environ("username") & "',"
-        strInsert = strInsert & Nz(rsStepTemplate![stepActionId], "NULL") & "," & Nz(rsStepTemplate![documentType], "NULL") & ",'" & _
-            Nz(rsStepTemplate![responsible], "") & "'," & rsStepTemplate![indexOrder] & "," & Nz(rsStepTemplate![duration], 1) & ",'" & runningDate & "');"
+        
+        If pillarTemplate Then
+        
+            '------------------------NEW STEP ADDITION CODE - FOR PILLARS ONLY--------------------------
+            'if NOT pillar, don't add date!
+            If rsStepTemplate!pillarStep Then
+                rsSess.FindFirst "pillarStepId = " & rsStepTemplate!recordId
+                If rsSess.noMatch Then GoTo nextStep 'this means user deleted this pillar from the template
+                
+                strInsert = "INSERT INTO tblPartSteps" & _
+                    "(partNumber,partProjectId,partGateId,stepType,openedBy,status,openDate,lastUpdatedDate,lastUpdatedBy,stepActionId,documentType,responsible,indexOrder,duration,dueDate) VALUES"
+                strInsert = strInsert & "('" & pNum & "'," & projId & "," & TempVars!gateId & ",'" & StrQuoteReplace(rsStepTemplate![Title]) & "','" & _
+                    Environ("username") & "','Not Started','" & Now() & "','" & Now() & "','" & Environ("username") & "',"
+                strInsert = strInsert & Nz(rsStepTemplate![stepActionId], "NULL") & "," & Nz(rsStepTemplate![documentType], "NULL") & ",'" & _
+                    Nz(rsStepTemplate![responsible], "") & "'," & rsStepTemplate![indexOrder] & "," & Nz(rsStepTemplate![duration], 1) & ",'" & rsSess!pillarDue & "');"
+            Else
+                 strInsert = "INSERT INTO tblPartSteps" & _
+                    "(partNumber,partProjectId,partGateId,stepType,openedBy,status,openDate,lastUpdatedDate,lastUpdatedBy,stepActionId,documentType,responsible,indexOrder,duration) VALUES"
+                strInsert = strInsert & "('" & pNum & "'," & projId & "," & TempVars!gateId & ",'" & StrQuoteReplace(rsStepTemplate![Title]) & "','" & _
+                    Environ("username") & "','Not Started','" & Now() & "','" & Now() & "','" & Environ("username") & "',"
+                strInsert = strInsert & Nz(rsStepTemplate![stepActionId], "NULL") & "," & Nz(rsStepTemplate![documentType], "NULL") & ",'" & _
+                    Nz(rsStepTemplate![responsible], "") & "'," & rsStepTemplate![indexOrder] & "," & Nz(rsStepTemplate![duration], 1) & ");"
+            End If
+            '-------------------------END NEW ADDITION CODE-----------------------------
+            
+        Else
+        
+            '------------------------OLD ADDITION CODE-------------------------------
+            runningDate_OLDTEMPLATE = addWorkdays(runningDate_OLDTEMPLATE, Nz(rsStepTemplate![duration], 1))
+            strInsert = "INSERT INTO tblPartSteps" & _
+                "(partNumber,partProjectId,partGateId,stepType,openedBy,status,openDate,lastUpdatedDate,lastUpdatedBy,stepActionId,documentType,responsible,indexOrder,duration,dueDate) VALUES"
+            strInsert = strInsert & "('" & pNum & "'," & projId & "," & TempVars!gateId & ",'" & StrQuoteReplace(rsStepTemplate![Title]) & "','" & _
+                Environ("username") & "','Not Started','" & Now() & "','" & Now() & "','" & Environ("username") & "',"
+            strInsert = strInsert & Nz(rsStepTemplate![stepActionId], "NULL") & "," & Nz(rsStepTemplate![documentType], "NULL") & ",'" & _
+                Nz(rsStepTemplate![responsible], "") & "'," & rsStepTemplate![indexOrder] & "," & Nz(rsStepTemplate![duration], 1) & ",'" & runningDate_OLDTEMPLATE & "');"
+            '------------------------END OLD ADDITION CODE----------------------------
+        
+        End If
+            
         db.Execute strInsert, dbFailOnError
         
         '--ADD APPROVALS FOR THIS STEP
@@ -1283,7 +1587,6 @@ nextStep:
         rsStepTemplate.MoveNext
     Loop
     If Left(rsGateTemplate!gateTitle, 2) = "G3" Then G3planned = runningDate
-    db.Execute "UPDATE tblPartGates SET plannedDate = '" & runningDate & "' WHERE recordId = " & TempVars!gateId 'set the planned date as the last step due date in this gate
     rsGateTemplate.MoveNext
 Loop
 
@@ -1308,6 +1611,8 @@ If projTempId = 8 Then
     Set rsAssyTemplate = Nothing
 End If
 
+rsSess.Close
+Set rsSess = Nothing
 rsGateTemplate.Close
 Set rsGateTemplate = Nothing
 rsStepTemplate.Close
