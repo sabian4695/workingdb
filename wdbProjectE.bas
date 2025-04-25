@@ -291,7 +291,7 @@ End If
 '---only check if TEST template was used---
 Dim projTempId
 projTempId = DLookup("projectTemplateId", "tblPartProject", "recordId = " & rsStep!partProjectId)
-If DLookup("projectTitle", "tblPartProjectTemplate", "recordId = " & projTempId) Like "*TEST*" Then GoTo skipPillarCheck
+If Not (DLookup("projectTitle", "tblPartProjectTemplate", "recordId = " & projTempId) Like "*TEST*") Then GoTo skipPillarCheck
 '---end here---
 
 If Not IsNull(rsStep!dueDate) And DCount("recordId", "tblPartSteps", "partGateId = " & rsStep!partGateId & " AND indexOrder < " & rsStep!indexOrder & " AND [status] <> 'Closed'") > 0 Then
