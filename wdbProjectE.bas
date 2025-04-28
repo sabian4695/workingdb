@@ -2244,7 +2244,7 @@ emailBody = generateHTML(subjectLine, aifType & " AIF " & partNumber & " is now 
 
 strTo = "cost_team_mailbox@us.nifco.com"
 
-Call sendNotification(strTo, 2, 2, partNumber & " " & aifType & " AIF", emailBody, "Part Project", CLng(partNumber), customEmail:=True)
+Call sendNotification(strTo, 2, 2, partNumber & " " & aifType & " AIF", emailBody, "Part Project", partNumber, customEmail:=True)
 
 emailAIFsend = True
 
