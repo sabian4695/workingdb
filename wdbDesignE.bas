@@ -279,13 +279,15 @@ End Function
 Function progressPercent(controlNum As Long)
 On Error GoTo err_handler
 
+progressPercent = 0
+
 Dim total
 Dim checked
 
 total = DCount("[Task_ID]", "[tblTaskTracker]", "[Control_Number] = " & controlNum)
 checked = DCount("[Task_ID]", "[tblTaskTracker]", "[Control_Number] = " & controlNum & "AND [cbClosed] = TRUE")
 
-progressPercent = checked / total
+If total <> 0 Then progressPercent = checked / total
 
 Exit Function
 err_handler:
