@@ -2211,11 +2211,11 @@ Set db = CurrentDb()
 Dim rsAssParts As Recordset
 Set rsAssParts = db.OpenRecordset("SELECT * FROM tblPartProjectPartNumbers WHERE projectId = " & projId)
 
-If emailAIFsend(stepId, partNumber, "Kickoff") = False Then Exit Function 'do primary part number first
+If emailAIFsend(stepId, partNumber, aifType) = False Then Exit Function 'do primary part number first
 
 If rsAssParts.RecordCount > 0 Then
     Do While Not rsAssParts.EOF
-        If emailAIFsend(stepId, rsAssParts!childPartNumber, "Kickoff") = False Then Exit Function 'do each associated part number
+        If emailAIFsend(stepId, rsAssParts!childPartNumber, aifType) = False Then Exit Function 'do each associated part number
         rsAssParts.MoveNext
     Loop
 End If
