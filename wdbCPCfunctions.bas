@@ -28,37 +28,40 @@ End Function
 Public Sub registerCPCUpdates(table As String, ID As Variant, column As String, oldVal As Variant, newVal As Variant, projectId As Long, Optional tag0 As String, Optional tag1 As String)
 On Error GoTo err_handler
 
-Dim sqlColumns As String, sqlValues As String
+If (VarType(oldVal) = vbDate) Then oldVal = Format(oldVal, "mm/dd/yyyy")
+If (VarType(newVal) = vbDate) Then newVal = Format(newVal, "mm/dd/yyyy")
 
-If (VarType(oldVal) = vbDate) Then
-    oldVal = Format(oldVal, "mm/dd/yyyy")
-End If
+Dim db As Database
+Set db = CurrentDb()
+Dim rs1 As Recordset
+Set rs1 = db.OpenRecordset("tblCPC_UpdateTracking")
 
-If (VarType(newVal) = vbDate) Then
-    newVal = Format(newVal, "mm/dd/yyyy")
-End If
+If Len(oldVal) > 255 Then oldVal = Left(oldVal, 255)
+If Len(newVal) > 255 Then newVal = Left(newVal, 255)
+If Len(tag0) > 100 Then newVal = Left(tag0, 100)
+If Len(tag1) > 100 Then newVal = Left(tag1, 100)
+If ID = "" Then ID = Null
 
-If (IsNull(oldVal)) Then
-    oldVal = ""
-End If
+With rs1
+    .addNew
+        !tableName = table
+        !tableRecordId = ID
+        !updatedBy = Environ("username")
+        !updatedDate = Now()
+        !columnName = column
+        !previousData = StrQuoteReplace(CStr(Nz(oldVal, "")))
+        !newData = StrQuoteReplace(CStr(Nz(newVal, "")))
+        !projectId = projectId
+        !dataTag0 = StrQuoteReplace(tag0)
+        !dataTag1 = StrQuoteReplace(tag1)
+    .Update
+    .Bookmark = .lastModified
+End With
 
-If (IsNull(newVal)) Then
-    newVal = ""
-End If
+rs1.Close
+Set rs1 = Nothing
+Set db = Nothing
 
-sqlColumns = "(tableName,tableRecordId,updatedBy,updatedDate,columnName,previousData,newData,dataTag0,projectId"
-                    
-sqlValues = " values ('" & table & "', '" & ID & "', '" & Environ("username") & "', '" & Now() & "', '" & column & "', '" & StrQuoteReplace(CStr(oldVal)) & "', '" & StrQuoteReplace(CStr(newVal)) & "'," & projectId & ",'" & tag0 & "'"
-
-If (IsNull(tag1)) Then
-    sqlColumns = sqlColumns & ")"
-    sqlValues = sqlValues & ");"
-Else
-    sqlColumns = sqlColumns & ",dataTag1)"
-    sqlValues = sqlValues & ",'" & tag1 & "');"
-End If
-
-dbExecute "INSERT INTO tblCPC_UpdateTracking" & sqlColumns & sqlValues
 
 Exit Sub
 err_handler:
