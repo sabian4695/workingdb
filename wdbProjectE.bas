@@ -1807,7 +1807,7 @@ err_handler:
 End Function
 
 Function scanSteps(partNum As String, routineName As String, Optional identifier As Variant = "notFound") As Boolean
-'On Error GoTo err_handler
+On Error GoTo err_handler
 
 scanSteps = False
 'this scans to see if there is a step that needs to be deleted or closed per its step action requirements
