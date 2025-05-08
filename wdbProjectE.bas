@@ -1740,7 +1740,7 @@ Do While Not rsPartTeam.EOF
         bodyTitle = "This step has been " & notiType
     End If
     
-    body = emailContentGen(subjectLine, emailTitle, bodyTitle, stepTitle & " Issue", "Part Number: " & partNum, "Who: " & closedBy, "When: " & CStr(Date))
+    body = emailContentGen(subjectLine, emailTitle, bodyTitle, stepTitle, "Part Number: " & partNum, "Who: " & closedBy, "When: " & CStr(Date))
     Call sendNotification(sendTo, 10, 2, stepTitle & " for " & partNum & " has been " & notiType, body, "Part Project", CLng(partNum))
     
 nextRec:
@@ -1807,7 +1807,7 @@ err_handler:
 End Function
 
 Function scanSteps(partNum As String, routineName As String, Optional identifier As Variant = "notFound") As Boolean
-On Error GoTo err_handler
+'On Error GoTo err_handler
 
 scanSteps = False
 'this scans to see if there is a step that needs to be deleted or closed per its step action requirements
@@ -1884,26 +1884,53 @@ Do While Not rsSteps.EOF
     
     If Nz(rsStepActions!compareColumn, "") = "" And Nz(rsStepActions!compareTable, "") = "" Then GoTo performAction 'assuming this is just wanting me to do an action no matter what
     
-    Set rsLookItUp = db.OpenRecordset("SELECT " & rsStepActions!compareColumn & " FROM " & rsStepActions!compareTable & " WHERE " & matchingCol & " = " & identifier)
-    If rsLookItUp.RecordCount = 0 Then GoTo nextOne
-    
-    meetsCriteria = False
-    
-    If InStr(rsStepActions!compareData, ",") > 0 Then 'check for multiple values - always seen as an OR command, not AND
-        'make an array of the values and check if any match
-        Dim checkIf() As String, ITEM
-        checkIf = Split(rsStepActions!compareData, ",")
-        For Each ITEM In checkIf
-            matches = CStr(Nz(rsLookItUp(rsStepActions!compareColumn), "")) = ITEM
+    'if multiple columns exist
+    Dim ITEM, item1
+    If InStr(rsStepActions!compareColumn, ",") Then
+        For Each item1 In Split(rsStepActions!compareColumn, ",")
+            Set rsLookItUp = db.OpenRecordset("SELECT " & item1 & " FROM " & rsStepActions!compareTable & " WHERE " & matchingCol & " = " & identifier)
+            If rsLookItUp.RecordCount = 0 Then GoTo nextOne
+            
+            meetsCriteria = False
+            
+            If InStr(rsStepActions!compareData, ",") > 0 Then 'check for multiple values - always seen as an OR command, not AND
+                'make an array of the values and check if any match
+                Dim checkIf1() As String
+                checkIf1 = Split(rsStepActions!compareData, ",")
+                For Each ITEM In checkIf1
+                    matches = CStr(Nz(rsLookItUp(item1), "")) = ITEM
+                    If matches Then meetsCriteria = True
+                Next ITEM
+            Else
+                matches = CStr(Nz(rsLookItUp(item1))) = Nz(rsStepActions!compareData)
+                If matches Then meetsCriteria = True
+            End If
+            
+            'if the action is not equal to what we actually have, skip it!
+            If meetsCriteria <> rsStepActions!compareAction Then GoTo nextOne
+        Next item1
+    Else 'for just a single column
+        Set rsLookItUp = db.OpenRecordset("SELECT " & rsStepActions!compareColumn & " FROM " & rsStepActions!compareTable & " WHERE " & matchingCol & " = " & identifier)
+        If rsLookItUp.RecordCount = 0 Then GoTo nextOne
+        
+        meetsCriteria = False
+        
+        If InStr(rsStepActions!compareData, ",") > 0 Then 'check for multiple values - always seen as an OR command, not AND
+            'make an array of the values and check if any match
+            Dim checkIf() As String
+            checkIf = Split(rsStepActions!compareData, ",")
+            For Each ITEM In checkIf
+                matches = CStr(Nz(rsLookItUp(rsStepActions!compareColumn), "")) = ITEM
+                If matches Then meetsCriteria = True
+            Next ITEM
+        Else
+            matches = CStr(Nz(rsLookItUp(rsStepActions!compareColumn))) = Nz(rsStepActions!compareData)
             If matches Then meetsCriteria = True
-        Next ITEM
-    Else
-        matches = CStr(Nz(rsLookItUp(rsStepActions!compareColumn))) = Nz(rsStepActions!compareData)
-        If matches Then meetsCriteria = True
+        End If
+        
+        'if the action is not equal to what we actually have, skip it!
+        If meetsCriteria <> rsStepActions!compareAction Then GoTo nextOne
     End If
-    
-    'if the action is not equal to what we actually have, skip it!
-    If meetsCriteria <> rsStepActions!compareAction Then GoTo nextOne
     
 performAction:
     Select Case rsStepActions!stepAction 'everything matched - what should be done with this step??
