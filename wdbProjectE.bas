@@ -4,6 +4,39 @@ Option Explicit
 Dim XL As Excel.Application, WB As Excel.Workbook, WKS As Excel.Worksheet
 Dim inV As Long
 
+Public Function createMeetingCheckItems(meetingType As Long, meetingId As Long) As Boolean
+On Error GoTo err_handler
+
+Dim db As Database
+Set db = CurrentDb()
+
+Dim rsMeetingInfo As Recordset
+Dim rsTemplate As Recordset
+
+'first check if there are other check items
+'delete if so
+db.Execute "DELETE * FROM tblPartMeetingInfo WHERE meetingId = " & meetingId
+
+'then find template and add all new items
+Set rsTemplate = db.OpenRecordset("SELECT * FROM tblPartMeetingTemplates WHERE meetingType = " & meetingType & " order By indexOrder")
+Set rsMeetingInfo = db.OpenRecordset("tblPartMeetingInfo")
+
+Do While Not rsTemplate.EOF
+    rsMeetingInfo.addNew
+    rsMeetingInfo!meetingId = meetingId
+    rsMeetingInfo!checkItem = rsTemplate!checkItem
+    rsMeetingInfo.Update
+    
+    rsTemplate.MoveNext
+Loop
+
+Set db = Nothing
+
+Exit Function
+err_handler:
+    Call handleError("wdbProjectE", "createMeetingCheckItems", Err.DESCRIPTION, Err.number)
+End Function
+
 Function copyPartInformation(fromPN As String, toPN As String, module As String, Optional optionDept As String = "") As String
 On Error GoTo err_handler
 

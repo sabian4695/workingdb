@@ -40,12 +40,12 @@ Public Function fncInit()
         Set objDoc = mobjCATIA.Windows.ITEM(i).Parent
         On Error GoTo 0
         If Not objDoc Is Nothing Then
-            If TypeName(objDoc) = "DrawingDocument" Then
+            If typeName(objDoc) = "DrawingDocument" Then
                 lngDrawCnt = lngDrawCnt + 1
                 ReDim Preserve mlstDrawDoc(lngDrawCnt)
                 Set mlstDrawDoc(lngDrawCnt) = objDoc
-            ElseIf TypeName(objDoc) = "ProductDocument" Or _
-                   TypeName(objDoc) = "PartDocument" Then
+            ElseIf typeName(objDoc) = "ProductDocument" Or _
+                   typeName(objDoc) = "PartDocument" Then
                 lngProdCnt = lngProdCnt + 1
                 ReDim Preserve mlstProdDoc(lngProdCnt)
                 Set mlstProdDoc(lngProdCnt) = objDoc
@@ -155,7 +155,7 @@ Private Function fncGetDrawingLink(ByRef iobjDrawDoc As Object) As String
             On Error GoTo 0
             If objLinkDoc Is Nothing Then GoTo continue
             
-            If TypeName(objLinkDoc) = "Product" Then
+            If typeName(objLinkDoc) = "Product" Then
                 fncGetDrawingLink = objLinkDoc.ReferenceProduct.Parent.fullName
                 Exit Function
             End If
@@ -164,7 +164,7 @@ Private Function fncGetDrawingLink(ByRef iobjDrawDoc As Object) As String
             Set objParent = objLinkDoc
             Do While True
                 If objParent Is Nothing Then Exit Do
-                If TypeName(objParent) = "ProductDocument" Or TypeName(objParent) = "PartDocument" Then Exit Do
+                If typeName(objParent) = "ProductDocument" Or typeName(objParent) = "PartDocument" Then Exit Do
                 
                 On Error Resume Next
                 Dim objTemp As Object
@@ -175,7 +175,7 @@ Private Function fncGetDrawingLink(ByRef iobjDrawDoc As Object) As String
                 If objTemp Is Nothing Then Exit Do
                 Set objParent = objTemp
             Loop
-            If TypeName(objParent) = "ProductDocument" Or TypeName(objParent) = "PartDocument" Then
+            If typeName(objParent) = "ProductDocument" Or typeName(objParent) = "PartDocument" Then
                 fncGetDrawingLink = objParent.fullName
                 Exit Function
             End If
@@ -693,13 +693,13 @@ Private Function fncGetDocType(ByRef iobjProduct As Object, ByRef ostrDocType As
     '/ Parent/RootProduct
     Dim objParentProd As Object
     Set objParentProd = iobjProduct.Parent.Parent
-    If TypeName(objParentProd) = "Application" Then
+    If typeName(objParentProd) = "Application" Then
         '/ RootDocument
         Set objParentProd = iobjProduct.Parent
     
-        If TypeName(objParentProd) = "ProductDocument" Then
+        If typeName(objParentProd) = "ProductDocument" Then
             strType = "CATProduct"
-        ElseIf TypeName(objParentProd) = "PartDocument" Then
+        ElseIf typeName(objParentProd) = "PartDocument" Then
             strType = "CATPart"
         End If
     Else
@@ -714,9 +714,9 @@ Private Function fncGetDocType(ByRef iobjProduct As Object, ByRef ostrDocType As
         
         If strParentPath = strPath Then
             strType = "Component"
-        ElseIf TypeName(objDoc) = "ProductDocument" Then
+        ElseIf typeName(objDoc) = "ProductDocument" Then
             strType = "CATProduct"
-        ElseIf TypeName(objDoc) = "PartDocument" Then
+        ElseIf typeName(objDoc) = "PartDocument" Then
             strType = "CATPart"
         End If
     End If
@@ -736,7 +736,7 @@ Private Function fncGetDocPath(ByRef iobjProduct As Object, ByRef ostrDocPath As
     '/ Parent
     Dim objParentProd As Object
     Set objParentProd = iobjProduct.Parent.Parent
-    If TypeName(objParentProd) = "Application" Then
+    If typeName(objParentProd) = "Application" Then
         '/ RootDocumentÇÃèÍçáÇÕParentÇ™DocumentÇ…Ç»ÇÈ
         Set objParentProd = iobjProduct.Parent
         strPath = objParentProd.fullName
@@ -765,7 +765,7 @@ Private Function fncGetDocName(ByRef iobjProduct As Object, ByRef ostrDocName As
     '/ Parent
     Dim objParentProd As Object
     Set objParentProd = iobjProduct.Parent.Parent
-    If TypeName(objParentProd) = "Application" Then
+    If typeName(objParentProd) = "Application" Then
         '/ RootDocumentÇÃèÍçáÇÕParentÇ™DocumentÇ…Ç»ÇÈ
         Set objParentProd = iobjProduct.Parent
         strName = objParentProd.name
@@ -851,7 +851,7 @@ Private Function fncCountInstance(ByRef iobjProduct As Object) As Long
     Set objProducts = iobjProduct.Parent
     On Error GoTo 0
     
-    If TypeName(objProducts) <> "Products" Then
+    If typeName(objProducts) <> "Products" Then
         '/ Products
         fncCountInstance = 1
         Exit Function
