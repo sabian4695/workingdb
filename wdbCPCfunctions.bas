@@ -89,15 +89,13 @@ If Not IsNull(rsStep!dueDate) And DCount("ID", "tblCPC_Steps", "projectId = " & 
     GoTo errorOut
 End If
 
-skipPillarCheck: 'BETA -TO BE REMOVED
-
 If restrict(Environ("username"), projectOwner) = False Then GoTo theCorrectFellow 'is the bro an owner?
 
 'FIRST: are you the right person for the job???
 If Nz(rsStep!responsible) = userData("Dept") And DCount("ID", "tblCPC_XFteams", "memberName = '" & Environ("username") & "' AND projectId = " & rsStep!projectId) > 0 Then GoTo theCorrectFellow 'if the bro is responsible AND CHECK IF ON CF TEAM
 If restrict(Environ("username"), projectOwner, "Manager") = False Then GoTo theCorrectFellow 'is the bro an owner Manager?
 If restrict(Environ("username"), Nz(rsStep!responsible), "Manager") = False Then GoTo theCorrectFellow  'is the bro a manager in the department of the "responsible" person?
-Call snackBox("error", "Woops", "Only the 'Responsible' person, their manager, or a project/service Manager can close a step", frmActive)
+Call snackBox("error", "Woops", "Only the 'Responsible' person, their manager, or a CPC Manager can close a step", frmActive)
 GoTo exit_handler
 theCorrectFellow:
 
@@ -105,15 +103,16 @@ If IsNull(rsStep!closeDate) = False Then errorText = "This is already closed - w
 If getApprovalsCompleteCPC(rsStep!ID) < getTotalApprovalsCPC(rsStep!ID) Then errorText = "I spy with my little eye: open approval(s) on this step!"
 
 'IF DOCUMENT REQUIRED, CHECK FOR DOCUMENTS
-If Nz(rsStep!documentType, 0) <> 0 Then
-    'First, check if any files are added. error out if not
-    Dim countAttach As Long
-    countAttach = DCount("ID", "tblPartAttachmentsSP", "partStepId = " & rsStep!ID)
-    If countAttach = 0 Then
-        errorText = "This step required a file to be added to close it"
-        GoTo errorOut
-    End If
-End If
+'BETA - skip file check
+'If Nz(rsStep!documentType, 0) <> 0 Then
+'    'First, check if any files are added. error out if not
+'    Dim countAttach As Long
+'    countAttach = DCount("ID", "tblPartAttachmentsSP", "partStepId = " & rsStep!ID)
+'    If countAttach = 0 Then
+'        errorText = "This step required a file to be added to close it"
+'        GoTo errorOut
+'    End If
+'End If
 
 If errorText <> "" Then GoTo errorOut
 
