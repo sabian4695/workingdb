@@ -1534,16 +1534,21 @@ End Function
 Public Function wdbEmail(ByVal strTo As String, ByVal strCC As String, ByVal strSubject As String, body As String) As Boolean
 On Error GoTo err_handler
 wdbEmail = True
-Dim SendItems As New clsOutlookCreateItem
-Set SendItems = New clsOutlookCreateItem
+    
+Dim objEmail As Object
 
-If IsNull(strCC) Then strCC = ""
+Set objEmail = CreateObject("outlook.Application")
+Set objEmail = objEmail.CreateItem(0)
 
-SendItems.CreateMailItem sendTo:=strTo, _
-                             CC:=strCC, _
-                             subject:=strSubject, _
-                             htmlBody:=body
-    Set SendItems = Nothing
+With objEmail
+    .To = strTo
+    .CC = strCC
+    .subject = strSubject
+    .htmlBody = body
+    .display
+End With
+
+Set objEmail = Nothing
     
 Exit Function
 err_handler:
