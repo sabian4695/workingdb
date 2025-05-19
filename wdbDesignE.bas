@@ -1,6 +1,76 @@
 Option Compare Database
 Option Explicit
 
+Function populateDCR(partNumber As String, Optional changeType As String = ".", Optional specificECO As String = "") As Boolean
+On Error GoTo err_handler
+
+populateDCR = False
+
+Dim db As Database
+Set db = CurrentDb()
+
+Dim docHis As String, partPath As String, dcrFold As String, dcrPath As String
+docHis = addLastSlash(openDocumentHistoryFolder(partNumber, False))
+partPath = docHis & "Misc\"
+dcrFold = partPath & "DCR\"
+dcrPath = dcrFold & partNumber & "_DCR.pptx"
+
+'make sure DCR folder exists
+If FolderExists(partPath) = False Then MkDir (partPath)
+If FolderExists(dcrFold) = False Then MkDir (dcrFold)
+
+'check for existing file. If exists, then kill this whole thing
+Dim fso As Object
+Set fso = CreateObject("Scripting.FileSystemObject")
+
+If fso.FileExists(dcrPath) Then Exit Function
+Call fso.CopyFile(mainFolder("DCR"), dcrPath) 'copy template file
+
+Dim ppt As New PowerPoint.Application
+Dim pptPres As PowerPoint.Presentation
+Dim curSlide As PowerPoint.Slide
+
+ppt.Presentations.open dcrPath
+Set pptPres = ppt.ActivePresentation
+Set curSlide = pptPres.Slides(1)
+
+Dim shp As PowerPoint.Shape
+
+curSlide.Shapes.Range(Array("partNumber")).TextFrame.TextRange.Text = partNumber
+curSlide.Shapes.Range(Array("purpose")).TextFrame.TextRange.Text = changeType
+curSlide.Shapes.Range(Array("issueOpened")).TextFrame.TextRange.Text = Date
+curSlide.Shapes.Range(Array("ECOimp")).TextFrame.TextRange.Text = "ASAP"
+curSlide.Shapes("tblSignatures").table.Cell(2, 1).Shape.TextFrame.TextRange.Text = getFullName
+curSlide.Shapes("tblSignatures").table.Cell(3, 1).Shape.TextFrame.TextRange.Text = Date
+
+Dim ecoText As String
+Dim rsECOs As Recordset
+ecoText = specificECO
+
+If specificECO = "" Then
+    Set rsECOs = db.OpenRecordset("SELECT * FROM ENG_ENG_REVISED_ITEMS WHERE REVISED_ITEM_ID = " & idNAM(partNumber, "NAM"), dbOpenSnapshot)
+    rsECOs.MoveLast
+    ecoText = rsECOs!CHANGE_NOTICE
+    rsECOs.Close
+End If
+
+curSlide.Shapes.Range(Array("ECO")).TextFrame.TextRange.Text = ecoText
+curSlide.Shapes.Range(Array("partDesc")).TextFrame.TextRange.Text = findDescription(partNumber)
+
+populateDCR = True
+
+Set rsECOs = Nothing
+
+Set db = Nothing
+Set curSlide = Nothing
+Set pptPres = Nothing
+Set ppt = Nothing
+
+Exit Function
+err_handler:
+    Call handleError("wdbDesignE", "populateDCR", Err.DESCRIPTION, Err.number)
+End Function
+
 Function populateETAs(issueDate As Date, dueDate As Date)
 On Error GoTo err_handler
 

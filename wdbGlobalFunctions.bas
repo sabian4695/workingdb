@@ -435,6 +435,10 @@ If rs1.RecordCount = 0 Then 'not in main Oracle table, now look through SIFs
         Set rs1 = db.OpenRecordset("SELECT SIFNUM, PART_DESCRIPTION FROM APPS_Q_SIF_NEW_MOLDED_PART_V WHERE NIFCO_PART_NUMBER = '" & partNumber & "'", dbOpenSnapshot)
         rs1.MoveLast
         findDescription = rs1!Part_Description
+    ElseIf DCount("[ROW_ID]", "APPS_Q_SIF_NEW_PURCHASING_PART_V ", "[NIFCO_PART_NUMBER] = '" & partNumber & "'") > 0 Then 'is it in molded table?
+        Set rs1 = db.OpenRecordset("SELECT SIFNUM, PART_DESCRIPTION FROM APPS_Q_SIF_NEW_PURCHASING_PART_V WHERE NIFCO_PART_NUMBER = '" & partNumber & "'", dbOpenSnapshot)
+        rs1.MoveLast
+        findDescription = rs1!Part_Description
     End If
     Exit Function
 End If
@@ -447,16 +451,6 @@ Set rs1 = Nothing
 Exit Function
 err_handler:
     Call handleError("wdbGlobalFunctions", "findDescription", Err.DESCRIPTION, Err.number)
-End Function
-
-Function gramsToLbs(gramsValue) As Double
-On Error GoTo err_handler
-
-gramsToLbs = gramsValue * 0.00220462
-
-Exit Function
-err_handler:
-    Call handleError("wdbGlobalFunctions", "gramsToLbs", Err.DESCRIPTION, Err.number)
 End Function
 
 Function applyToAllForms()
@@ -776,17 +770,6 @@ Set db = Nothing
 Exit Function
 err_handler:
     Call handleError("wdbGlobalFunctions", "loadECOtype", Err.DESCRIPTION, Err.number)
-End Function
-
-Function randomNumber(low As Long, high As Long) As Long
-On Error GoTo err_handler
-
-Randomize
-randomNumber = Int((high - low + 1) * Rnd() + low)
-
-Exit Function
-err_handler:
-    Call handleError("wdbGlobalFunctions", "randomNumber", Err.DESCRIPTION, Err.number)
 End Function
 
 Function getAPI(url, header1, header2)

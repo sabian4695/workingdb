@@ -44,3 +44,24 @@ Exit Function
 err_handler:
     Call handleError("wdbMath", "Acos", Err.DESCRIPTION, Err.number)
 End Function
+
+Function gramsToLbs(gramsValue) As Double
+On Error GoTo err_handler
+
+gramsToLbs = gramsValue * 0.00220462
+
+Exit Function
+err_handler:
+    Call handleError("wdbMath", "gramsToLbs", Err.DESCRIPTION, Err.number)
+End Function
+
+Function randomNumber(low As Long, high As Long) As Long
+On Error GoTo err_handler
+
+Randomize
+randomNumber = Int((high - low + 1) * Rnd() + low)
+
+Exit Function
+err_handler:
+    Call handleError("wdbMath", "randomNumber", Err.DESCRIPTION, Err.number)
+End Function
