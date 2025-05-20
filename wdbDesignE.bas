@@ -26,6 +26,13 @@ Set fso = CreateObject("Scripting.FileSystemObject")
 If fso.FileExists(dcrPath) Then Exit Function
 Call fso.CopyFile(mainFolder("DCR"), dcrPath) 'copy template file
 
+Dim file As Object
+
+Set file = fso.GetFile(dcrPath)
+If file.Attributes And 1 Then '1 = ReadOnly
+    file.Attributes = file.Attributes - 1
+End If
+
 Dim ppt As New PowerPoint.Application
 Dim pptPres As PowerPoint.Presentation
 Dim curSlide As PowerPoint.Slide
