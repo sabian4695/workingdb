@@ -93,9 +93,9 @@ If restrict(Environ("username"), projectOwner) = False Then GoTo theCorrectFello
 
 'FIRST: are you the right person for the job???
 If Nz(rsStep!responsible) = userData("Dept") And DCount("ID", "tblCPC_XFteams", "memberName = '" & Environ("username") & "' AND projectId = " & rsStep!projectId) > 0 Then GoTo theCorrectFellow 'if the bro is responsible AND CHECK IF ON CF TEAM
-If restrict(Environ("username"), projectOwner, "Manager") = False Then GoTo theCorrectFellow 'is the bro an owner Manager?
+If restrict(Environ("username"), "Project", "Manager") = False Then GoTo theCorrectFellow 'is the bro an owner Manager?
 If restrict(Environ("username"), Nz(rsStep!responsible), "Manager") = False Then GoTo theCorrectFellow  'is the bro a manager in the department of the "responsible" person?
-Call snackBox("error", "Woops", "Only the 'Responsible' person, their manager, or a CPC Manager can close a step", frmActive)
+Call snackBox("error", "Woops", "Only the 'Responsible' person, their manager, or a Project Manager can close a step", frmActive)
 GoTo exit_handler
 theCorrectFellow:
 
