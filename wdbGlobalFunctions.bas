@@ -4,34 +4,26 @@ Option Explicit
 Public bClone As Boolean
 
 Declare PtrSafe Sub ChooseColor Lib "msaccess.exe" Alias "#53" (ByVal hwnd As LongPtr, rgb As Long)
-
 Declare PtrSafe Function LoadCursorFromFile Lib "user32" Alias "LoadCursorFromFileA" (ByVal lpFileName As String) As Long
 Declare PtrSafe Function setCursor Lib "user32" Alias "SetCursor" (ByVal hCursor As Long) As Long
-
-Function doStuff1()
-
-'dbExecute ("UPDATE tblPartSteps SET stepActionId = 27 WHERE stepType = 'Upload WI in Q-Pulse' AND status <> 'Closed'")
-
-End Function
 
 Function doStuff()
 
 Dim db As Database
 Set db = CurrentDb()
 
-Dim rs1 As Recordset
-Set rs1 = db.OpenRecordset("SELECT * FROM tblPartSteps WHERE stepType Like '*Q-Pulse*' and status <> 'Closed'")
+Dim rsSteps As Recordset, indexOrd As Long
+Set rsSteps = db.OpenRecordset("SELECT * from tblPartSteps WHERE status <> 'Closed'")
 
-Do While Not rs1.EOF
-    rs1.Edit
+Do While Not rsSteps.EOF
     
-    rs1!stepType = Replace(rs1!stepType, "Q-Pulse", "DMS")
     
-    rs1.Update
-    rs1.MoveNext
+    
+    rsSteps.MoveNext
 Loop
 
-
+rsSteps.Close
+Set rsSteps = Nothing
 Set db = Nothing
 
 End Function

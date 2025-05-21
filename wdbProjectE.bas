@@ -319,20 +319,10 @@ If gateId <> rsGate!recordId Then
 End If
 
 'PILLARS ADDITION - check if all steps before this pillar are closed
-
-'BETA - TO BE REMOVED
-'---only check if TEST template was used---
-Dim projTempId
-projTempId = DLookup("projectTemplateId", "tblPartProject", "recordId = " & rsStep!partProjectId)
-If Not (DLookup("projectTitle", "tblPartProjectTemplate", "recordId = " & projTempId) Like "*TEST*") Then GoTo skipPillarCheck
-'---end here---
-
 If Not IsNull(rsStep!dueDate) And DCount("recordId", "tblPartSteps", "partGateId = " & rsStep!partGateId & " AND indexOrder < " & rsStep!indexOrder & " AND [status] <> 'Closed'") > 0 Then
     errorText = "This step is a pillar. All steps before this pillar must be closed before this step."
     GoTo errorOut
 End If
-
-skipPillarCheck: 'BETA -TO BE REMOVED
 
 If restrict(Environ("username"), projectOwner) = False Then GoTo theCorrectFellow 'is the bro an owner?
 
@@ -1547,11 +1537,6 @@ If DCount("recordId", "tblPartTeam", "partNumber = '" & pNum & "' AND person = '
 
 Set rsGateTemplate = db.OpenRecordset("Select * FROM tblPartGateTemplate WHERE [projectTemplateId] = " & projTempId, dbOpenSnapshot)
 Set rsSess = db.OpenRecordset("SELECT * FROM tblSessionVariables WHERE pillarTitle is not null")
-
-'ASSUME OLD TEMPLATE IS SELECTED IF NO PILLARS FOUND IN SESS VARS
-'BETA - REMOVE ONCE PILLARS ARE FULLY IMPLEMENTED
-Dim pillarTemplate As Boolean
-pillarTemplate = rsSess.RecordCount > 0
     
 '--GO THROUGH EACH GATE
 Do While Not rsGateTemplate.EOF
@@ -1564,43 +1549,24 @@ Do While Not rsGateTemplate.EOF
     Set rsStepTemplate = db.OpenRecordset("SELECT * from tblPartStepTemplate WHERE [gateTemplateId] = " & rsGateTemplate![recordId] & " ORDER BY indexOrder Asc", dbOpenSnapshot)
     Do While Not rsStepTemplate.EOF
         If (IsNull(rsStepTemplate![Title]) Or rsStepTemplate![Title] = "") Then GoTo nextStep
-        
-        If pillarTemplate Then
-        
-            '------------------------NEW STEP ADDITION CODE - FOR PILLARS ONLY--------------------------
-            'if NOT pillar, don't add date!
-            If rsStepTemplate!pillarStep Then
-                rsSess.FindFirst "pillarStepId = " & rsStepTemplate!recordId
-                If rsSess.noMatch Then GoTo nextStep 'this means user deleted this pillar from the template
-                
-                strInsert = "INSERT INTO tblPartSteps" & _
-                    "(partNumber,partProjectId,partGateId,stepType,openedBy,status,openDate,lastUpdatedDate,lastUpdatedBy,stepActionId,documentType,responsible,indexOrder,duration,dueDate) VALUES"
-                strInsert = strInsert & "('" & pNum & "'," & projId & "," & TempVars!gateId & ",'" & StrQuoteReplace(rsStepTemplate![Title]) & "','" & _
-                    Environ("username") & "','Not Started','" & Now() & "','" & Now() & "','" & Environ("username") & "',"
-                strInsert = strInsert & Nz(rsStepTemplate![stepActionId], "NULL") & "," & Nz(rsStepTemplate![documentType], "NULL") & ",'" & _
-                    Nz(rsStepTemplate![responsible], "") & "'," & rsStepTemplate![indexOrder] & "," & Nz(rsStepTemplate![duration], 1) & ",'" & rsSess!pillarDue & "');"
-            Else
-                 strInsert = "INSERT INTO tblPartSteps" & _
-                    "(partNumber,partProjectId,partGateId,stepType,openedBy,status,openDate,lastUpdatedDate,lastUpdatedBy,stepActionId,documentType,responsible,indexOrder,duration) VALUES"
-                strInsert = strInsert & "('" & pNum & "'," & projId & "," & TempVars!gateId & ",'" & StrQuoteReplace(rsStepTemplate![Title]) & "','" & _
-                    Environ("username") & "','Not Started','" & Now() & "','" & Now() & "','" & Environ("username") & "',"
-                strInsert = strInsert & Nz(rsStepTemplate![stepActionId], "NULL") & "," & Nz(rsStepTemplate![documentType], "NULL") & ",'" & _
-                    Nz(rsStepTemplate![responsible], "") & "'," & rsStepTemplate![indexOrder] & "," & Nz(rsStepTemplate![duration], 1) & ");"
-            End If
-            '-------------------------END NEW ADDITION CODE-----------------------------
+    
+        If rsStepTemplate!pillarStep Then
+            rsSess.FindFirst "pillarStepId = " & rsStepTemplate!recordId
+            If rsSess.noMatch Then GoTo nextStep 'this means user deleted this pillar from the template
             
-        Else
-        
-            '------------------------OLD ADDITION CODE-------------------------------
-            runningDate_OLDTEMPLATE = addWorkdays(runningDate_OLDTEMPLATE, Nz(rsStepTemplate![duration], 1))
             strInsert = "INSERT INTO tblPartSteps" & _
                 "(partNumber,partProjectId,partGateId,stepType,openedBy,status,openDate,lastUpdatedDate,lastUpdatedBy,stepActionId,documentType,responsible,indexOrder,duration,dueDate) VALUES"
             strInsert = strInsert & "('" & pNum & "'," & projId & "," & TempVars!gateId & ",'" & StrQuoteReplace(rsStepTemplate![Title]) & "','" & _
                 Environ("username") & "','Not Started','" & Now() & "','" & Now() & "','" & Environ("username") & "',"
             strInsert = strInsert & Nz(rsStepTemplate![stepActionId], "NULL") & "," & Nz(rsStepTemplate![documentType], "NULL") & ",'" & _
-                Nz(rsStepTemplate![responsible], "") & "'," & rsStepTemplate![indexOrder] & "," & Nz(rsStepTemplate![duration], 1) & ",'" & runningDate_OLDTEMPLATE & "');"
-            '------------------------END OLD ADDITION CODE----------------------------
-        
+                Nz(rsStepTemplate![responsible], "") & "'," & rsStepTemplate![indexOrder] & "," & Nz(rsStepTemplate![duration], 1) & ",'" & rsSess!pillarDue & "');"
+        Else
+             strInsert = "INSERT INTO tblPartSteps" & _
+                "(partNumber,partProjectId,partGateId,stepType,openedBy,status,openDate,lastUpdatedDate,lastUpdatedBy,stepActionId,documentType,responsible,indexOrder,duration) VALUES"
+            strInsert = strInsert & "('" & pNum & "'," & projId & "," & TempVars!gateId & ",'" & StrQuoteReplace(rsStepTemplate![Title]) & "','" & _
+                Environ("username") & "','Not Started','" & Now() & "','" & Now() & "','" & Environ("username") & "',"
+            strInsert = strInsert & Nz(rsStepTemplate![stepActionId], "NULL") & "," & Nz(rsStepTemplate![documentType], "NULL") & ",'" & _
+                Nz(rsStepTemplate![responsible], "") & "'," & rsStepTemplate![indexOrder] & "," & Nz(rsStepTemplate![duration], 1) & ");"
         End If
             
         db.Execute strInsert, dbFailOnError
