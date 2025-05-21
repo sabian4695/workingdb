@@ -78,7 +78,7 @@ With rs1
     .Update
 End With
 
-rs1.Close
+rs1.CLOSE
 Set rs1 = Nothing
 Set db = Nothing
 
@@ -193,7 +193,7 @@ Set db = CurrentDb()
 Dim rs1 As Recordset
 Set rs1 = db.OpenRecordset("SELECT Release FROM tblDBinfo WHERE [ID] = 1", dbOpenSnapshot)
 grabVersion = rs1!release
-rs1.Close: Set rs1 = Nothing
+rs1.CLOSE: Set rs1 = Nothing
 Set db = Nothing
 
 Exit Function

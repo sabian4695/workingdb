@@ -22,7 +22,7 @@ Do While Not rsSteps.EOF
     rsSteps.MoveNext
 Loop
 
-rsSteps.Close
+rsSteps.CLOSE
 Set rsSteps = Nothing
 Set db = Nothing
 
@@ -437,7 +437,7 @@ End If
 
 findDescription = rs1("DESCRIPTION")
 
-rs1.Close
+rs1.CLOSE
 Set rs1 = Nothing
 
 Exit Function
@@ -457,7 +457,7 @@ For Each obj In dbs.AllForms
         If forms(obj.name).DefaultView = 1 Then
             forms(obj.name).BorderStyle = 2
         End If
-        DoCmd.Close acForm, obj.name, acSaveYes
+        DoCmd.CLOSE acForm, obj.name, acSaveYes
     End If
 nextOne:
 Next obj
@@ -580,7 +580,7 @@ With rs1
     .Bookmark = .lastModified
 End With
 
-rs1.Close
+rs1.CLOSE
 Set rs1 = Nothing
 Set db = Nothing
 
@@ -617,7 +617,7 @@ With rs1
     .Bookmark = .lastModified
 End With
 
-rs1.Close
+rs1.CLOSE
 Set rs1 = Nothing
 Set db = Nothing
 
@@ -668,7 +668,7 @@ Loop
 addWorkdays = testDate
 
 On Error Resume Next
-rsHolidays.Close
+rsHolidays.CLOSE
 Set rsHolidays = Nothing
 Set db = Nothing
 
@@ -709,7 +709,7 @@ Else
     getFullName = rs1!firstName & " " & rs1!lastName
 End If
 
-rs1.Close: Set rs1 = Nothing
+rs1.CLOSE: Set rs1 = Nothing
 Set db = Nothing
 
 Exit Function
@@ -737,7 +737,7 @@ Select Case rsNoti!unRead
         Form_DASHBOARD.Form.notifications.BackColor = rgb(230, 0, 0)
 End Select
 
-rsNoti.Close
+rsNoti.CLOSE
 Set rsNoti = Nothing
 Set db = Nothing
 
@@ -755,7 +755,7 @@ Set rs1 = db.OpenRecordset("SELECT [CHANGE_ORDER_TYPE_ID] from ENG_ENG_ENGINEERI
 
 If rs1.RecordCount > 0 Then loadECOtype = DLookup("[ECO_Type]", "[tblOracleDropDowns]", "[ECO_Type_ID]=" & rs1!CHANGE_ORDER_TYPE_ID)
 
-rs1.Close
+rs1.CLOSE
 Set rs1 = Nothing
 Set db = Nothing
 
@@ -1002,7 +1002,7 @@ With rsNotifications
 End With
 
 On Error Resume Next
-rsNotifications.Close
+rsNotifications.CLOSE
 Set rsNotifications = Nothing
 Set db = Nothing
 
@@ -1056,7 +1056,7 @@ Set rs1 = db.OpenRecordset("SELECT sum(unitWeight*quantity) as total FROM tblPac
 
 getTotalPackingListWeight = rs1!total
 
-rs1.Close
+rs1.CLOSE
 Set rs1 = Nothing
 Set db = Nothing
 
@@ -1073,7 +1073,7 @@ Set rs1 = db.OpenRecordset("SELECT sum(unitCost*quantity) as total FROM tblPackL
 
 getTotalPackingListCost = rs1!total
 
-rs1.Close
+rs1.CLOSE
 Set rs1 = Nothing
 Set db = Nothing
 
@@ -1119,7 +1119,7 @@ End Select
 setRestrict:
 restrict = d Or l
 
-rsPerm.Close
+rsPerm.CLOSE
 Set rsPerm = Nothing
 Set db = Nothing
 
@@ -1152,9 +1152,9 @@ Set rsSummaryEmail = db.OpenRecordset("SELECT max(dateUsed) as anaDate from tblA
 If Not DateSerial(Year(rsSummaryEmail!anaDate), Month(rsSummaryEmail!anaDate), Day(rsSummaryEmail!anaDate)) >= Date Then Call openPath("\\data\mdbdata\WorkingDB\build\Commands\Misc_Commands\summaryEmail.vbs")
 
 On Error Resume Next
-rsAnalytics.Close: Set rsAnalytics = Nothing
-rsRefreshReports.Close: Set rsRefreshReports = Nothing
-rsSummaryEmail.Close: Set rsSummaryEmail = Nothing
+rsAnalytics.CLOSE: Set rsAnalytics = Nothing
+rsRefreshReports.CLOSE: Set rsRefreshReports = Nothing
+rsSummaryEmail.CLOSE: Set rsSummaryEmail = Nothing
 Set db = Nothing
 
 Exit Sub
@@ -1233,7 +1233,7 @@ Do While Not rsPeople.EOF 'go through every active person
 nextStep:
         rsOpenSteps.MoveNext
     Loop
-    rsOpenSteps.Close
+    rsOpenSteps.CLOSE
     Set rsOpenSteps = Nothing
     
     If ti + li + ni > 0 Then
@@ -1252,7 +1252,7 @@ nextStep:
             !emailContent = StrQuoteReplace(dailySummary("Hi " & rsPeople!firstName, "Here is what you have going on...", lateSteps(), todaySteps(), nextSteps(), li, ti, ni))
             .Update
         End With
-        rsNoti.Close
+        rsNoti.CLOSE
         Set rsNoti = Nothing
     End If
     
@@ -1332,19 +1332,19 @@ Do While Not rsEvents.EOF
         rsPeople.MoveNext
     Loop
     
-    rsNoti.Close
+    rsNoti.CLOSE
     Set rsNoti = Nothing
         
-    rsProgram.Close
+    rsProgram.CLOSE
     Set rsProgram = Nothing
     
     rsEvents.MoveNext
 Loop
 
-rsEvents.Close
+rsEvents.CLOSE
 Set rsEvents = Nothing
 
-rsPeople.Close
+rsPeople.CLOSE
 Set rsPeople = Nothing
 
 Set db = Nothing
@@ -1364,7 +1364,7 @@ Set db = CurrentDb()
 Dim rsPermissions As Recordset
 Set rsPermissions = db.OpenRecordset("SELECT * from tblPermissions WHERE user = '" & userName & "'")
 getEmail = Nz(rsPermissions!userEmail, "")
-rsPermissions.Close
+rsPermissions.CLOSE
 Set rsPermissions = Nothing
 
 GoTo exitFunc
@@ -1373,7 +1373,7 @@ tryOracle:
 Dim rsEmployee As Recordset
 Set rsEmployee = db.OpenRecordset("SELECT FIRST_NAME, LAST_NAME, EMAIL_ADDRESS FROM APPS_XXCUS_USER_EMPLOYEES_V WHERE USER_NAME = '" & StrConv(userName, vbUpperCase) & "'")
 getEmail = Nz(rsEmployee!EMAIL_ADDRESS, "")
-rsEmployee.Close
+rsEmployee.CLOSE
 Set rsEmployee = Nothing
 
 exitFunc:
@@ -1441,7 +1441,7 @@ If typeVal = "NAM" Then
 End If
 
 exitFunction:
-rs1.Close
+rs1.CLOSE
 Set rs1 = Nothing
 Set db = Nothing
 End Function
@@ -1462,7 +1462,7 @@ If rs1.RecordCount = 0 Then GoTo exitFunction
 getDescriptionFromId = rs1("DESCRIPTION")
 
 exitFunction:
-rs1.Close
+rs1.CLOSE
 Set rs1 = Nothing
 Set db = Nothing
 
@@ -1487,7 +1487,7 @@ If rs1.RecordCount = 0 Then GoTo exitFunction
 getStatusFromId = rs1("INVENTORY_ITEM_STATUS_CODE")
 
 exitFunction:
-rs1.Close
+rs1.CLOSE
 Set rs1 = Nothing
 Set db = Nothing
 

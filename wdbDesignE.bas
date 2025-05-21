@@ -58,7 +58,7 @@ If specificECO = "" Then
     Set rsECOs = db.OpenRecordset("SELECT * FROM ENG_ENG_REVISED_ITEMS WHERE REVISED_ITEM_ID = " & idNAM(partNumber, "NAM"), dbOpenSnapshot)
     rsECOs.MoveLast
     ecoText = rsECOs!CHANGE_NOTICE
-    rsECOs.Close
+    rsECOs.CLOSE
 End If
 
 curSlide.Shapes.Range(Array("ECO")).TextFrame.TextRange.Text = ecoText
@@ -110,10 +110,10 @@ Do While Not rsPerm.EOF
     rsPerm.MoveNext
 Loop
 
-rsSessVar.Close: Set rsSessVar = Nothing
-rsPerm.Close: Set rsPerm = Nothing
-rsWorkloadTbl.Close: Set rsWorkloadTbl = Nothing
-rsWorkloadTbl1.Close: Set rsWorkloadTbl1 = Nothing
+rsSessVar.CLOSE: Set rsSessVar = Nothing
+rsPerm.CLOSE: Set rsPerm = Nothing
+rsWorkloadTbl.CLOSE: Set rsWorkloadTbl = Nothing
+rsWorkloadTbl1.CLOSE: Set rsWorkloadTbl1 = Nothing
 Set db = Nothing
 
 Exit Function
@@ -193,10 +193,10 @@ Loop
 
 populateWorkload = True
 
-rsWorkloadTbl.Close: Set rsWorkloadTbl = Nothing
-rsHolidays.Close: Set rsHolidays = Nothing
-rsUsers.Close: Set rsUsers = Nothing
-rsWO.Close: Set rsWO = Nothing
+rsWorkloadTbl.CLOSE: Set rsWorkloadTbl = Nothing
+rsHolidays.CLOSE: Set rsHolidays = Nothing
+rsUsers.CLOSE: Set rsUsers = Nothing
+rsWO.CLOSE: Set rsWO = Nothing
 Set db = Nothing
 
 Exit Function
@@ -231,7 +231,7 @@ db.Execute strInsert, dbFailOnError
 
 createDnumber = "D" & dNum
 
-rs1.Close
+rs1.CLOSE
 Set rs1 = Nothing
 Set db = Nothing
 

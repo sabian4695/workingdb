@@ -59,7 +59,7 @@ Loop
 
 notifyCPC = True
 
-rsPartTeam.Close
+rsPartTeam.CLOSE
 Set rsPartTeam = Nothing
 Set db = Nothing
 
@@ -176,7 +176,7 @@ Select Case rsStepAction!stepAction
             Call snackBox("info", "FYI", "This step is automatically closed when specific data is present. Clicking 'Close' ran this check manually", frmActive)
             GoTo exit_handler: 'keep stepActionChecks FALSE so it doesn't re-close the step if it was closed in the scanSteps area.
         End If
-        rsPI.Close
+        rsPI.CLOSE
         Set rsPI = Nothing
     Case "emailApprovedCapitalPacket"
         'check for capital packet number
@@ -211,13 +211,13 @@ closeCPCstep = True
 
 exit_handler:
 On Error Resume Next
-rsStepAction.Close
+rsStepAction.CLOSE
 Set rsStepAction = Nothing
-rsMoldInfo.Close
+rsMoldInfo.CLOSE
 Set rsMoldInfo = Nothing
-rsPI.Close
+rsPI.CLOSE
 Set rsPI = Nothing
-rsStep.Close
+rsStep.CLOSE
 Set rsStep = Nothing
 Set db = Nothing
 
@@ -242,7 +242,7 @@ Set rs1 = db.OpenRecordset("SELECT count(approvedOn) as appCount from tblCPC_Ste
 
 getApprovalsCompleteCPC = Nz(rs1!appCount, 0)
 
-rs1.Close
+rs1.CLOSE
 Set rs1 = Nothing
 Set db = Nothing
 
@@ -260,7 +260,7 @@ Set rs1 = db.OpenRecordset("SELECT count(ID) as appCount from tblCPC_StepApprova
 
 getTotalApprovalsCPC = Nz(rs1!appCount, 0)
 
-rs1.Close
+rs1.CLOSE
 Set rs1 = Nothing
 Set db = Nothing
 
@@ -293,7 +293,7 @@ nextRec:
 Loop
 If findDeptCPC <> "" Then findDeptCPC = Left(findDeptCPC, Len(findDeptCPC) - 1)
 
-rsPermissions.Close
+rsPermissions.CLOSE
 Set rsPermissions = Nothing
 Set db = Nothing
 
@@ -335,7 +335,7 @@ With rs1
     .Bookmark = .lastModified
 End With
 
-rs1.Close
+rs1.CLOSE
 Set rs1 = Nothing
 Set db = Nothing
 

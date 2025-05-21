@@ -77,7 +77,7 @@ For i = 1 To 10
     rs1.MoveNext
 Next i
 
-rs1.Close
+rs1.CLOSE
 Set rs1 = Nothing
 Set db = Nothing
     
@@ -789,7 +789,7 @@ Private Function fncWriteExcelForUpdate(ByRef iobjRecords As CATIAPropertyTable)
         rs1.MoveNext
     Next i
     
-    rs1.Close
+    rs1.CLOSE
     Set rs1 = Nothing
     Set db = Nothing
     Form_frmPLM.Dirty = False
@@ -916,7 +916,7 @@ Private Function fncGetProperty() As CATIAPropertyTable
         End If
         rs1.MoveNext
     Next i
-    rs1.Close
+    rs1.CLOSE
     Set rs1 = Nothing
     Set db = Nothing
 End Function
@@ -1161,7 +1161,7 @@ Error:
     fncNumberingRow = "E021"
 Finally:
     If Not con Is Nothing Then
-        If con.State = adStateOpen Then con.Close
+        If con.State = adStateOpen Then con.CLOSE
         Set con = Nothing
     End If
 End Function
@@ -1234,7 +1234,7 @@ Error:
     fncNumberingDesignNo = "E023"
 Finally:
     If Not lRec Is Nothing Then
-        lRec.Close
+        lRec.CLOSE
         Set lRec = Nothing
     End If
 End Function
@@ -1283,7 +1283,7 @@ Public Function fncGetPropertyFromDB(ByRef ilstModelID() As String, _
     
 Finally:
     If Not con Is Nothing Then
-        If con.State = adStateOpen Then con.Close
+        If con.State = adStateOpen Then con.CLOSE
         Set con = Nothing
     End If
 End Function

@@ -252,18 +252,18 @@ skipPackaging:
 
 exitThis:
 On Error Resume Next
-rsPIcopy.Close
-rsPIpaste.Close
-rsAIcopy.Close
-rsAIpaste.Close
-rsCOcopy.Close
-rsCOpaste.Close
-rsOSIcopy.Close
-rsOSIpaste.Close
-rsPackIcopy.Close
-rsPackIpaste.Close
-rsPackIcompCopy.Close
-rsPackIcompPaste.Close
+rsPIcopy.CLOSE
+rsPIpaste.CLOSE
+rsAIcopy.CLOSE
+rsAIpaste.CLOSE
+rsCOcopy.CLOSE
+rsCOpaste.CLOSE
+rsOSIcopy.CLOSE
+rsOSIpaste.CLOSE
+rsPackIcopy.CLOSE
+rsPackIpaste.CLOSE
+rsPackIcompCopy.CLOSE
+rsPackIcompPaste.CLOSE
 
 Set rsPIcopy = Nothing
 Set rsPIpaste = Nothing
@@ -372,9 +372,9 @@ If Nz(rsStep!documentType, 0) <> 0 Then
         Loop
     End If
     
-    rsAttach.Close: Set rsAttach = Nothing
-    rsAttStd.Close: Set rsAttStd = Nothing
-    rsProjPNs.Close: Set rsProjPNs = Nothing
+    rsAttach.CLOSE: Set rsAttach = Nothing
+    rsAttStd.CLOSE: Set rsAttStd = Nothing
+    rsProjPNs.CLOSE: Set rsProjPNs = Nothing
 End If
 
 If errorText <> "" Then GoTo errorOut
@@ -439,7 +439,7 @@ Select Case rsStepAction!stepAction
             Call snackBox("info", "FYI", "This step is automatically closed when specific data is present. Clicking 'Close' ran this check manually", frmActive)
             GoTo exit_handler: 'keep stepActionChecks FALSE so it doesn't re-close the step if it was closed in the scanSteps area.
         End If
-        rsPI.Close
+        rsPI.CLOSE
         Set rsPI = Nothing
     Case "emailApprovedCapitalPacket"
         'check for capital packet number
@@ -494,15 +494,15 @@ closeProjectStep = True
 
 exit_handler:
 On Error Resume Next
-rsStepAction.Close
+rsStepAction.CLOSE
 Set rsStepAction = Nothing
-rsMoldInfo.Close
+rsMoldInfo.CLOSE
 Set rsMoldInfo = Nothing
-rsPI.Close
+rsPI.CLOSE
 Set rsPI = Nothing
-rsStep.Close
+rsStep.CLOSE
 Set rsStep = Nothing
-rsGate.Close
+rsGate.CLOSE
 Set rsGate = Nothing
 Set db = Nothing
 
@@ -548,13 +548,13 @@ If rsAttStd!uniqueFile Then
     Dim rsRelated As Recordset
     Set rsRelated = db.OpenRecordset("SELECT count(recordId) as countIt FROM tblPartProjectPartNumbers WHERE projectId = " & projectId)
     getAttachmentsCountReq = rsRelated!countIt + 1 'count of all related parts on this project + 1 for master
-    rsRelated.Close
+    rsRelated.CLOSE
     Set rsRelated = Nothing
 Else
     getAttachmentsCountReq = 1 'just one file for all the parts is OK
 End If
 
-rsAttStd.Close
+rsAttStd.CLOSE
 Set rsAttStd = Nothing
 Set db = Nothing
 
@@ -572,7 +572,7 @@ Set rs1 = db.OpenRecordset("SELECT count(ID) as countIt from tblPartAttachmentsS
 
 getAttachmentsCount = Nz(rs1!countIt, 0)
 
-rs1.Close
+rs1.CLOSE
 Set rs1 = Nothing
 Set db = Nothing
 
@@ -642,7 +642,7 @@ If Form_DASHBOARD.lblErrors.Visible = True And Form_DASHBOARD.lblErrors.Caption 
 End If
 
 openIt:
-If (CurrentProject.AllForms("frmPartDashboard").IsLoaded = True) Then DoCmd.Close acForm, "frmPartDashboard"
+If (CurrentProject.AllForms("frmPartDashboard").IsLoaded = True) Then DoCmd.CLOSE acForm, "frmPartDashboard"
 DoCmd.OpenForm "frmPartDashboard"
 
 Exit Function
@@ -722,10 +722,10 @@ If checkAIFfields(partNumber) Then
         
         On Error Resume Next
         Set fld = Nothing
-        rsPartAttChild.Close: Set rsPartAttChild = Nothing
-        rsPartAtt.Close: Set rsPartAtt = Nothing
-        rsStep.Close: Set rsStep = Nothing
-        rsDocType.Close: Set rsDocType = Nothing
+        rsPartAttChild.CLOSE: Set rsPartAttChild = Nothing
+        rsPartAtt.CLOSE: Set rsPartAtt = Nothing
+        rsStep.CLOSE: Set rsStep = Nothing
+        rsDocType.CLOSE: Set rsDocType = Nothing
         Set db = Nothing
         
         Call registerPartUpdates("tblPartAttachmentsSP", Null, "Step Attachment", attachName, "Uploaded", partNumber, rsStep!stepType, Form_frmPartDashboard.recordId)
@@ -827,7 +827,7 @@ If rsPI!partType = 1 Or rsPI!partType = 4 Then 'molded / new color
         If Nz(rsPMI!assignedPress) = "" Then errorArray.Add "Assigned Press"
     End If
     
-    rsPMI.Close
+    rsPMI.CLOSE
     Set rsPMI = Nothing
 End If
 skipMold:
@@ -852,7 +852,7 @@ If rsPI!partType = 2 Or rsPI!partType = 5 Then
         If Nz(rsAI!machineLine) = "" Then errorArray.Add "Assembly Machine Line"
     End If
 
-    rsAI.Close
+    rsAI.CLOSE
     Set rsAI = Nothing
     
     Set rsComp = db.OpenRecordset("SELECT * from tblPartComponents WHERE assemblyNumber = '" & partNum & "'")
@@ -873,7 +873,7 @@ If rsPI!partType = 2 Or rsPI!partType = 5 Then
         
         rsComp.MoveNext
     Loop
-    rsComp.Close
+    rsComp.CLOSE
     Set rsComp = Nothing
 End If
 skipAssy:
@@ -899,10 +899,10 @@ Else
             rsPackC.MoveNext
         Loop
         rsPack.MoveNext
-        rsPackC.Close: Set rsPackC = Nothing
+        rsPackC.CLOSE: Set rsPackC = Nothing
     Loop
     
-    rsPack.Close: Set rsPack = Nothing
+    rsPack.CLOSE: Set rsPack = Nothing
 End If
 
 If Nz(rsPI!unitId, 0) = 3 And rsPI!dataStatus = 2 Then 'if U06 - these are required for transfer
@@ -929,13 +929,13 @@ MsgBox "Please fix these items for " & partNum & ":" & vbNewLine & errorTxtLines
 
 exitFunction:
 On Error Resume Next
-rsPI.Close: Set rsPI = Nothing
-rsPack.Close: Set rsPack = Nothing
-rsPackC.Close: Set rsPackC = Nothing
-rsComp.Close: Set rsComp = Nothing
-rsAI.Close: Set rsAI = Nothing
-rsPMI.Close: Set rsPMI = Nothing
-rsU.Close: Set rsU = Nothing
+rsPI.CLOSE: Set rsPI = Nothing
+rsPack.CLOSE: Set rsPack = Nothing
+rsPackC.CLOSE: Set rsPackC = Nothing
+rsComp.CLOSE: Set rsComp = Nothing
+rsAI.CLOSE: Set rsAI = Nothing
+rsPMI.CLOSE: Set rsPMI = Nothing
+rsU.CLOSE: Set rsU = Nothing
 Set db = Nothing
 Exit Function
 
@@ -973,7 +973,7 @@ outsourceCost = "0"
 If Nz(rsPI!outsourceInfoId) <> "" Then
     Set rsOI = db.OpenRecordset("SELECT * from tblPartOutsourceInfo WHERE recordId = " & rsPI!outsourceInfoId)
     outsourceCost = Nz(rsOI!outsourceCost)
-    rsOI.Close: Set rsOI = Nothing
+    rsOI.CLOSE: Set rsOI = Nothing
 End If
                                     
 '---Setup Excel Form---
@@ -1111,7 +1111,7 @@ Select Case rsPI!partType
         aifInsert "Piece Weight (lb)", gramsToLbs(Nz(rsPI!pieceWeight)), firstColBold:=True, set5Dec:=True
         aifInsert "Material Number 2", Nz(rsPI!materialNumber1), firstColBold:=True
         aifInsert "Material 2 Piece Weight (lb)", gramsToLbs(Nz(rsPI!matNum1PieceWeight)), firstColBold:=True, set5Dec:=True
-        rsPMI.Close
+        rsPMI.CLOSE
         Set rsPMI = Nothing
     Case 2, 5 'Assembled / subassembly
         aifInsert "ASSEMBLY INFORMATION", "", , , , True
@@ -1133,7 +1133,7 @@ Select Case rsPI!partType
         End If
         
         aifInsert "Machine Line", Nz(rsAI!machineLine), firstColBold:=True
-        rsAI.Close
+        rsAI.CLOSE
         Set rsAI = Nothing
     Case 3 'Purchased
 End Select
@@ -1159,7 +1159,7 @@ Do While Not rsComp.EOF
         Nz(DLookup("finishSubInv", "tblDropDownsSP", "ID = " & Nz(rsComp!finishSubInv, 0)))
     rsComp.MoveNext
 Loop
-rsComp.Close
+rsComp.CLOSE
 Set rsComp = Nothing
 
 '---Packaging Information---
@@ -1196,10 +1196,10 @@ Set WKS = Nothing
 Set XL = Nothing
 
 On Error Resume Next
-rsPI.Close: Set rsPI = Nothing
-rsU.Close: Set rsU = Nothing
-rsPack.Close: Set rsPack = Nothing
-rsPackC.Close: Set rsPackC = Nothing
+rsPI.CLOSE: Set rsPI = Nothing
+rsU.CLOSE: Set rsU = Nothing
+rsPack.CLOSE: Set rsPack = Nothing
+rsPackC.CLOSE: Set rsPackC = Nothing
 Set db = Nothing
 
 exportAIF = FileName
@@ -1265,7 +1265,7 @@ Set rs1 = db.OpenRecordset("SELECT [CHANGE_NOTICE] from ENG_ENG_REVISED_ITEMS wh
 
 If rs1.RecordCount > 0 Then loadPlannerECO = rs1!CHANGE_NOTICE
 
-rs1.Close
+rs1.CLOSE
 Set rs1 = Nothing
 Set db = Nothing
 End Function
@@ -1286,7 +1286,7 @@ Set rs1 = db.OpenRecordset("SELECT [CHANGE_NOTICE] from ENG_ENG_REVISED_ITEMS wh
 
 If rs1.RecordCount > 0 Then loadTransferECO = rs1!CHANGE_NOTICE
 
-rs1.Close
+rs1.CLOSE
 Set rs1 = Nothing
 Set db = Nothing
 End Function
@@ -1367,7 +1367,7 @@ Set rs1 = db.OpenRecordset("SELECT " & columnName & " FROM tblDropDownsSP WHERE 
 
 grabHistoryRef = rs1(columnName)
 
-rs1.Close
+rs1.CLOSE
 Set rs1 = Nothing
 Set db = Nothing
 
@@ -1405,7 +1405,7 @@ db.Execute "delete * from tblPartQuoteInfo where recordId = " & rsPartInfo!quote
 db.Execute "delete * from tblPartAssemblyInfo where recordId = " & rsPartInfo!assemblyInfoId
 db.Execute "delete * from tblPartOutsourceInfo where recordId = " & rsPartInfo!outsourceInfoId
 
-rsPartInfo.Close
+rsPartInfo.CLOSE
 Set rsPartInfo = Nothing
 
 '-----Part Packaging and Components
@@ -1415,7 +1415,7 @@ Do While Not rsPackaging.EOF
     rsPackaging.MoveNext
 Loop
 rsPackaging.Delete
-rsPackaging.Close
+rsPackaging.CLOSE
 Set rsPackaging = Nothing
 
 '-----Part Meetings and Attendees
@@ -1425,7 +1425,7 @@ Do While Not rsMeetings.EOF
     db.Execute "Delete * from tblPartMeetingAttendees WHERE meetingId = " & rsMeetings!recordId
     rsMeetings.MoveNext
 Loop
-rsMeetings.Close
+rsMeetings.CLOSE
 Set rsMeetings = Nothing
 
 '-----Part Info
@@ -1451,7 +1451,7 @@ Set rs1 = db.OpenRecordset("SELECT count(approvedOn) as appCount from tblPartTra
 
 getApprovalsComplete = Nz(rs1!appCount, 0)
 
-rs1.Close
+rs1.CLOSE
 Set rs1 = Nothing
 Set db = Nothing
 
@@ -1469,7 +1469,7 @@ Set rs1 = db.OpenRecordset("SELECT count(recordId) as appCount from tblPartTrack
 
 getTotalApprovals = Nz(rs1!appCount, 0)
 
-rs1.Close
+rs1.CLOSE
 Set rs1 = Nothing
 Set db = Nothing
 
@@ -1491,7 +1491,7 @@ Do While Not rsSteps.EOF
     rsSteps.MoveNext
 Loop
 
-rsSteps.Close
+rsSteps.CLOSE
 Set rsSteps = Nothing
 Set db = Nothing
 
@@ -1509,7 +1509,7 @@ Set rs1 = db.OpenRecordset("SELECT Min(dueDate) as minDue from tblPartSteps WHER
 
 getCurrentStepDue = Nz(rs1!minDue, "")
 
-rs1.Close
+rs1.CLOSE
 Set rs1 = Nothing
 Set db = Nothing
 
@@ -1606,15 +1606,15 @@ If projTempId = 8 Then
         rsAssyTemplate.MoveNext
     Loop
     
-    rsAssyTemplate.Close
+    rsAssyTemplate.CLOSE
     Set rsAssyTemplate = Nothing
 End If
 
-rsSess.Close
+rsSess.CLOSE
 Set rsSess = Nothing
-rsGateTemplate.Close
+rsGateTemplate.CLOSE
 Set rsGateTemplate = Nothing
-rsStepTemplate.Close
+rsStepTemplate.CLOSE
 Set rsStepTemplate = Nothing
 Set db = Nothing
 
@@ -1637,7 +1637,7 @@ Dim rsPermissions As Recordset
 Set rsPermissions = db.OpenRecordset("SELECT * from tblPermissions where user = '" & User & "'")
 grabTitle = rsPermissions!dept & " " & rsPermissions!Level
 
-rsPermissions.Close
+rsPermissions.CLOSE
 Set rsPermissions = Nothing
 Set db = Nothing
 
@@ -1669,7 +1669,7 @@ grabProjectProgressPercent = closedSteps / totalSteps
 
 exitFunction:
 On Error Resume Next
-rsSteps.Close
+rsSteps.CLOSE
 Set rsSteps = Nothing
 Set db = Nothing
 
@@ -1748,7 +1748,7 @@ Loop
 
 notifyPE = True
 
-rsPartTeam.Close
+rsPartTeam.CLOSE
 Set rsPartTeam = Nothing
 Set db = Nothing
 
@@ -1796,7 +1796,7 @@ nextRec:
 Loop
 If findDept <> "" Then findDept = Left(findDept, Len(findDept) - 1)
 
-rsPermissions.Close
+rsPermissions.CLOSE
 Set rsPermissions = Nothing
 Set db = Nothing
 
@@ -1875,7 +1875,7 @@ Do While Not rsSteps.EOF
                 " AND " & rsStepActions!compareColumn & " = " & rsStepActions!compareData & " AND gateStatus = 3")
                 
             noMatch = rsPartAssemblyGates.RecordCount = 0
-            rsPartAssemblyGates.Close
+            rsPartAssemblyGates.CLOSE
             Set rsPartAssemblyGates = Nothing
             If noMatch Then GoTo nextOne
             GoTo performAction 'Automation gate is complete!
@@ -1955,7 +1955,7 @@ performAction:
                 rsGate.Edit
                 rsGate!actualDate = currentDate
                 rsGate.Update
-                rsGate.Close
+                rsGate.CLOSE
                 Set rsGate = Nothing
             End If
             
@@ -1968,25 +1968,25 @@ nextOne:
 Loop
 
 On Error Resume Next
-rsECOrev.Close
+rsECOrev.CLOSE
 Set rsECOrev = Nothing
-rsPI.Close
+rsPI.CLOSE
 Set rsPI = Nothing
-rsPMI.Close
+rsPMI.CLOSE
 Set rsPMI = Nothing
-rsECOrev.Close
+rsECOrev.CLOSE
 Set rsECOrev = Nothing
-rsLookItUp.Close
+rsLookItUp.CLOSE
 Set rsLookItUp = Nothing
-rsStepActions.Close
+rsStepActions.CLOSE
 Set rsStepActions = Nothing
-rsSteps.Close
+rsSteps.CLOSE
 Set rsSteps = Nothing
-rsCostDocs.Close
+rsCostDocs.CLOSE
 Set rsCostDocs = Nothing
-rsMasterSetups.Close
+rsMasterSetups.CLOSE
 Set rsMasterSetups = Nothing
-rsPartAssemblyGates.Close
+rsPartAssemblyGates.CLOSE
 Set rsPartAssemblyGates = Nothing
 
 Set db = Nothing
@@ -2011,9 +2011,9 @@ Set rsApprovals = db.OpenRecordset("SELECT * from tblPartTrackingApprovals WHERE
 
 If rsApprovals.RecordCount > 0 Then iHaveOpenApproval = True
 
-rsPermissions.Close
+rsPermissions.CLOSE
 Set rsPermissions = Nothing
-rsApprovals.Close
+rsApprovals.CLOSE
 Set rsApprovals = Nothing
 Set db = Nothing
 
@@ -2035,9 +2035,9 @@ Set rsApprovals = db.OpenRecordset("SELECT * from tblPartTrackingApprovals WHERE
 
 If rsApprovals.RecordCount > 0 Then iAmApprover = True
 
-rsPermissions.Close
+rsPermissions.CLOSE
 Set rsPermissions = Nothing
-rsApprovals.Close
+rsApprovals.CLOSE
 Set rsApprovals = Nothing
 Set db = Nothing
 
@@ -2076,7 +2076,7 @@ Dim SendItems As New clsOutlookCreateItem               ' outlook class
     z = tempFold & Format(Date, "YYMMDD") & "_" & partNum & "_Part_Information.pdf"
     DoCmd.OpenReport "rptPartInformation", acViewPreview, , "[partNumber]='" & partNum & "'", acHidden
     DoCmd.OutputTo acOutputReport, "rptPartInformation", acFormatPDF, z, False
-    DoCmd.Close acReport, "rptPartInformation"
+    DoCmd.CLOSE acReport, "rptPartInformation"
     
     SendItems.CreateMailItem sendTo:=strTo, _
                              subject:=strSubject, _
@@ -2135,7 +2135,7 @@ With rs1
     .Bookmark = .lastModified
 End With
 
-rs1.Close
+rs1.CLOSE
 Set rs1 = Nothing
 Set db = Nothing
 
@@ -2193,7 +2193,7 @@ SendItems.CreateMailItem sendTo:=grabPartTeam(partNumber, True), _
 
 toolShipAuthorizationEmail = True
 
-rsApprovals.Close
+rsApprovals.CLOSE
 Set rsApprovals = Nothing
 Set db = Nothing
 

@@ -516,7 +516,7 @@ Function CreateAppointmentItem(StartAt As Date, Optional duration As Long = 30, 
         Else
             If CloseRightAway Then
                 CurrentProperty = "Close"
-                .Close olSave
+                .CLOSE olSave
             Else
                 CurrentProperty = "Display"
                 .display

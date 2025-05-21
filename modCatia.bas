@@ -64,7 +64,7 @@ Public Sub Terminate()
     ReDim gstrNotFoundModelID(0)
     ReDim gstrNotSavedFile(0)
     On Error Resume Next
-    rsPLMprops.Close
+    rsPLMprops.CLOSE
     Set rsPLMprops = Nothing
 End Sub
 
@@ -1646,7 +1646,7 @@ Public Function getSectionData(outColumnName As String, inColumnName As String, 
     
     getSectionData = rsPLMsections(outColumnName)
     
-    rsPLMsections.Close
+    rsPLMsections.CLOSE
     Set rsPLMsections = Nothing
     Set db = Nothing
 
