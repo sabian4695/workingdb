@@ -7,6 +7,14 @@ Declare PtrSafe Sub ChooseColor Lib "msaccess.exe" Alias "#53" (ByVal hwnd As Lo
 Declare PtrSafe Function LoadCursorFromFile Lib "user32" Alias "LoadCursorFromFileA" (ByVal lpFileName As String) As Long
 Declare PtrSafe Function setCursor Lib "user32" Alias "SetCursor" (ByVal hCursor As Long) As Long
 
+Function doStuff1()
+
+Dim strMail As String
+strMail = "mailto:recipient@example.com?subject=Test Subject&body=Hello from VBA!"
+FollowHyperlink strMail
+
+End Function
+
 Function doStuff()
 
 Dim db As Database
