@@ -1209,10 +1209,10 @@ Do While Not rsPeople.EOF 'go through every active person
     ReDim nextSteps(ni)
 
     Set rsOpenSteps = db.OpenRecordset("SELECT * from qryStepApprovalTracker " & _
-                                "WHERE person = '" & rsPeople!User & "' AND dueDate <= Date()+7")
+                                "WHERE person = '" & rsPeople!User & "' AND due <= Date()+7")
     
     Do While (Not rsOpenSteps.EOF And Not (ti > 15 And li > 15 And ni > 15))
-        Select Case rsOpenSteps!dueDate
+        Select Case rsOpenSteps!Due
             Case Date 'due today
                 If ti > 15 Then
                     ti = ti + 1
@@ -1227,7 +1227,7 @@ Do While Not rsPeople.EOF 'go through every active person
                     GoTo nextStep
                 End If
                 ReDim Preserve lateSteps(li)
-                lateSteps(li) = rsOpenSteps!partNumber & "," & rsOpenSteps!Action & "," & Format(rsOpenSteps!dueDate, "mm/dd/yyyy")
+                lateSteps(li) = rsOpenSteps!partNumber & "," & rsOpenSteps!Action & "," & Format(rsOpenSteps!Due, "mm/dd/yyyy")
                 li = li + 1
             Case Is <= (Date + 7) 'due in next week
                 If ni > 15 Then
@@ -1235,7 +1235,7 @@ Do While Not rsPeople.EOF 'go through every active person
                     GoTo nextStep
                 End If
                 ReDim Preserve nextSteps(ni)
-                nextSteps(ni) = rsOpenSteps!partNumber & "," & rsOpenSteps!Action & "," & Format(rsOpenSteps!dueDate, "mm/dd/yyyy")
+                nextSteps(ni) = rsOpenSteps!partNumber & "," & rsOpenSteps!Action & "," & Format(rsOpenSteps!Due, "mm/dd/yyyy")
                 ni = ni + 1
         End Select
 nextStep:
