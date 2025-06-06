@@ -7,31 +7,30 @@ Declare PtrSafe Sub ChooseColor Lib "msaccess.exe" Alias "#53" (ByVal hwnd As Lo
 Declare PtrSafe Function LoadCursorFromFile Lib "user32" Alias "LoadCursorFromFileA" (ByVal lpFileName As String) As Long
 Declare PtrSafe Function setCursor Lib "user32" Alias "SetCursor" (ByVal hCursor As Long) As Long
 
-Function doStuff1()
-
-Dim strMail As String
-strMail = "mailto:recipient@example.com?subject=Test Subject&body=Hello from VBA!"
-FollowHyperlink strMail
-
-End Function
 
 Function doStuff()
 
 Dim db As Database
 Set db = CurrentDb()
 
-Dim rsSteps As Recordset, indexOrd As Long
-Set rsSteps = db.OpenRecordset("SELECT * from tblPartSteps WHERE status <> 'Closed'")
+Dim rsPI As Recordset, indexOrd As Long
+Set rsPI = db.OpenRecordset("SELECT * from tblPartInfo WHERE partNumber IN (SELECT PN FROM qryPackagingPartNumbers)")
 
-Do While Not rsSteps.EOF
+Dim rsPackInfo As Recordset
+
+Do While Not rsPI.EOF
+    Set rsPackInfo = db.OpenRecordset("SELECT * FROM tblPartPackagingInfo WHERE partInfoId = " & rsPI!recordId)
     
+    If rsPackInfo.RecordCount = 0 Then
+        Debug.Print rsPI!partNumber
+        db.Execute "INSERT INTO tblPartPackagingInfo(partInfoId,packType) VALUES (" & rsPI!recordId & ",1)"
+    End If
     
-    
-    rsSteps.MoveNext
+    rsPI.MoveNext
 Loop
 
-rsSteps.CLOSE
-Set rsSteps = Nothing
+rsPI.CLOSE
+Set rsPI = Nothing
 Set db = Nothing
 
 End Function
