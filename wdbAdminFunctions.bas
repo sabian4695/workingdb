@@ -249,3 +249,19 @@ Exit Sub
 err_handler:
     Call handleError("wdbAdminFunctions", "SizeAccess", Err.DESCRIPTION, Err.number)
 End Sub
+
+Function is1920x1080() As Boolean
+On Error GoTo err_handler
+
+Dim r As RECT
+
+On Error Resume Next
+'Get available Desktop size
+GetWindowRect GetDesktopWindow(), r
+
+is1920x1080 = (r.x2 >= 1920 And r.y2 >= 1080)
+
+Exit Function
+err_handler:
+    Call handleError("wdbAdminFunctions", "is1920x1080", Err.DESCRIPTION, Err.number)
+End Function
