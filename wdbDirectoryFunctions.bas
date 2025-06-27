@@ -4,40 +4,40 @@ Option Explicit
 Declare PtrSafe Function ShellExecute Lib "shell32.dll" Alias "ShellExecuteA" (ByVal hwnd As Long, ByVal lpOperation As String, ByVal lpFile As String, ByVal lpParameters As String, ByVal lpDirectory As String, ByVal lpnShowCmd As Long) As Long
 
 Public Sub openPath(Path)
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 CreateObject("Shell.Application").open CVar(Path)
 
 Exit Sub
-err_handler:
+Err_Handler:
     Call handleError("wdbDirectoryFunctions", "openPath", Err.DESCRIPTION, Err.number)
 End Sub
 
 Function replaceDriveLetters(linkInput) As String
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 replaceDriveLetters = Replace(linkInput, "N:\", "\\ncm-fs2\data\Department\")
 replaceDriveLetters = Replace(linkInput, "T:\", "\\design\data\")
 replaceDriveLetters = Replace(linkInput, "S:\", "\\nas01\allshare\")
 
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbDirectoryFunctions", "replaceDriveLetters", Err.DESCRIPTION, Err.number)
 End Function
 
 Function addLastSlash(linkString As String) As String
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 addLastSlash = linkString
 If Right(addLastSlash, 1) <> "\" Then addLastSlash = addLastSlash & "\"
 
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbDirectoryFunctions", "addLastSlash", Err.DESCRIPTION, Err.number)
 End Function
 
 Function createShortcut(lnkLocation As String, targetLocation As String, shortcutName As String)
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 If shortcutName <> "" Then shortcutName = " - " & shortcutName
 
@@ -48,12 +48,12 @@ With CreateObject("WScript.Shell").createShortcut(lnkLocation & shortcutName & "
 End With
 
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbDirectoryFunctions", "createShortcut", Err.DESCRIPTION, Err.number)
 End Function
 
 Public Function checkMkDir(mainFolder, partNum, Optional variableVal = "", Optional openBool As Boolean = True) As String
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 Dim FolName As String, fullPath As String
 
 If variableVal = "*" Then
@@ -83,35 +83,35 @@ End If
 If openBool Then openPath (checkMkDir)
 
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbDirectoryFunctions", "checkMkDir", Err.DESCRIPTION, Err.number)
 End Function
 
 Function mainFolder(sName As String) As String
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 mainFolder = DLookup("[Link]", "tblLinks", "[btnName] = '" & sName & "'")
 
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbDirectoryFunctions", "mainFolder", Err.DESCRIPTION, Err.number)
 End Function
 
 Function FolderExists(sFile As Variant) As Boolean
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 FolderExists = False
 If IsNull(sFile) Then Exit Function
 If Dir(sFile, vbDirectory) <> "" Then FolderExists = True
 
 Exit Function
-err_handler:
+Err_Handler:
     If Err.number = 52 Then Exit Function
     Call handleError("wdbDirectoryFunctions", "FolderExists", Err.DESCRIPTION, Err.number)
 End Function
 
 Public Function zeros(partNum, Amount As Variant)
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
     If (Amount = 2) Then
         zeros = Left(partNum, 3) & "00\"
@@ -120,12 +120,12 @@ On Error GoTo err_handler
     End If
     
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbDirectoryFunctions", "zeros", Err.DESCRIPTION, Err.number)
 End Function
 
 Function openDocumentHistoryFolder(partNum, Optional openBool As Boolean = True) As String
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 openDocumentHistoryFolder = ""
 
 Dim thousZeros, hundZeros
@@ -172,12 +172,12 @@ Else
 End If
 
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbDirectoryFunctions", "openDocumentHistoryFolder", Err.DESCRIPTION, Err.number, CStr(partNum))
 End Function
 
 Function openModelV5Folder(partNumOriginal, Optional openFold As Boolean = True) As String
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 openModelV5Folder = ""
 
@@ -234,6 +234,6 @@ End If
 exit_handler:
 
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbDirectoryFunctions", "openModelV5Folder", Err.DESCRIPTION, Err.number)
 End Function

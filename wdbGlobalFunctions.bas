@@ -354,12 +354,12 @@ nextControl:
 Next
 
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbGlobalFunctions", "setTheme", Err.DESCRIPTION, Err.number)
 End Function
 
 Function findColorLevel(tagText As String) As Long
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 findColorLevel = 0
 If tagText = "" Then Exit Function
@@ -367,12 +367,12 @@ If tagText = "" Then Exit Function
 findColorLevel = Mid(tagText, InStr(tagText, ".L") + 2, 1)
 
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbGlobalFunctions", "setTheme", Err.DESCRIPTION, Err.number)
 End Function
 
 Function shadeColor(inputColor As Long, scalar As Double) As Long
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 Dim tempHex, ioR, ioG, ioB
 
@@ -397,22 +397,22 @@ If ioB > 255 Then ioB = 255
 shadeColor = rgb(ioR, ioG, ioB)
 
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbGlobalFunctions", "shadeColor", Err.DESCRIPTION, Err.number)
 End Function
 
 Public Function colorPicker() As Long
-On Error GoTo err_handler
+On Error GoTo Err_Handler
     Static lngColor As Long
     ChooseColor Application.hWndAccessApp, lngColor
     colorPicker = lngColor
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbGlobalFunctions", "colorPicker", Err.DESCRIPTION, Err.number)
 End Function
 
 Function dbExecute(sql As String)
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 Dim db As Database
 Set db = CurrentDb()
@@ -422,12 +422,12 @@ db.Execute sql
 Set db = Nothing
 
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbGlobalFunctions", "dbExecute", Err.DESCRIPTION, Err.number, sql)
 End Function
 
 Function findDescription(partNumber As String) As String
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 findDescription = ""
 
@@ -460,7 +460,7 @@ rs1.CLOSE
 Set rs1 = Nothing
 
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbGlobalFunctions", "findDescription", Err.DESCRIPTION, Err.number)
 End Function
 
@@ -488,7 +488,7 @@ On Error Resume Next
 Dim db As Database
 Set db = CurrentDb()
 db.QueryDefs.Delete "myExportQueryDef"
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 Dim qExport As DAO.QueryDef
 Set qExport = db.CreateQueryDef("myExportQueryDef", sqlString)
@@ -500,22 +500,22 @@ db.QueryDefs.Delete "myExportQueryDef"
 
 Set db = Nothing
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbGlobalFunctions", "exportSQL", Err.DESCRIPTION, Err.number)
 End Function
 
 Public Function nowString() As String
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 nowString = Format(Now(), "yyyymmddTHHmmss")
 
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbGlobalFunctions", "nowString", Err.DESCRIPTION, Err.number)
 End Function
 
 Public Function snackBox(sType As String, sTitle As String, sMessage As String, refForm As String, Optional centerBool As Boolean = False, Optional autoClose As Boolean = True)
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 TempVars.Add "snackType", sType
 TempVars.Add "snackTitle", sTitle
@@ -535,12 +535,12 @@ End If
 DoCmd.OpenForm "frmSnack"
 
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbGlobalFunctions", "snackBox", Err.DESCRIPTION, Err.number)
 End Function
 
 Public Function labelUpdate(oldLabel As String)
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 Select Case True
     Case InStr(oldLabel, "-") <> 0
@@ -552,24 +552,24 @@ Select Case True
 End Select
 
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbGlobalFunctions", "labelUpdate", Err.DESCRIPTION, Err.number)
 End Function
 
 Public Function labelDirection(label As String)
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 If InStr(label, ">") <> 0 Then
     labelDirection = "DESC"
 Else
     labelDirection = ""
 End If
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbGlobalFunctions", "labelDirection", Err.DESCRIPTION, Err.number)
 End Function
 
 Public Function registerWdbUpdates(table As String, ID As Variant, column As String, oldVal As Variant, newVal As Variant, Optional tag0 As String = "", Optional tag1 As Variant = "")
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 Dim sqlColumns As String, sqlValues As String
 
@@ -604,12 +604,12 @@ Set rs1 = Nothing
 Set db = Nothing
 
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbGlobalFunctions", "registerWdbUpdates", Err.DESCRIPTION, Err.number, table & " " & ID)
 End Function
 
 Public Function registerSalesUpdates(table As String, ID As Variant, column As String, oldVal As Variant, newVal As Variant, Optional tag0 As String = "", Optional tag1 As Variant = "")
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 Dim sqlColumns As String, sqlValues As String
 
@@ -641,7 +641,7 @@ Set rs1 = Nothing
 Set db = Nothing
 
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbGlobalFunctions", "registerSalesUpdates", Err.DESCRIPTION, Err.number)
 End Function
 
@@ -658,7 +658,7 @@ TempVars.Add "tStamp", Timer
 End Function
 
 Public Function addWorkdays(dateInput As Date, daysToAdd As Long) As Date
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 Dim db As Database
 Set db = CurrentDb()
@@ -692,12 +692,12 @@ Set rsHolidays = Nothing
 Set db = Nothing
 
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbGlobalFunctions", "addWorkdays", Err.DESCRIPTION, Err.number)
 End Function
 
 Public Function countWorkdays(oldDate As Date, newDate As Date) As Long
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 Dim total, sunday, saturday, weekdays, holidays
 
@@ -708,12 +708,12 @@ holidays = DCount("recordId", "tblHolidays", "holidayDate > #" & oldDate - 1 & "
 countWorkdays = total - sunday - saturday - holidays
 
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbGlobalFunctions", "countWorkdays", Err.DESCRIPTION, Err.number)
 End Function
 
 Function getFullName(Optional userName As String = "", Optional firstOnly As Boolean = False) As String
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 If userName = "" Then userName = Environ("username")
 
@@ -732,7 +732,7 @@ rs1.CLOSE: Set rs1 = Nothing
 Set db = Nothing
 
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbGlobalFunctions", "getFullName", Err.DESCRIPTION, Err.number)
 End Function
 
@@ -763,7 +763,7 @@ Set db = Nothing
 End Function
 
 Function loadECOtype(changeNotice As String) As String
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 loadECOtype = ""
 
@@ -779,12 +779,12 @@ Set rs1 = Nothing
 Set db = Nothing
 
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbGlobalFunctions", "loadECOtype", Err.DESCRIPTION, Err.number)
 End Function
 
 Function getAPI(url, header1, header2)
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 Dim reader As New XMLHTTP60
     reader.open "GET", url, False
@@ -800,12 +800,12 @@ Else
 End If
 
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbGlobalFunctions", "getAPI", Err.DESCRIPTION, Err.number)
 End Function
 
 Function generateHTML(Title As String, subTitle As String, primaryMessage As String, detail1 As String, detail2 As String, detail3 As String, Optional Link As String = "", Optional addLines As Boolean = False) As String
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 Dim tblHeading As String, tblFooter As String, strHTMLBody As String
 
@@ -856,12 +856,12 @@ strHTMLBody = "" & _
 generateHTML = strHTMLBody
 
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbGlobalFunctions", "generateHTML", Err.DESCRIPTION, Err.number)
 End Function
 
 Function dailySummary(Title As String, subTitle As String, lates() As String, todays() As String, nexts() As String, lateCount As Long, todayCount As Long, nextCount As Long) As String
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 Dim tblHeading As String, tblStepOverview As String, strHTMLBody As String
 
@@ -943,24 +943,24 @@ strHTMLBody = "" & _
 dailySummary = strHTMLBody
 
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbGlobalFunctions", "dailySummary", Err.DESCRIPTION, Err.number)
 End Function
 
 Function emailContentGen(subject As String, Title As String, subTitle As String, primaryMessage As String, detail1 As String, detail2 As String, detail3 As String) As String
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 emailContentGen = subject & "," & Title & "," & subTitle & "," & primaryMessage & "," & detail1 & "," & detail2 & "," & detail3
 
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbGlobalFunctions", "emailContentGen", Err.DESCRIPTION, Err.number)
 End Function
 
 Function sendNotification(sendTo As String, notType As Integer, notPriority As Integer, desc As String, emailContent As String, Optional appName As String = "", Optional appId As Variant = "", Optional multiEmail As Boolean = False, Optional customEmail As Boolean = False) As Boolean
 sendNotification = True
 
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 Dim db As Database
 Set db = CurrentDb()
@@ -1026,41 +1026,41 @@ Set rsNotifications = Nothing
 Set db = Nothing
 
 Exit Function
-err_handler:
+Err_Handler:
 sendNotification = False
     Call handleError("wdbGlobalFunctions", "sendNotification", Err.DESCRIPTION, Err.number)
 End Function
 
 Function privilege(pref) As Boolean
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 privilege = DLookup("[" & pref & "]", "[tblPermissions]", "[User] = '" & Environ("username") & "'")
     
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbGlobalFunctions", "privilege", Err.DESCRIPTION, Err.number)
 End Function
 
 Function getTempFold() As String
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 getTempFold = Environ("temp") & "\workingdb\"
 If FolderExists(getTempFold) = False Then MkDir (getTempFold)
     
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbGlobalFunctions", "getTempFold", Err.DESCRIPTION, Err.number)
 End Function
 
 Function userData(data, Optional specificUser As String = "") As String
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 If specificUser = "" Then specificUser = Environ("username")
 
 userData = Nz(DLookup("[" & data & "]", "[tblPermissions]", "[User] = '" & specificUser & "'"))
 
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbGlobalFunctions", "replaceDriveLetters", Err.DESCRIPTION, Err.number)
 End Function
 
@@ -1099,7 +1099,7 @@ Set db = Nothing
 End Function
 
 Function restrict(userName As String, dept As String, Optional reqLevel As String = "", Optional orAbove As Boolean = False) As Boolean
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 If (CurrentProject.Path = "H:\dev") Then
     If userData("Developer") Then
@@ -1143,12 +1143,12 @@ Set rsPerm = Nothing
 Set db = Nothing
 
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbGlobalFunctions", "restrict", Err.DESCRIPTION, Err.number)
 End Function
 
 Public Sub checkForFirstTimeRun()
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 Dim db As Database
 Set db = CurrentDb()
@@ -1177,12 +1177,12 @@ rsSummaryEmail.CLOSE: Set rsSummaryEmail = Nothing
 Set db = Nothing
 
 Exit Sub
-err_handler:
+Err_Handler:
     Call handleError("wdbGlobalFunctions", "checkForFirstTimeRun", Err.DESCRIPTION, Err.number)
 End Sub
 
 Function grabSummaryInfo(Optional specificUser As String = "") As Boolean
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 grabSummaryInfo = False
 
@@ -1282,12 +1282,12 @@ Set db = Nothing
 grabSummaryInfo = True
 
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbGlobalFunctions", "grabSummaryInfo", Err.DESCRIPTION, Err.number)
 End Function
 
 Function checkProgramEvents() As Boolean
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 Dim db As Database
 Set db = CurrentDb()
@@ -1369,12 +1369,12 @@ Set rsPeople = Nothing
 Set db = Nothing
 
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbGlobalFunctions", "checkProgramEvents", Err.DESCRIPTION, Err.number)
 End Function
 
 Function getEmail(userName As String) As String
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 getEmail = ""
 On Error GoTo tryOracle
@@ -1399,7 +1399,7 @@ exitFunc:
 Set db = Nothing
 
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbGlobalFunctions", "getEmail", Err.DESCRIPTION, Err.number)
 End Function
 
@@ -1412,7 +1412,7 @@ errorCatch:
 End Function
 
 Function labelCycle(checkLabel As String, nameLabel As String, Optional controlSourceVal As String = "") As String()
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
     Dim returnVal(0 To 1) As String, sortLabel As String
     If controlSourceVal = "" Then
@@ -1434,7 +1434,7 @@ On Error GoTo err_handler
     labelCycle = returnVal
     
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbGlobalFunctions", "labelCycle", Err.DESCRIPTION, Err.number)
 End Function
 
@@ -1466,7 +1466,7 @@ Set db = Nothing
 End Function
 
 Function getDescriptionFromId(inventId As Long) As String
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 Dim db As Database
 Set db = CurrentDb()
@@ -1486,12 +1486,12 @@ Set rs1 = Nothing
 Set db = Nothing
 
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbGlobalFunctions", "getDescriptionFromId", Err.DESCRIPTION, Err.number)
 End Function
 
 Function getStatusFromId(inventId As Long) As String
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 Dim db As Database
 Set db = CurrentDb()
@@ -1511,22 +1511,22 @@ Set rs1 = Nothing
 Set db = Nothing
 
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbGlobalFunctions", "getStatusFromId", Err.DESCRIPTION, Err.number)
 End Function
 
 Public Function StrQuoteReplace(strValue)
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 StrQuoteReplace = Replace(Nz(strValue, ""), "'", "''")
 
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbGlobalFunctions", "StrQuoteReplace", Err.DESCRIPTION, Err.number)
 End Function
 
 Public Function wdbEmail(ByVal strTo As String, ByVal strCC As String, ByVal strSubject As String, body As String) As Boolean
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 wdbEmail = True
     
 Dim objEmail As Object
@@ -1545,13 +1545,13 @@ End With
 Set objEmail = Nothing
     
 Exit Function
-err_handler:
+Err_Handler:
 wdbEmail = False
     Call handleError("wdbGlobalFunctions", "wdbEmail", Err.DESCRIPTION, Err.number)
 End Function
 
 Function removeReferenceString(stringWithReference As String, Optional addBetween As String = "") As String
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 Dim tempString As String
 tempString = stringWithReference
@@ -1562,6 +1562,6 @@ If InStr(stringWithReference, ")") Then tempString = tempString & addBetween & T
 removeReferenceString = tempString
 
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbGlobalFunctions", "removeReferenceString", Err.DESCRIPTION, Err.number)
 End Function

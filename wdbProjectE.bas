@@ -5,7 +5,7 @@ Dim XL As Excel.Application, WB As Excel.Workbook, WKS As Excel.Worksheet
 Dim inV As Long
 
 Public Function createMeetingCheckItems(meetingType As Long, meetingId As Long) As Boolean
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 Dim db As Database
 Set db = CurrentDb()
@@ -33,12 +33,12 @@ Loop
 Set db = Nothing
 
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbProjectE", "createMeetingCheckItems", Err.DESCRIPTION, Err.number)
 End Function
 
 Function copyPartInformation(fromPN As String, toPN As String, module As String, Optional optionDept As String = "") As String
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 If fromPN = toPN Then
     copyPartInformation = "Can't copy from and to the same part number, that is silly."
@@ -281,12 +281,12 @@ Set rsPackIcompPaste = Nothing
 Set db = Nothing
 
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbProjectE", "copyPartInformation", Err.DESCRIPTION, Err.number)
 End Function
 
 Function closeProjectStep(stepId As Long, frmActive As String) As Boolean
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 closeProjectStep = False
 
@@ -512,12 +512,12 @@ errorOut:
 Call snackBox("error", "Darn", errorText, frmActive)
 
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbProjectE", "closeProjectStep", Err.DESCRIPTION, Err.number)
 End Function
 
 Public Function daysSinceLastNudge(stepId As Long)
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 Dim lastNudgeDate
 lastNudgeDate = Nz(DLookup("updatedDate", "tblPartUpdateTracking", "tableRecordId = " & stepId & " AND columnName = 'Nudge'"), 0)
@@ -529,12 +529,12 @@ Else
 End If
 
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbProjectE", "daysSinceLastNudge", Err.DESCRIPTION, Err.number)
 End Function
 
 Public Function getAttachmentsCountReq(stepId As Long, docType, projectId As Long) As Long
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 getAttachmentsCountReq = 0
 If Nz(docType) = "" Then Exit Function 'no document required
@@ -558,11 +558,11 @@ rsAttStd.CLOSE
 Set rsAttStd = Nothing
 Set db = Nothing
 
-err_handler:
+Err_Handler:
 End Function
 
 Public Function getAttachmentsCount(stepId As Long) As Long
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 getAttachmentsCount = 0
 Dim db As Database
@@ -576,11 +576,11 @@ rs1.CLOSE
 Set rs1 = Nothing
 Set db = Nothing
 
-err_handler:
+Err_Handler:
 End Function
 
 Function grabPartTeam(partNum As String, Optional withEmail As Boolean = False, Optional includeMe As Boolean = False, Optional searchForPrimaryProj As Boolean = False) As String
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 grabPartTeam = ""
 
@@ -616,12 +616,12 @@ Loop
 Set db = Nothing
 
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbProjectE", "grabPartTeam", Err.DESCRIPTION, Err.number)
 End Function
 
 Function openPartProject(partNum As String) As Boolean
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 Form_DASHBOARD.partNumberSearch = partNum
 TempVars.Add "partNumber", partNum
@@ -646,12 +646,12 @@ If (CurrentProject.AllForms("frmPartDashboard").IsLoaded = True) Then DoCmd.CLOS
 DoCmd.OpenForm "frmPartDashboard"
 
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbProjectE", "openPartProject", Err.DESCRIPTION, Err.number)
 End Function
 
 Public Function autoUploadAIF(partNumber As String) As Boolean
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 autoUploadAIF = False
 
 If checkAIFfields(partNumber) Then
@@ -735,12 +735,12 @@ End If
 autoUploadAIF = True
 
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbProjectE", "autoUploadAIF", Err.DESCRIPTION, Err.number)
 End Function
 
 Public Function checkAIFfields(partNum As String) As Boolean
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 checkAIFfields = False
 
 '---Setup Variables---
@@ -939,13 +939,13 @@ rsU.CLOSE: Set rsU = Nothing
 Set db = Nothing
 Exit Function
 
-err_handler:
+Err_Handler:
     Call handleError("wdbProjectE", "checkAIFfields", Err.DESCRIPTION, Err.number)
     GoTo exitFunction
 End Function
 
 Public Function exportAIF(partNum As String) As String
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 exportAIF = False
 
 '---Setup Variables---
@@ -1205,13 +1205,13 @@ Set db = Nothing
 exportAIF = FileName
 
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbProjectE", "exportAIF", Err.DESCRIPTION, Err.number)
 End Function
 
 Function aifInsert(columnVal0 As String, columnVal1 As String, Optional columnVal2 As String = ".", Optional columnVal3 As String = ".", Optional columnVal4 As String = ".", _
                                 Optional heading As Boolean = False, Optional Title As Boolean = False, Optional firstColBold As Boolean = False, Optional set5Dec = False)
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 WKS.Cells(inV, 1) = columnVal0
 WKS.Cells(inV, 2) = columnVal1
@@ -1245,7 +1245,7 @@ End If
 inV = inV + 1
 
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbProjectE", "aifInsert", Err.DESCRIPTION, Err.number)
 End Function
 
@@ -1292,7 +1292,7 @@ Set db = Nothing
 End Function
 
 Function trialScheduleEmail(Title As String, data() As Variant, columns, rows) As String
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 Dim tblHeading As String, tblArraySection As String, strHTMLBody As String
 
@@ -1341,12 +1341,12 @@ strHTMLBody = "" & _
 trialScheduleEmail = strHTMLBody
 
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbProjectE", "trialScheduleEmail", Err.DESCRIPTION, Err.number)
 End Function
 
 Public Function grabHistoryRef(dataValue As Variant, columnName As String) As String
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 grabHistoryRef = dataValue
 
@@ -1371,11 +1371,11 @@ rs1.CLOSE
 Set rs1 = Nothing
 Set db = Nothing
 
-err_handler:
+Err_Handler:
 End Function
 
 Public Function completelyDeletePartProjectAndInfo()
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 '-----THIS SUB IS NOT YET USABLE
 
 Dim db As Database, partInfoId, partNum
@@ -1436,12 +1436,12 @@ MsgBox "All done.", vbInformation, "It is finished."
 
 'Call registerWdbUpdates("tblPartProjects", partNum, "Part Project", partNum, "Deleted", "frmPartTrackingSettings")
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbProjectE", "completelyDeletePartProjectAndInfo", Err.DESCRIPTION, Err.number)
 End Function
 
 Public Function getApprovalsComplete(stepId As Long, partNumber As String) As Long
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 getApprovalsComplete = 0
 Dim db As Database
@@ -1455,11 +1455,11 @@ rs1.CLOSE
 Set rs1 = Nothing
 Set db = Nothing
 
-err_handler:
+Err_Handler:
 End Function
 
 Public Function getTotalApprovals(stepId As Long, partNumber As String) As Long
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 getTotalApprovals = 0
 Dim db As Database
@@ -1473,7 +1473,7 @@ rs1.CLOSE
 Set rs1 = Nothing
 Set db = Nothing
 
-err_handler:
+Err_Handler:
 End Function
 
 Public Function recalcStepDueDates(projId As Long, oldDueDate As Date, moveBy As Long)
@@ -1516,7 +1516,7 @@ Set db = Nothing
 End Function
 
 Public Function createPartProject(projId, Optional opT0 As Date)
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 Dim db As DAO.Database
 Set db = CurrentDb()
@@ -1619,12 +1619,12 @@ Set rsStepTemplate = Nothing
 Set db = Nothing
 
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbProjectE", "createPartProject", Err.DESCRIPTION, Err.number)
 End Function
 
 Public Function grabTitle(User) As String
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 If IsNull(User) Then
     grabTitle = ""
@@ -1641,11 +1641,11 @@ rsPermissions.CLOSE
 Set rsPermissions = Nothing
 Set db = Nothing
 
-err_handler:
+Err_Handler:
 End Function
 
 Public Function grabProjectProgressPercent(projId As Long) As Double
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 Dim db As Database
 Set db = CurrentDb()
@@ -1674,12 +1674,12 @@ Set rsSteps = Nothing
 Set db = Nothing
 
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbProjectE", "grabProjectProgressPercent", Err.DESCRIPTION, Err.number)
 End Function
 
 Public Function boxPercentConvert(percentIn As Double) As String
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 Select Case percentIn
     Case 0
@@ -1697,12 +1697,12 @@ Select Case percentIn
 End Select
 
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbProjectE", "boxPercentConvert", Err.DESCRIPTION, Err.number)
 End Function
 
 Function notifyPE(partNum As String, notiType As String, stepTitle As String, Optional sendAlways As Boolean = False, Optional stepAction As Boolean = False, Optional notStepRelated As Boolean = False) As Boolean
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 notifyPE = False
 
@@ -1753,12 +1753,12 @@ Set rsPartTeam = Nothing
 Set db = Nothing
 
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbProjectE", "notifyPE", Err.DESCRIPTION, Err.number)
 End Function
 
 Function findDept(partNumber As String, dept As String, Optional returnMe As Boolean = False, Optional returnFullName As Boolean = False) As String
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 findDept = ""
 
@@ -1801,12 +1801,12 @@ Set rsPermissions = Nothing
 Set db = Nothing
 
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbProjectE", "findDept", Err.DESCRIPTION, Err.number)
 End Function
 
 Function scanSteps(partNum As String, routineName As String, Optional identifier As Variant = "notFound") As Boolean
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 scanSteps = False
 'this scans to see if there is a step that needs to be deleted or closed per its step action requirements
@@ -1994,12 +1994,12 @@ Set db = Nothing
 scanSteps = True
 
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbProjectE", "scanSteps", Err.DESCRIPTION, Err.number)
 End Function
 
 Function iHaveOpenApproval(stepId As Long)
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 iHaveOpenApproval = False
 
@@ -2018,12 +2018,12 @@ Set rsApprovals = Nothing
 Set db = Nothing
 
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbProjectE", "iHaveOpenApproval", Err.DESCRIPTION, Err.number)
 End Function
 
 Function iAmApprover(approvalId As Long) As Boolean
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 iAmApprover = False
 
@@ -2042,22 +2042,22 @@ Set rsApprovals = Nothing
 Set db = Nothing
 
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbProjectE", "iAmApprover", Err.DESCRIPTION, Err.number)
 End Function
 
 Function issueCount(partNum As String) As Long
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 issueCount = DCount("recordId", "tblPartIssues", "partNumber = '" & partNum & "' AND [closeDate] is null")
 
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbProjectE", "issueCount", Err.DESCRIPTION, Err.number)
 End Function
 
 Function emailPartInfo(partNum As String, noteTxt As String) As Boolean
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 emailPartInfo = False
 
 Dim SendItems As New clsOutlookCreateItem               ' outlook class
@@ -2090,14 +2090,14 @@ Call fso.deleteFile(z)
 emailPartInfo = True
 
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbProjectE", "emailPartInfo", Err.DESCRIPTION, Err.number)
 End Function
 
 Public Function registerPartUpdates(table As String, ID As Variant, column As String, _
     oldVal As Variant, newVal As Variant, partNumber As String, _
     Optional tag1 As String = "", Optional tag2 As Variant = "", Optional optionExtra As String = "")
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 Dim sqlColumns As String, sqlValues As String
 
@@ -2140,12 +2140,12 @@ Set rs1 = Nothing
 Set db = Nothing
 
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbProjectE", "registerPartUpdates", Err.DESCRIPTION, Err.number)
 End Function
 
 Function toolShipAuthorizationEmail(toolNumber As String, stepId As Long, shipMethod As String, partNumber As String) As Boolean
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 toolShipAuthorizationEmail = False
 
@@ -2198,12 +2198,12 @@ Set rsApprovals = Nothing
 Set db = Nothing
 
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbProjectE", "toolShipAuthorizationEmail", Err.DESCRIPTION, Err.number)
 End Function
 
 Function emailPartApprovalNotification(stepId As Long, partNumber As String) As Boolean
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 emailPartApprovalNotification = False
 
@@ -2222,12 +2222,12 @@ SendItems.CreateMailItem sendTo:=grabPartTeam(partNumber, True), _
 emailPartApprovalNotification = True
 
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbProjectE", "emailPartApprovalNotification", Err.DESCRIPTION, Err.number)
 End Function
 
 Function emailAIF(stepId As Long, partNumber As String, aifType As String, projId As Long) As Boolean
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 emailAIF = False
 
@@ -2251,12 +2251,12 @@ Set db = Nothing
 emailAIF = True
 
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbProjectE", "emailAIF", Err.DESCRIPTION, Err.number)
 End Function
 
 Function emailAIFsend(stepId As Long, partNumber As String, aifType As String)
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 emailAIFsend = False
 
@@ -2275,12 +2275,12 @@ Call sendNotification(strTo, 2, 2, partNumber & " " & aifType & " AIF", emailBod
 emailAIFsend = True
 
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbProjectE", "emailAIFsend", Err.DESCRIPTION, Err.number)
 End Function
 
 Function emailApprovedCapitalPacket(stepId As Long, partNumber As String, capitalPacketNum As String) As Boolean
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 emailApprovedCapitalPacket = False
 
@@ -2298,12 +2298,12 @@ Call sendNotification(grabPartTeam(partNumber), 9, 2, partNumber & " Capital Pac
 emailApprovedCapitalPacket = True
 
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbProjectE", "emailApprovedCapitalPacket", Err.DESCRIPTION, Err.number)
 End Function
 
 Function generateEmailWarray(Title As String, subTitle As String, primaryMessage As String, detailTitle As String, arr() As Variant) As String
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 Dim tblHeading As String, tblFooter As String, strHTMLBody As String, extraFooter As String, detailTable As String
 
@@ -2356,6 +2356,6 @@ strHTMLBody = "" & _
 generateEmailWarray = strHTMLBody
 
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbProjectE", "generateEmailWarray", Err.DESCRIPTION, Err.number)
 End Function

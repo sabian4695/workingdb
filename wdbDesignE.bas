@@ -2,7 +2,7 @@ Option Compare Database
 Option Explicit
 
 Function populateDCR(partNumber As String, Optional changeType As String = ".", Optional specificECO As String = "") As Boolean
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 populateDCR = False
 
@@ -74,12 +74,12 @@ Set pptPres = Nothing
 Set ppt = Nothing
 
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbDesignE", "populateDCR", Err.DESCRIPTION, Err.number)
 End Function
 
 Function populateETAs(issueDate As Date, dueDate As Date)
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 Dim db As Database
 Set db = CurrentDb()
@@ -117,12 +117,12 @@ rsWorkloadTbl1.CLOSE: Set rsWorkloadTbl1 = Nothing
 Set db = Nothing
 
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbDesignE", "populateETAs", Err.DESCRIPTION, Err.number)
 End Function
 
 Function populateWorkload() As Boolean
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 TempVars.Add "tStamp", Timer
 
@@ -200,12 +200,12 @@ rsWO.CLOSE: Set rsWO = Nothing
 Set db = Nothing
 
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbDesignE", "populateWorkload", Err.DESCRIPTION, Err.number)
 End Function
 
 Function createDnumber() As String
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 Dim db As Database
 Set db = CurrentDb()
@@ -236,12 +236,12 @@ Set rs1 = Nothing
 Set db = Nothing
 
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbDesignE", "createDnumber", Err.DESCRIPTION, Err.number)
 End Function
 
 Public Sub registerDRSUpdates(table As String, ID As Variant, column As String, oldVal As Variant, newVal As Variant, Optional tag0 As String, Optional tag1 As String)
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 Dim sqlColumns As String, sqlValues As String
 
@@ -282,7 +282,7 @@ db.Execute "INSERT INTO tblDRSUpdateTracking" & sqlColumns & sqlValues
 Set db = Nothing
 
 Exit Sub
-err_handler:
+Err_Handler:
     Call handleError("wdbDesignE", "registerDRSUpdates", Err.DESCRIPTION, Err.number)
 End Sub
 
@@ -354,7 +354,7 @@ exitFunc:
 End Function
 
 Function progressPercent(controlNum As Long)
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 progressPercent = 0
 
@@ -367,6 +367,6 @@ checked = DCount("[Task_ID]", "[tblTaskTracker]", "[Control_Number] = " & contro
 If total <> 0 Then progressPercent = checked / total
 
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbDesignE", "progressPercent", Err.DESCRIPTION, Err.number)
 End Function

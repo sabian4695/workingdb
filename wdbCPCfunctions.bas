@@ -2,7 +2,7 @@ Option Compare Database
 Option Explicit
 
 Public Function daysSinceLastNudgeCPC(stepId As Long)
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 Dim lastNudgeDate
 lastNudgeDate = Nz(DLookup("updatedDate", "tblCPC_UpdateTracking", "tableRecordId = " & stepId & " AND columnName = 'Nudge'"), 0)
@@ -14,12 +14,12 @@ Else
 End If
 
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbCPCfunctions", "daysSinceLastNudgeCPC", Err.DESCRIPTION, Err.number)
 End Function
 
 Function notifyCPC(projId As Long, notiType As String, stepTitle As String, Optional sendAlways As Boolean = False, Optional stepAction As Boolean = False) As Boolean
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 notifyCPC = False
 
@@ -64,12 +64,12 @@ Set rsPartTeam = Nothing
 Set db = Nothing
 
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbCPCfunctions", "notifyCPC", Err.DESCRIPTION, Err.number)
 End Function
 
 Function closeCPCstep(stepId As Long, frmActive As String) As Boolean
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 closeCPCstep = False
 
@@ -227,12 +227,12 @@ errorOut:
 Call snackBox("error", "Darn", errorText, frmActive)
 
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbCPCfunctions", "closeCPCstep", Err.DESCRIPTION, Err.number)
 End Function
 
 Public Function getApprovalsCompleteCPC(stepId As Long) As Long
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 getApprovalsCompleteCPC = 0
 Dim db As Database
@@ -246,11 +246,11 @@ rs1.CLOSE
 Set rs1 = Nothing
 Set db = Nothing
 
-err_handler:
+Err_Handler:
 End Function
 
 Public Function getTotalApprovalsCPC(stepId As Long) As Long
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 getTotalApprovalsCPC = 0
 Dim db As Database
@@ -264,11 +264,11 @@ rs1.CLOSE
 Set rs1 = Nothing
 Set db = Nothing
 
-err_handler:
+Err_Handler:
 End Function
 
 Function findDeptCPC(projId As Long, dept As String, Optional returnMe As Boolean = False, Optional returnFullName As Boolean = False) As String
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 findDeptCPC = ""
 
@@ -298,12 +298,12 @@ Set rsPermissions = Nothing
 Set db = Nothing
 
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbCPCfunctions", "findDeptCPC", Err.DESCRIPTION, Err.number)
 End Function
 
 Public Sub registerCPCUpdates(table As String, ID As Variant, column As String, oldVal As Variant, newVal As Variant, projectId As Long, Optional tag0 As String = "", Optional tag1 As String = "")
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 If (VarType(oldVal) = vbDate) Then oldVal = Format(oldVal, "mm/dd/yyyy")
 If (VarType(newVal) = vbDate) Then newVal = Format(newVal, "mm/dd/yyyy")
@@ -340,12 +340,12 @@ Set rs1 = Nothing
 Set db = Nothing
 
 Exit Sub
-err_handler:
+Err_Handler:
     Call handleError("wdbCPCfunctions", "registerCPCUpdates", Err.DESCRIPTION, Err.number)
 End Sub
 
 Function getYear(projectNumber As String)
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
     If Len(projectNumber) = 7 Then
         getYear = Left(Year(Now), 2) & Mid(projectNumber, 2, 2)
@@ -354,6 +354,6 @@ On Error GoTo err_handler
     End If
     
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbCPCfunctions", "getYear", Err.DESCRIPTION, Err.number)
 End Function

@@ -23,7 +23,7 @@ Private Declare PtrSafe Function ShowWindow Lib "user32" (ByVal hwnd As Long, By
 Dim AppX As Long, AppY As Long, AppTop As Long, AppLeft As Long, WinRECT As RECT
 
 Function readyForPublish() As Boolean
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 readyForPublish = False
 
@@ -53,7 +53,7 @@ End If
 readyForPublish = True
 
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbAdminFunctions", "readyForPublish", Err.DESCRIPTION, Err.number)
 End Function
 
@@ -186,7 +186,7 @@ dbExecute strSQL
 End Sub
 
 Function grabVersion() As String
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 Dim db As Database
 Set db = CurrentDb()
@@ -197,12 +197,12 @@ rs1.CLOSE: Set rs1 = Nothing
 Set db = Nothing
 
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbAdminFunctions", "grabVersion", Err.DESCRIPTION, Err.number)
 End Function
 
 Sub maximizeAccess()
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 Dim h As Long
 Dim r As RECT
@@ -214,12 +214,12 @@ h = Application.hWndAccessApp
 If (IsZoomed(h) = False) Then ShowWindow h, SW_SHOWMAXIMIZED
 
 Exit Sub
-err_handler:
+Err_Handler:
     Call handleError("wdbAdminFunctions", "SizeAccess", Err.DESCRIPTION, Err.number)
 End Sub
 
 Sub SizeAccess(ByVal dx As Long, ByVal dy As Long)
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 'Set size of Access and center on Desktop
 
 Dim h As Long
@@ -246,12 +246,12 @@ dx, dy, True
 End If
 
 Exit Sub
-err_handler:
+Err_Handler:
     Call handleError("wdbAdminFunctions", "SizeAccess", Err.DESCRIPTION, Err.number)
 End Sub
 
 Function is1920x1080() As Boolean
-On Error GoTo err_handler
+On Error GoTo Err_Handler
 
 Dim r As RECT
 
@@ -262,6 +262,6 @@ GetWindowRect GetDesktopWindow(), r
 is1920x1080 = (r.x2 >= 1920 And r.y2 >= 1080)
 
 Exit Function
-err_handler:
+Err_Handler:
     Call handleError("wdbAdminFunctions", "is1920x1080", Err.DESCRIPTION, Err.number)
 End Function
