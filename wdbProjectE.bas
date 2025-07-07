@@ -72,10 +72,10 @@ End If
 
 '---tblPartQuoteInfo---
 Dim rsPQIcopy As Recordset, rsPQIpaste As Recordset
-Set rsPQIcopy = db.OpenRecordset("SELECT * from tblPartQuoteInfo WHERE recordId = " & Nz(rsPIcopy!quoteInfoId), dbOpenSnapshot)
+Set rsPQIcopy = db.OpenRecordset("SELECT * from tblPartQuoteInfo WHERE recordId = " & Nz(rsPIcopy!quoteInfoId, 0), dbOpenSnapshot)
 
 If rsPQIcopy.RecordCount > 0 Then
-    Set rsPQIpaste = db.OpenRecordset("SELECT * from tblPartQuoteInfo WHERE recordId = " & Nz(rsPIpaste!quoteInfoId))
+    Set rsPQIpaste = db.OpenRecordset("SELECT * from tblPartQuoteInfo WHERE recordId = " & Nz(rsPIpaste!quoteInfoId, 0))
     If rsPQIpaste.RecordCount = 0 Then
         rsPQIpaste.addNew
     Else
@@ -99,10 +99,10 @@ End If
 
 '--tblPartMoldingInfo---
 Dim rsPMIcopy As Recordset, rsPMIpaste As Recordset
-Set rsPMIcopy = db.OpenRecordset("SELECT * from tblPartMoldingInfo WHERE recordId = " & Nz(rsPIcopy!moldInfoId), dbOpenSnapshot)
+Set rsPMIcopy = db.OpenRecordset("SELECT * from tblPartMoldingInfo WHERE recordId = " & Nz(rsPIcopy!moldInfoId, 0), dbOpenSnapshot)
 
 If rsPMIcopy.RecordCount > 0 Then
-    Set rsPMIpaste = db.OpenRecordset("SELECT * from tblPartMoldingInfo WHERE recordId = " & Nz(rsPIpaste!moldInfoId))
+    Set rsPMIpaste = db.OpenRecordset("SELECT * from tblPartMoldingInfo WHERE recordId = " & Nz(rsPIpaste!moldInfoId, 0))
     If rsPMIpaste.RecordCount = 0 Then
         rsPMIpaste.addNew
         rsPMIpaste!toolNumber = toPN & "T"
@@ -129,10 +129,10 @@ If optionDept = "Design" Then GoTo skipPackaging
 '---tblPartAssemblyInfo---
 Dim rsAIcopy As Recordset, rsAIpaste As Recordset
 If Nz(rsPIcopy!assemblyInfoId) = "" Then GoTo skipAssembly
-Set rsAIcopy = db.OpenRecordset("SELECT * from tblPartAssemblyInfo WHERE recordId = " & Nz(rsPIcopy!assemblyInfoId), dbOpenSnapshot)
+Set rsAIcopy = db.OpenRecordset("SELECT * from tblPartAssemblyInfo WHERE recordId = " & Nz(rsPIcopy!assemblyInfoId, 0), dbOpenSnapshot)
 
 If rsAIcopy.RecordCount > 0 Then
-    Set rsAIpaste = db.OpenRecordset("SELECT * from tblPartAssemblyInfo WHERE recordId = " & Nz(rsPIpaste!assemblyInfoId))
+    Set rsAIpaste = db.OpenRecordset("SELECT * from tblPartAssemblyInfo WHERE recordId = " & Nz(rsPIpaste!assemblyInfoId, 0))
     If rsAIpaste.RecordCount = 0 Then
         rsAIpaste.addNew
     Else
@@ -182,10 +182,10 @@ End If
 '---tblPartOutsourceInfo---
 Dim rsOSIcopy As Recordset, rsOSIpaste As Recordset
 If Nz(rsPIcopy!outsourceInfoId) = "" Then GoTo skipOutsource
-Set rsOSIcopy = db.OpenRecordset("SELECT * from tblPartOutsourceInfo where recordId = " & Nz(rsPIcopy!outsourceInfoId), dbOpenSnapshot)
+Set rsOSIcopy = db.OpenRecordset("SELECT * from tblPartOutsourceInfo where recordId = " & Nz(rsPIcopy!outsourceInfoId, 0), dbOpenSnapshot)
 
 If rsOSIcopy.RecordCount > 0 Then
-    Set rsOSIpaste = db.OpenRecordset("SELECT * from tblPartOutsourceInfo WHERE recordId = " & Nz(rsPIpaste!outsourceInfoId))
+    Set rsOSIpaste = db.OpenRecordset("SELECT * from tblPartOutsourceInfo WHERE recordId = " & Nz(rsPIpaste!outsourceInfoId, 0))
     If rsOSIpaste.RecordCount = 0 Then
         rsOSIpaste.addNew
     Else
@@ -228,8 +228,8 @@ If rsPackIcopy.RecordCount > 0 Then
         rsPackIpaste.MoveLast
         
         '---tblPartPackagingComponents---
-        Set rsPackIcompCopy = db.OpenRecordset("SELECT * from tblPartPackagingComponents WHERE packagingInfoId = " & rsPackIcopy!recordId, dbOpenSnapshot)
-        Set rsPackIcompPaste = db.OpenRecordset("SELECT * from tblPartPackagingComponents WHERE packagingInfoId = " & rsPackIpaste!recordId)
+        Set rsPackIcompCopy = db.OpenRecordset("SELECT * from tblPartPackagingComponents WHERE packagingInfoId = " & Nz(rsPackIcopy!recordId), dbOpenSnapshot)
+        Set rsPackIcompPaste = db.OpenRecordset("SELECT * from tblPartPackagingComponents WHERE packagingInfoId = " & Nz(rsPackIpaste!recordId))
         
         Do While Not rsPackIcompCopy.EOF
             rsPackIcompPaste.addNew
@@ -1754,7 +1754,7 @@ Set db = Nothing
 
 Exit Function
 Err_Handler:
-    Call handleError("wdbProjectE", "notifyPE", Err.DESCRIPTION, Err.number)
+    Call handleError("wdbProjectE", "notifyPE", Err.DESCRIPTION, Err.number, Nz(partNum) & ": " & Nz(body))
 End Function
 
 Function findDept(partNumber As String, dept As String, Optional returnMe As Boolean = False, Optional returnFullName As Boolean = False) As String

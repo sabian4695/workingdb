@@ -7,46 +7,6 @@ Declare PtrSafe Sub ChooseColor Lib "msaccess.exe" Alias "#53" (ByVal hwnd As Lo
 Declare PtrSafe Function LoadCursorFromFile Lib "user32" Alias "LoadCursorFromFileA" (ByVal lpFileName As String) As Long
 Declare PtrSafe Function setCursor Lib "user32" Alias "SetCursor" (ByVal hCursor As Long) As Long
 
-Function doStuff1()
-
-Dim oldVal As String
-Dim newVal As String
-
-oldVal = "Upload Customer Layout"
-'newVal = "Upload Approved Production Checklist"
-
-dbExecute ("UPDATE tblPartSteps SET dueDate = Null WHERE status='Closed' AND stepType = '" & oldVal & "'")
-
-End Function
-
-
-Function doStuff()
-
-Dim db As Database
-Set db = CurrentDb()
-
-Dim rsPI As Recordset, indexOrd As Long
-Set rsPI = db.OpenRecordset("SELECT * from tblPartSteps WHERE stepType = ''")
-
-Dim rsPackInfo As Recordset
-
-Do While Not rsPI.EOF
-    Set rsPackInfo = db.OpenRecordset("SELECT * FROM tblPartPackagingInfo WHERE partInfoId = " & rsPI!recordId)
-    
-    If rsPackInfo.RecordCount = 0 Then
-        Debug.Print rsPI!partNumber
-        db.Execute "INSERT INTO tblPartPackagingInfo(partInfoId,packType) VALUES (" & rsPI!recordId & ",1)"
-    End If
-    
-    rsPI.MoveNext
-Loop
-
-rsPI.CLOSE
-Set rsPI = Nothing
-Set db = Nothing
-
-End Function
-
 Function setCustomCursor()
 Dim lngRet As Long
 lngRet = LoadCursorFromFile("\\data\mdbdata\WorkingDB\Pictures\Theme_Pictures\cursor.cur")
@@ -583,6 +543,11 @@ Set rs1 = db.OpenRecordset("tblWdbUpdateTracking")
 
 If Len(oldVal) > 255 Then oldVal = Left(oldVal, 255)
 If Len(newVal) > 255 Then newVal = Left(newVal, 255)
+
+If VarType(ID) = vbString Then
+    tag0 = ID
+    ID = 0
+End If
 
 With rs1
     .addNew

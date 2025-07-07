@@ -1,6 +1,39 @@
 Option Compare Database
 Option Explicit
 
+Function doStuff()
+
+Dim db As Database
+Set db = CurrentDb()
+
+Dim rs1 As Recordset
+Set rs1 = db.OpenRecordset("tblPermissions")
+
+Dim rsUserSettings As Recordset
+Set rsUserSettings = db.OpenRecordset("tblUserSettings")
+
+Do While Not rs1.EOF
+    If DCount("recordId", "tblUserSettings", "User = '" & rs1!User & "'") = 0 Then
+        With rsUserSettings
+            .addNew
+                !User = rs1!User
+                !catiaCustomColor = rs1!catiaCustomColor
+                !autoPosition = rs1!autoPosition
+                !notifications = rs1!notifications
+                !themeId = rs1!themeId
+            .Update
+        End With
+    End If
+    
+    rs1.MoveNext
+Loop
+
+rs1.CLOSE
+Set rs1 = Nothing
+Set db = Nothing
+
+End Function
+
 Public Function setItUp()
 
 Dim serverCon As String, tableName As String, tableNameTo As String
