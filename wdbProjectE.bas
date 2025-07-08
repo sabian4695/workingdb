@@ -4,6 +4,93 @@ Option Explicit
 Dim XL As Excel.Application, WB As Excel.Workbook, WKS As Excel.Worksheet
 Dim inV As Long
 
+Public Function calcNPIFstatus(partNumber As String) As String
+On Error GoTo Err_Handler
+
+calcNPIFstatus = "Not Found"
+
+Dim db As Database
+Set db = CurrentDb()
+
+Dim rsDMS As Recordset
+Set rsDMS = db.OpenRecordset("SELECT * FROM NPIF WHERE [Part Number] = '" & partNumber & "' AND [Form Type] = 'NPIF' AND [Doc Status] = 'Active'")
+
+If rsDMS.RecordCount > 0 Then
+    calcNPIFstatus = "Uploaded"
+    GoTo exitThis
+End If
+
+Dim rsDraft As Recordset, rsFinal As Recordset
+Set rsDraft = db.OpenRecordset("SELECT status FROM tblPartSteps WHERE partNumber = '" & partNumber & "' AND stepType = 'Create Draft NPIF'")
+If rsDraft.RecordCount > 0 Then
+    rsDraft.MoveLast
+    Select Case rsDraft!status
+        Case "Not Started", "In Progress"
+            calcNPIFstatus = "Draft " & rsDraft!status
+        Case "Closed"
+            calcNPIFstatus = "Draft Complete"
+    End Select
+End If
+
+Set rsFinal = db.OpenRecordset("SELECT status FROM tblPartSteps WHERE partNumber = '" & partNumber & "' AND stepType = 'Finalize NPIF'")
+If rsFinal.RecordCount > 0 Then
+    rsFinal.MoveLast
+    If rsDraft.RecordCount > 0 Then
+        If rsDraft!status = "In Progress" Or rsDraft!status = "Not Started" Then GoTo exitThis
+    End If
+    Select Case rsFinal!status
+        Case "Not Started"
+            calcNPIFstatus = "Draft Complete"
+        Case "In Progress"
+            calcNPIFstatus = "Final " & rsFinal!status
+        Case "Closed"
+            calcNPIFstatus = "Final Complete"
+    End Select
+End If
+
+exitThis:
+On Error Resume Next
+rsDMS.CLOSE
+Set rsDMS = Nothing
+rsDraft.CLOSE
+Set rsDraft = Nothing
+rsFinal.CLOSE
+Set rsFinal = Nothing
+
+Set db = Nothing
+
+Exit Function
+Err_Handler:
+    Call handleError("wdbProjectE", "calcNPIFstatus", Err.DESCRIPTION, Err.number)
+End Function
+
+Public Function findStepStatus(stepName As String, partNumber As String) As String
+On Error GoTo Err_Handler
+
+Dim db As Database
+Set db = CurrentDb()
+
+Dim rsStep As Recordset
+
+Set rsStep = db.OpenRecordset("SELECT status FROM tblPartSteps WHERE partNumber = '" & partNumber & "' AND stepType = '" & stepName & "'")
+
+If rsStep.RecordCount > 0 Then
+    rsStep.MoveLast
+    findStepStatus = rsStep!status
+Else
+    findStepStatus = "Not Found"
+End If
+
+rsStep.CLOSE
+Set rsStep = Nothing
+
+Set db = Nothing
+
+Exit Function
+Err_Handler:
+    Call handleError("wdbProjectE", "findStepStatus", Err.DESCRIPTION, Err.number)
+End Function
+
 Public Function createMeetingCheckItems(meetingType As Long, meetingId As Long) As Boolean
 On Error GoTo Err_Handler
 
@@ -1035,7 +1122,13 @@ Else
 End If
 
 aifInsert "Mexico Rates", Nz(rsU!Org) = "CUU", firstColBold:=True
-aifInsert "Org", Nz(rsU!Org, rsPI!developingLocation), firstColBold:=True  'is this supposed to be UNIT based, or the developing ORG?
+
+If rsPI!dataStatus = 2 Then '(transfer)
+    aifInsert "Org", Nz(rsU!Org, rsPI!developingLocation), firstColBold:=True  'for TRANSFER, use MP unit ORG
+Else
+    aifInsert "Org", Nz(rsPI!developingLocation, ""), firstColBold:=True 'for KICKOFF, use Developing ORG
+End If
+
 aifInsert "Part Type", DLookup("partType", "tblDropDownsSP", "ID = " & rsPI!partType), firstColBold:=True
 aifInsert "Locator", Nz(DLookup("finishLocator", "tblDropDownsSP", "ID = " & rsPI!finishLocator)), firstColBold:=True
 aifInsert "Sub-Inventory", Nz(DLookup("finishSubInv", "tblDropDownsSP", "ID = " & rsPI!finishSubInv)), firstColBold:=True
