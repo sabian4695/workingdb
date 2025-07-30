@@ -1217,8 +1217,8 @@ Select Case rsPI!partType
         pph = Nz(rsAI!partsPerHour)
         
         resID = 1
-        If Len(Trim(rsPI!resource)) > 0 Then
-            resourceCSV = Split(rsAI!resource, ",")
+        If Len(Trim(Nz(rsAI!resource))) > 0 Then
+            resourceCSV = Split(Nz(rsAI!resource), ",")
             For Each ITEM In resourceCSV
                 aifInsert "Resource " & resID, CStr(ITEM), firstColBold:=True
                 resID = resID + 1
@@ -1833,7 +1833,7 @@ Do While Not rsPartTeam.EOF
     End If
     
     body = emailContentGen(subjectLine, emailTitle, bodyTitle, stepTitle, "Part Number: " & partNum, "Who: " & closedBy, "When: " & CStr(Date))
-    Call sendNotification(sendTo, 10, 2, stepTitle & " for " & partNum & " has been " & notiType, body, "Part Project", CLng(partNum))
+    Call sendNotification(sendTo, 10, 2, stepTitle & " for " & partNum & " has been " & notiType, body, "Part Project", partNum)
     
 nextRec:
     rsPartTeam.MoveNext
