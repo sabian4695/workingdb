@@ -27,6 +27,7 @@ If rsDraft.RecordCount > 0 Then
     Select Case rsDraft!status
         Case "Not Started", "In Progress"
             calcNPIFstatus = "Draft " & rsDraft!status
+            GoTo exitThis
         Case "Closed"
             calcNPIFstatus = "Draft Complete"
     End Select
@@ -35,9 +36,6 @@ End If
 Set rsFinal = db.OpenRecordset("SELECT status FROM tblPartSteps WHERE partNumber = '" & partNumber & "' AND stepType = 'Finalize NPIF'")
 If rsFinal.RecordCount > 0 Then
     rsFinal.MoveLast
-    If rsDraft.RecordCount > 0 Then
-        If rsDraft!status = "In Progress" Or rsDraft!status = "Not Started" Then GoTo exitThis
-    End If
     Select Case rsFinal!status
         Case "Not Started"
             calcNPIFstatus = "Draft Complete"
@@ -1948,7 +1946,7 @@ Do While Not rsSteps.EOF
             If pnId = "" Then GoTo nextOne
             Set rsECOrev = db.OpenRecordset("select CHANGE_NOTICE from ENG_ENG_ENGINEERING_CHANGES " & _
                 "where CHANGE_NOTICE IN (select CHANGE_NOTICE from ENG_ENG_REVISED_ITEMS where REVISED_ITEM_ID = " & pnId & " ) " & _
-                "AND IMPLEMENTATION_DATE is not null AND REASON_CODE = 'TRANSFER'")
+                "AND IMPLEMENTATION_DATE is not null AND CHANGE_ORDER_TYPE_ID = 72")
                 
             If rsECOrev.RecordCount = 0 Then GoTo nextOne
             GoTo performAction 'transfer ECO found!
