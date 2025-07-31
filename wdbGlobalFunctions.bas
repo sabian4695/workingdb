@@ -13,6 +13,28 @@ lngRet = LoadCursorFromFile("\\data\mdbdata\WorkingDB\Pictures\Theme_Pictures\cu
 lngRet = setCursor(lngRet)
 End Function
 
+Function getCustomerName(customerId As Long) As String
+On Error GoTo Err_Handler
+
+getCustomerName = ""
+
+Dim db As Database
+Set db = CurrentDb()
+
+Dim rs As Recordset
+Set rs = db.OpenRecordset("SELECT CUSTOMER_NAME FROM APPS_XXCUS_CUSTOMERS WHERE CUSTOMER_ID = " & customerId)
+
+If rs.RecordCount > 0 Then getCustomerName = rs!CUSTOMER_NAME
+
+rs.CLOSE
+Set rs = Nothing
+Set db = Nothing
+
+Exit Function
+Err_Handler:
+    Call handleError("wdbGlobalFunctions", "getCustomerName", Err.DESCRIPTION, Err.number)
+End Function
+
 Function dueDay(dueDate, completedDate) As String
 On Error Resume Next
 
