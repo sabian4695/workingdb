@@ -4,6 +4,62 @@ Option Explicit
 Dim XL As Excel.Application, WB As Excel.Workbook, WKS As Excel.Worksheet
 Dim inV As Long
 
+Public Function grabGatePlannedDate(partNumber As String, gateNum As Long) As Date
+On Error GoTo Err_Handler
+
+Dim db As Database
+Dim rs As Recordset
+
+Set db = CurrentDb()
+
+Set rs = db.OpenRecordset("SELECT * FROM tblPartGates WHERE partNumber = '" & partNumber & "' AND gateTitle Like 'G" & gateNum & "*'")
+
+If rs.RecordCount = 0 Then GoTo skip
+
+grabGatePlannedDate = rs!plannedDate
+
+skip:
+On Error Resume Next
+rs.CLOSE
+Set rs = Nothing
+
+Set db = Nothing
+
+Exit Function
+Err_Handler:
+    Call handleError("wdbProjectE", "grabGatePlannedDate", Err.DESCRIPTION, Err.number)
+End Function
+
+Public Function nextDeptStep(partNumber As String, dept As String) As String
+On Error GoTo Err_Handler
+
+nextDeptStep = ""
+
+Dim db As Database
+Dim rs As Recordset
+
+Set db = CurrentDb()
+
+Set rs = db.OpenRecordset("SELECT * FROM tblPartSteps WHERE partNumber = '" & partNumber & "' AND " & _
+    "(recordId IN (Select tableRecordId FROM tblPartTrackingApprovals WHERE dept = '" & dept & "' AND reqLevel = 'Engineer' AND approvedOn is null) OR " & _
+    "((responsible = '" & dept & "') AND [status] <> 'Closed' ))")
+
+If rs.RecordCount = 0 Then GoTo skip
+
+nextDeptStep = rs!stepType
+
+skip:
+On Error Resume Next
+rs.CLOSE
+Set rs = Nothing
+
+Set db = Nothing
+
+Exit Function
+Err_Handler:
+    Call handleError("wdbProjectE", "nextDeptStep", Err.DESCRIPTION, Err.number)
+End Function
+
 Public Function calcNPIFstatus(partNumber As String) As String
 On Error GoTo Err_Handler
 
@@ -622,11 +678,12 @@ Public Function getAttachmentsCountReq(stepId As Long, docType, projectId As Lon
 On Error GoTo Err_Handler
 
 getAttachmentsCountReq = 0
-If Nz(docType) = "" Then Exit Function 'no document required
+If Nz(docType, 0) = 0 Then Exit Function 'no document required
 
 Dim db As Database
 Set db = CurrentDb()
 Dim rsAttStd As Recordset
+
 Set rsAttStd = db.OpenRecordset("SELECT uniqueFile FROM tblPartAttachmentStandards WHERE recordId = " & docType)
 
 If rsAttStd!uniqueFile Then
