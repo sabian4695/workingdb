@@ -52,6 +52,61 @@ Err_Handler:
     Call handleError("wdbDirectoryFunctions", "createShortcut", Err.DESCRIPTION, Err.number)
 End Function
 
+Function modifyShortcuts(folderLocation As String)
+On Error GoTo Err_Handler
+
+Dim objShell As Object
+Dim objShortcut As Object
+
+Set objShell = CreateObject("WScript.Shell")
+
+Set objShortcut = objShell.createShortcut("\\data\mdbdata\WorkingDB\build\Dev_Submission_Review - Copy.lnk")
+
+MsgBox objShortcut.TargetPath 'this shows current shortcut link
+
+objShortcut.TargetPath = "\\data\mdbdata\WorkingDB\build\Code_Review\" 'this changes to new location
+
+'Set objShortcut = itm.GetLink
+'If Not objShortcut Is Nothing Then
+'    objShortcut.Path = strNewShortcutTarget
+'    objShortcut.save
+'End If
+
+Exit Function
+Err_Handler:
+    Call handleError("wdbDirectoryFunctions", "modifyShortcut", Err.DESCRIPTION, Err.number)
+End Function
+
+Sub ListFilesInFolderAndSubfolders(folderPath As String)
+    Dim fso As Object
+    Dim startFolder As Object
+
+    TempVars.Add "tStamp", Timer
+
+    Set fso = CreateObject("Scripting.FileSystemObject")
+    Set startFolder = fso.GetFolder(folderPath)
+
+    ProcessFolder startFolder
+    
+    checkTime ("DONE")
+End Sub
+
+Sub ProcessFolder(ByVal currentFolder As Object)
+    Dim subFolder As Object
+    Dim file As Object
+    
+    
+    ' Loop through each file in the current folder
+    For Each file In currentFolder.Files
+        'Debug.Print file.Path ' Or perform other actions with the file (e.g., add to a list)
+        dbExecute ("INSERT INTO tblSessionVariables(searchHistory) VALUES('" & file.Path & "')")
+    Next file
+
+    For Each subFolder In currentFolder.SubFolders
+        ProcessFolder subFolder
+    Next subFolder
+End Sub
+
 Public Function checkMkDir(mainFolder, partNum, Optional variableVal = "", Optional openBool As Boolean = True) As String
 On Error GoTo Err_Handler
 Dim FolName As String, fullPath As String

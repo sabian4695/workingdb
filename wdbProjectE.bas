@@ -895,78 +895,78 @@ Dim errorArray As Collection
 Set errorArray = New Collection
 
 If findDept(partNum, "Project", True) = "" Then
-    errorArray.Add "Project Engineer"
+    errorArray.Add "Project Engineer not found"
 End If
 
 '---Grab General Data---
 Set rsPI = db.OpenRecordset("SELECT * from tblPartInfo WHERE partNumber = '" & partNum & "'")
 
 If rsPI.RecordCount > 1 Then
-    errorArray.Add "There is a rogue Part Info record. Please contact a WDB developer to have this fixed."
+    errorArray.Add "Rogue Part Info record. Please contact a WDB developer to have this fixed."
     GoTo sendMsg
 End If
 
 Set rsPack = db.OpenRecordset("SELECT * from tblPartPackagingInfo WHERE partInfoId = " & Nz(rsPI!recordId, 0) & " AND (packType = 1 OR packType = 99)")
 Set rsU = db.OpenRecordset("SELECT * from tblUnits WHERE recordId = " & Nz(rsPI!unitId, 0))
 
-If Nz(rsPI!dataStatus) = "" Then errorArray.Add "Data Status"
+If Nz(rsPI!dataStatus) = "" Then errorArray.Add "Data Status is blank"
 
 'check catalog stuff
-If Nz(rsPI!partClassCode) = "" Then errorArray.Add "Part Class Code"
-If Nz(rsPI!subClassCode) = "" Then errorArray.Add "Sub Class Code"
-If Nz(rsPI!businessCode) = "" Then errorArray.Add "Business Code"
-If Nz(rsPI!focusAreaCode) = "" Then errorArray.Add "Focus Area Code"
+If Nz(rsPI!partClassCode) = "" Then errorArray.Add "Part Class Code is blank"
+If Nz(rsPI!subClassCode) = "" Then errorArray.Add "Sub Class Code is blank"
+If Nz(rsPI!businessCode) = "" Then errorArray.Add "Business Code is blank"
+If Nz(rsPI!focusAreaCode) = "" Then errorArray.Add "Focus Area Code is blank"
 
-If Nz(rsPI!customerId) = "" Then errorArray.Add "Customer"
-If Nz(rsPI!developingLocation) = "" Then errorArray.Add "Developing Org"
-If Nz(rsPI!unitId) = "" Then errorArray.Add "MP Unit"
+If Nz(rsPI!customerId) = "" Then errorArray.Add "Customer is blank"
+If Nz(rsPI!developingLocation) = "" Then errorArray.Add "Developing Org is blank"
+If Nz(rsPI!unitId) = "" Then errorArray.Add "MP Unit is blank"
 
 'check part info stuff - always reqruied
 If rsPI!dataStatus = 2 Then
     If Nz(rsPI!developingUnit) = "" Then errorArray.Add "In-House Unit"
 End If
 
-If Nz(rsPI!partType) = "" Then errorArray.Add "Part Type"
-If Nz(rsPI!finishLocator) = "" Then errorArray.Add "Locator"
-If Nz(rsPI!finishSubInv) = "" Then errorArray.Add "Sub-Inventory"
-If Nz(rsPI!quoteInfoId) = "" Then errorArray.Add "Quote Information"
-If Nz(DLookup("quotedCost", "tblPartQuoteInfo", "recordId = " & rsPI!quoteInfoId)) = "" Then errorArray.Add "Quoted Cost"
-If Nz(rsPI!sellingPrice) = "" Then errorArray.Add "Selling Price" 'required always if FG
+If Nz(rsPI!partType) = "" Then errorArray.Add "Part Type is blank"
+If Nz(rsPI!finishLocator) = "" Then errorArray.Add "Locator is blank"
+If Nz(rsPI!finishSubInv) = "" Then errorArray.Add "Sub-Inventory is blank"
+If Nz(rsPI!quoteInfoId) = "" Then errorArray.Add "Quote Information is blank"
+If Nz(DLookup("quotedCost", "tblPartQuoteInfo", "recordId = " & rsPI!quoteInfoId)) = "" Then errorArray.Add "Quoted Cost is blank"
+If Nz(rsPI!sellingPrice) = "" Then errorArray.Add "Selling Price is blank" 'required always if FG
 
 If rsPI!partType = 1 Or rsPI!partType = 4 Then 'molded / new color
     If Nz(rsPI!moldInfoId) = "" Then
-        errorArray.Add "Molding Info" 'always required
+        errorArray.Add "Molding Info is missing (req. for new mold / new color)" 'always required
         GoTo skipMold
     End If
     
     Set rsPMI = db.OpenRecordset("SELECT * from tblPartMoldingInfo WHERE recordId = " & rsPI!moldInfoId)
 
     'always required
-    If Nz(rsPMI!inspection) = "" Then errorArray.Add "Tool Inspection Level"
-    If Nz(rsPMI!measurePack) = "" Then errorArray.Add "Tool Measure Pack Level"
-    If Nz(rsPMI!annealing) = "" Then errorArray.Add "Tool Annealing Level"
-    If Nz(rsPMI!automated) = "" Then errorArray.Add "Tool Automation Type"
-    If Nz(rsPMI!toolType) = "" Then errorArray.Add "Tool Level"
-    If Nz(rsPMI!gateCutting) = "" Then errorArray.Add "Tool Gate Level"
-    If Nz(rsPI!materialNumber) = "" Then errorArray.Add "Material Number"
+    If Nz(rsPMI!inspection) = "" Then errorArray.Add "Tool Inspection Level is blank"
+    If Nz(rsPMI!measurePack) = "" Then errorArray.Add "Tool Measure Pack Level is blank"
+    If Nz(rsPMI!annealing) = "" Then errorArray.Add "Tool Annealing Level is blank"
+    If Nz(rsPMI!automated) = "" Then errorArray.Add "Tool Automation Type is blank"
+    If Nz(rsPMI!toolType) = "" Then errorArray.Add "Tool Level is blank"
+    If Nz(rsPMI!gateCutting) = "" Then errorArray.Add "Tool Gate Level is blank"
+    If Nz(rsPI!materialNumber) = "" Then errorArray.Add "Material Number is blank"
     
     'check if material number exists in Oracle
-    If Nz(rsPI!materialNumber) = "" Then errorArray.Add "Material Number"
-    If idNAM(rsPI!materialNumber, "NAM") = "" Then errorArray.Add "Material Number Not in Oracle"
+    If Nz(rsPI!materialNumber) = "" Then errorArray.Add "Material Number is blank"
+    If idNAM(rsPI!materialNumber, "NAM") = "" Then errorArray.Add "Material Number not found in Oracle"
     
-    If Nz(rsPI!pieceWeight) = "" Then errorArray.Add "Piece Weight"
+    If Nz(rsPI!pieceWeight) = "" Then errorArray.Add "Piece Weight is blank"
     If Nz(rsPI!materialNumber1) <> "" Then 'if there is a second material, must enter wieght for that material
         'also check if this material exists in Oracle
         If idNAM(rsPI!materialNumber1, "NAM") = "" Then errorArray.Add "Second Material Number Not in Oracle"
-        If Nz(rsPI!matNum1PieceWeight) = "" Then errorArray.Add "Second Material Piece Weight"
+        If Nz(rsPI!matNum1PieceWeight) = "" Then errorArray.Add "Second Material Piece Weight is blank"
     End If
-    If Nz(rsPMI!toolNumber) = "" Then errorArray.Add "Tool Number"
-    If Nz(rsPMI!pressSize) = "" Then errorArray.Add "Press Tonnage"
-    If Nz(rsPMI!piecesPerHour) = "" Then errorArray.Add "Pieces Per Hour"
+    If Nz(rsPMI!toolNumber) = "" Then errorArray.Add "Tool Number is blank"
+    If Nz(rsPMI!pressSize) = "" Then errorArray.Add "Press Tonnage is blank"
+    If Nz(rsPMI!piecesPerHour) = "" Then errorArray.Add "Pieces Per Hour is blank"
     
     If rsPI!dataStatus = 2 Then 'required for transfer
-        If Nz(rsPI!itemWeight100Pc) = "" And rsPI!unitId = 1 Then errorArray.Add "100 Piece Weight" 'U01 only
-        If Nz(rsPMI!assignedPress) = "" Then errorArray.Add "Assigned Press"
+        If Nz(rsPI!itemWeight100Pc) = "" And rsPI!unitId = 1 Then errorArray.Add "100 Piece Weight is blank (req. for U01)" 'U01 only
+        If Nz(rsPMI!assignedPress) = "" Then errorArray.Add "Assigned Press is blank"
     End If
     
     rsPMI.CLOSE
@@ -976,22 +976,22 @@ skipMold:
 
 If rsPI!partType = 2 Or rsPI!partType = 5 Then
     If Nz(rsPI!assemblyInfoId) = "" Then
-        errorArray.Add "Assembly Info"
+        errorArray.Add "Assembly Info is missing (req. for assembly / subassembly)"
         GoTo skipAssy
     End If
     
     Set rsAI = db.OpenRecordset("SELECT * from tblPartAssemblyInfo WHERE recordId = " & rsPI!assemblyInfoId)
 
     'always required
-    If Nz(rsAI!assemblyType) = "" Then errorArray.Add "Assembly Type"
-    If Nz(rsAI!assemblyAnnealing) = "" Then errorArray.Add "Assembly Annealing Level"
+    If Nz(rsAI!assemblyType) = "" Then errorArray.Add "Assembly Type is blank"
+    If Nz(rsAI!assemblyAnnealing) = "" Then errorArray.Add "Assembly Annealing Level is blank"
     If Nz(rsAI!assemblyInspection) = "" Then errorArray.Add "Assembly Inspection Level)"
-    If Nz(rsAI!assemblyMeasPack) = "" Then errorArray.Add "Assembly Measure Pack Level"
-    If Nz(rsAI!partsPerHour) = "" Then errorArray.Add "Assembly Parts Per Hour"
+    If Nz(rsAI!assemblyMeasPack) = "" Then errorArray.Add "Assembly Measure Pack Level is blank"
+    If Nz(rsAI!partsPerHour) = "" Then errorArray.Add "Assembly Parts Per Hour is blank"
     
     If rsPI!dataStatus = 2 Then 'required for transfer
-        If Nz(rsAI!resource) = "" Then errorArray.Add "Assembly Resource"
-        If Nz(rsAI!machineLine) = "" Then errorArray.Add "Assembly Machine Line"
+        If Nz(rsAI!resource) = "" Then errorArray.Add "Assembly Resource is blank (req. for transfer)"
+        If Nz(rsAI!machineLine) = "" Then errorArray.Add "Assembly Machine Line is blank (req. for transfer)"
     End If
 
     rsAI.CLOSE
@@ -999,18 +999,18 @@ If rsPI!partType = 2 Or rsPI!partType = 5 Then
     
     Set rsComp = db.OpenRecordset("SELECT * from tblPartComponents WHERE assemblyNumber = '" & partNum & "'")
     If rsComp.RecordCount = 0 Then
-        errorArray.Add "Component Information"
+        errorArray.Add "Component Information is missing"
         GoTo skipAssy
     End If
     
     Do While Not rsComp.EOF
         'always required
-        If Nz(rsComp!componentNumber) = "" Then errorArray.Add "Blank Component Number" 'always required
-        If Nz(rsComp!quantity) = "" Then errorArray.Add "Blank Component Quantity" 'always required
+        If Nz(rsComp!componentNumber) = "" Then errorArray.Add "Component Number is blank" 'always required
+        If Nz(rsComp!quantity) = "" Then errorArray.Add "Component Quantity is blank" 'always required
         
         If rsPI!dataStatus = 2 Then 'required for transfer
-            If Nz(rsComp!finishLocator) = "" Then errorArray.Add "Component Finish Locator"
-            If Nz(rsComp!finishSubInv) = "" Then errorArray.Add "Component Sub-Inventory"
+            If Nz(rsComp!finishLocator) = "" Then errorArray.Add "Component Finish Locator is blank (req. for transfer)"
+            If Nz(rsComp!finishSubInv) = "" Then errorArray.Add "Component Sub-Inventory is blank (req. for transfer)"
         End If
         
         rsComp.MoveNext
@@ -1021,23 +1021,21 @@ End If
 skipAssy:
 
 If rsPack.RecordCount = 0 Then
-    If rsPI!dataStatus = 2 Then errorArray.Add "Packaging Information" 'required for transfer
+    If rsPI!dataStatus = 2 Then errorArray.Add "Packaging Information is missing (req. for transfer)" 'required for transfer
 Else
     Do While Not rsPack.EOF
         If Nz(rsPack!packType) = "" Then errorArray.Add "Packaging Type" 'required for transfer
         If rsU!Org = "CUU" Then
-            If Nz(rsPack!boxesPerSkid) = "" Then errorArray.Add "Boxes Per Skid" 'if CUU org, then need to check this for transfer for MEX FREIGHT cost calc
+            If Nz(rsPack!boxesPerSkid) = "" Then errorArray.Add "Boxes Per Skid (req. for CUU)" 'if CUU org, then need to check this for transfer for MEX FREIGHT cost calc
         End If
 
         Set rsPackC = db.OpenRecordset("SELECT * from tblPartPackagingComponents WHERE packagingInfoId = " & rsPack!recordId)
-        If rsPackC.RecordCount = 0 And rsPI!dataStatus = 2 Then errorArray.Add "Packaging Components" 'required for transfer
+        If rsPackC.RecordCount = 0 And rsPI!dataStatus = 2 Then errorArray.Add "Packaging Components missing (req. for transfer)" 'required for transfer
         
-        Do While Not rsPackC.EOF
-            If rsPI!dataStatus = 2 Then 'required for transfer
-                If Nz(rsPackC!componentType) = "" Then errorArray.Add "Packaging Component Type"
-                If Nz(rsPackC!componentPN) = "" Then errorArray.Add "Packaging Component Part Number"
-                If Nz(rsPackC!componentQuantity) = "" Then errorArray.Add "Packing Component Quantity"
-            End If
+        Do While Not rsPackC.EOF 'always check available records to avoid null errors
+            If Nz(rsPackC!componentType) = "" Then errorArray.Add "Packaging Component Type is blank"
+            If Nz(rsPackC!componentPN) = "" Then errorArray.Add "Packaging Component Part Number is blank"
+            If Nz(rsPackC!componentQuantity) = "" Then errorArray.Add "Packaging Component Quantity is blank"
             rsPackC.MoveNext
         Loop
         rsPack.MoveNext
@@ -1049,9 +1047,9 @@ End If
 
 If Nz(rsPI!unitId, 0) = 3 And rsPI!dataStatus = 2 Then 'if U06 - these are required for transfer
     If Nz(rsPI!outsourceInfoId) = "" Then
-        errorArray.Add "Outsource Info"
+        errorArray.Add "Outsource Info is missing (req. for U06)"
     Else
-        If Nz(DLookup("outsourceCost", "tblPartOutsourceInfo", "recordId = " & rsPI!outsourceInfoId)) = "" Then errorArray.Add "Outsource Cost"
+        If Nz(DLookup("outsourceCost", "tblPartOutsourceInfo", "recordId = " & rsPI!outsourceInfoId)) = "" Then errorArray.Add "Outsource Cost is blank"
     End If
 End If
 
@@ -1067,7 +1065,7 @@ For Each element In errorArray
     errorTxtLines = errorTxtLines & vbNewLine & element
 Next element
 
-MsgBox "Please fix these items for " & partNum & ":" & vbNewLine & errorTxtLines, vbOKOnly, "Fix this to export"
+MsgBox "Please fix these items for " & partNum & ":" & vbNewLine & errorTxtLines, vbOKOnly, "ACTION REQUIRED"
 
 exitFunction:
 On Error Resume Next
@@ -1087,7 +1085,7 @@ Err_Handler:
 End Function
 
 Public Function exportAIF(partNum As String) As String
-On Error GoTo Err_Handler
+'On Error GoTo Err_Handler
 exportAIF = False
 
 '---Setup Variables---
