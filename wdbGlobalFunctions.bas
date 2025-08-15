@@ -1324,8 +1324,8 @@ Do While Not rsEvents.EOF
             .addNew
             !recipientUser = rsPeople!User
             !recipientEmail = rsPeople!userEmail
-            !senderUser = Environ("username")
-            !senderEmail = getEmail(Environ("username"))
+            !senderUser = "automated"
+            !senderEmail = "workingdb@us.nifco.com"
             !sentDate = Now()
             !notificationType = 10
             !notificationPriority = 2

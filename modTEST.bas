@@ -7,24 +7,20 @@ Dim db As Database
 Set db = CurrentDb()
 
 Dim rs1 As Recordset
-Set rs1 = db.OpenRecordset("tblPermissions")
+Set rs1 = db.OpenRecordset("SELECT * FROM tblPartSteps WHERE stepType = 'Upload'")
 
-Dim rsUserSettings As Recordset
-Set rsUserSettings = db.OpenRecordset("tblUserSettings")
+Dim rsApprovals As Recordset
 
 Do While Not rs1.EOF
-    If DCount("recordId", "tblUserSettings", "User = '" & rs1!User & "'") = 0 Then
-        With rsUserSettings
-            .addNew
-                !User = rs1!User
-                !catiaCustomColor = rs1!catiaCustomColor
-                !autoPosition = rs1!autoPosition
-                !notifications = rs1!notifications
-                !themeId = rs1!themeId
-            .Update
-        End With
-    End If
+    Set rsApprovals = db.OpenRecordset("SELECT * FROM tblPartTrackingApprovals WHERE approvedOn is null AND tableRecordId = " & rs1!recordId)
     
+    Do While Not rsApprovals.EOF
+        rsApprovals.Delete
+        rsApprovals.MoveNext
+    Loop
+    
+    rsApprovals.CLOSE
+    Set rsApprovals = Nothing
     rs1.MoveNext
 Loop
 

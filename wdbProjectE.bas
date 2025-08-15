@@ -2105,7 +2105,7 @@ performAction:
                 Set rsGate = Nothing
             End If
             
-            Call notifyPE(rsSteps!partNumber, "Closed", rsSteps!stepType, True)
+            Call notifyPE(rsSteps!partNumber, "Closed", rsSteps!stepType, True, True)
             If CurrentProject.AllForms("frmPartDashboard").IsLoaded Then Form_frmPartDashboard.partDash_refresh_Click
     End Select
 
