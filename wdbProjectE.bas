@@ -909,29 +909,29 @@ End If
 Set rsPack = db.OpenRecordset("SELECT * from tblPartPackagingInfo WHERE partInfoId = " & Nz(rsPI!recordId, 0) & " AND (packType = 1 OR packType = 99)")
 Set rsU = db.OpenRecordset("SELECT * from tblUnits WHERE recordId = " & Nz(rsPI!unitId, 0))
 
-If Nz(rsPI!dataStatus) = "" Then errorArray.Add "Data Status is blank"
+If Nz(rsPI!dataStatus) = "" Then errorArray.Add "Data Status is blank" & vbTab & "(Part Info Page)"
 
 'check catalog stuff
-If Nz(rsPI!partClassCode) = "" Then errorArray.Add "Part Class Code is blank"
-If Nz(rsPI!subClassCode) = "" Then errorArray.Add "Sub Class Code is blank"
-If Nz(rsPI!businessCode) = "" Then errorArray.Add "Business Code is blank"
-If Nz(rsPI!focusAreaCode) = "" Then errorArray.Add "Focus Area Code is blank"
+If Nz(rsPI!partClassCode) = "" Then errorArray.Add "Part Class Code is blank" & vbTab & "(DE Manager Resp)"
+If Nz(rsPI!subClassCode) = "" Then errorArray.Add "Sub Class Code is blank" & vbTab & "(DE Manager Resp)"
+If Nz(rsPI!businessCode) = "" Then errorArray.Add "Business Code is blank" & vbTab & "(DE Manager Resp)"
+If Nz(rsPI!focusAreaCode) = "" Then errorArray.Add "Focus Area Code is blank" & vbTab & "(DE Manager Resp)"
 
-If Nz(rsPI!customerId) = "" Then errorArray.Add "Customer is blank"
-If Nz(rsPI!developingLocation) = "" Then errorArray.Add "Developing Org is blank"
-If Nz(rsPI!unitId) = "" Then errorArray.Add "MP Unit is blank"
+If Nz(rsPI!customerId) = "" Then errorArray.Add "Customer is blank" & vbTab & "(Part Info Page)"
+If Nz(rsPI!developingLocation) = "" Then errorArray.Add "Developing Org is blank" & vbTab & "(Part Info Page)"
+If Nz(rsPI!unitId) = "" Then errorArray.Add "MP Unit is blank" & vbTab & "(Part Info Page)"
 
 'check part info stuff - always reqruied
 If rsPI!dataStatus = 2 Then
-    If Nz(rsPI!developingUnit) = "" Then errorArray.Add "In-House Unit"
+    If Nz(rsPI!developingUnit) = "" Then errorArray.Add "In-House Unit" & vbTab & "(Part Info Page)"
 End If
 
-If Nz(rsPI!partType) = "" Then errorArray.Add "Part Type is blank"
-If Nz(rsPI!finishLocator) = "" Then errorArray.Add "Locator is blank"
-If Nz(rsPI!finishSubInv) = "" Then errorArray.Add "Sub-Inventory is blank"
-If Nz(rsPI!quoteInfoId) = "" Then errorArray.Add "Quote Information is blank"
-If Nz(DLookup("quotedCost", "tblPartQuoteInfo", "recordId = " & rsPI!quoteInfoId)) = "" Then errorArray.Add "Quoted Cost is blank"
-If Nz(rsPI!sellingPrice) = "" Then errorArray.Add "Selling Price is blank" 'required always if FG
+If Nz(rsPI!partType) = "" Then errorArray.Add "Part Type is blank" & vbTab & "(Part Info Page)"
+If Nz(rsPI!finishLocator) = "" Then errorArray.Add "Locator is blank" & vbTab & "(Part Info Page)"
+If Nz(rsPI!finishSubInv) = "" Then errorArray.Add "Sub-Inventory is blank" & vbTab & "(Part Info Page)"
+If Nz(rsPI!quoteInfoId) = "" Then errorArray.Add "Quote Information is blank" & vbTab & "(Part Info Page)"
+If Nz(DLookup("quotedCost", "tblPartQuoteInfo", "recordId = " & rsPI!quoteInfoId)) = "" Then errorArray.Add "Quoted Cost is blank" & vbTab & "(Part Info Page)"
+If Nz(rsPI!sellingPrice) = "" Then errorArray.Add "Selling Price is blank" & vbTab & "(Part Info Page)" 'required always if FG
 
 If rsPI!partType = 1 Or rsPI!partType = 4 Then 'molded / new color
     If Nz(rsPI!moldInfoId) = "" Then
@@ -942,31 +942,31 @@ If rsPI!partType = 1 Or rsPI!partType = 4 Then 'molded / new color
     Set rsPMI = db.OpenRecordset("SELECT * from tblPartMoldingInfo WHERE recordId = " & rsPI!moldInfoId)
 
     'always required
-    If Nz(rsPMI!inspection) = "" Then errorArray.Add "Tool Inspection Level is blank"
-    If Nz(rsPMI!measurePack) = "" Then errorArray.Add "Tool Measure Pack Level is blank"
-    If Nz(rsPMI!annealing) = "" Then errorArray.Add "Tool Annealing Level is blank"
-    If Nz(rsPMI!automated) = "" Then errorArray.Add "Tool Automation Type is blank"
-    If Nz(rsPMI!toolType) = "" Then errorArray.Add "Tool Level is blank"
-    If Nz(rsPMI!gateCutting) = "" Then errorArray.Add "Tool Gate Level is blank"
-    If Nz(rsPI!materialNumber) = "" Then errorArray.Add "Material Number is blank"
+    If Nz(rsPMI!inspection) = "" Then errorArray.Add "Tool Inspection Level is blank" & vbTab & "(Molding Info Page)"
+    If Nz(rsPMI!measurePack) = "" Then errorArray.Add "Tool Measure Pack Level is blank" & vbTab & "(Molding Info Page)"
+    If Nz(rsPMI!annealing) = "" Then errorArray.Add "Tool Annealing Level is blank" & vbTab & "(Molding Info Page)"
+    If Nz(rsPMI!automated) = "" Then errorArray.Add "Tool Automation Type is blank" & vbTab & "(Molding Info Page)"
+    If Nz(rsPMI!toolType) = "" Then errorArray.Add "Tool Level is blank" & vbTab & "(Molding Info Page)"
+    If Nz(rsPMI!gateCutting) = "" Then errorArray.Add "Tool Gate Level is blank" & vbTab & "(Molding Info Page)"
+    If Nz(rsPI!materialNumber) = "" Then errorArray.Add "Material Number is blank" & vbTab & "(Molding Info Page)"
     
     'check if material number exists in Oracle
-    If Nz(rsPI!materialNumber) = "" Then errorArray.Add "Material Number is blank"
+    If Nz(rsPI!materialNumber) = "" Then errorArray.Add "Material Number is blank" & vbTab & "(Part Info Page)"
     If idNAM(rsPI!materialNumber, "NAM") = "" Then errorArray.Add "Material Number not found in Oracle"
     
-    If Nz(rsPI!pieceWeight) = "" Then errorArray.Add "Piece Weight is blank"
+    If Nz(rsPI!pieceWeight) = "" Then errorArray.Add "Piece Weight is blank" & vbTab & "(Part Info Page)"
     If Nz(rsPI!materialNumber1) <> "" Then 'if there is a second material, must enter wieght for that material
         'also check if this material exists in Oracle
-        If idNAM(rsPI!materialNumber1, "NAM") = "" Then errorArray.Add "Second Material Number Not in Oracle"
+        If idNAM(rsPI!materialNumber1, "NAM") = "" Then errorArray.Add "Second Material Number Not in Oracle" & vbTab & "(Part Info Page)"
         If Nz(rsPI!matNum1PieceWeight) = "" Then errorArray.Add "Second Material Piece Weight is blank"
     End If
-    If Nz(rsPMI!toolNumber) = "" Then errorArray.Add "Tool Number is blank"
-    If Nz(rsPMI!pressSize) = "" Then errorArray.Add "Press Tonnage is blank"
-    If Nz(rsPMI!piecesPerHour) = "" Then errorArray.Add "Pieces Per Hour is blank"
+    If Nz(rsPMI!toolNumber) = "" Then errorArray.Add "Tool Number is blank" & vbTab & "(Molding Info Page)"
+    If Nz(rsPMI!pressSize) = "" Then errorArray.Add "Press Tonnage is blank" & vbTab & "(Molding Info Page)"
+    If Nz(rsPMI!piecesPerHour) = "" Then errorArray.Add "Pieces Per Hour is blank" & vbTab & "(Molding Info Page)"
     
     If rsPI!dataStatus = 2 Then 'required for transfer
-        If Nz(rsPI!itemWeight100Pc) = "" And rsPI!unitId = 1 Then errorArray.Add "100 Piece Weight is blank (req. for U01)" 'U01 only
-        If Nz(rsPMI!assignedPress) = "" Then errorArray.Add "Assigned Press is blank"
+        If Nz(rsPI!itemWeight100Pc) = "" And rsPI!unitId = 1 Then errorArray.Add "100 Piece Weight is blank (req. for U01)" & vbTab & "(Molding Info Page)" 'U01 only
+        If Nz(rsPMI!assignedPress) = "" Then errorArray.Add "Assigned Press is blank" & vbTab & "(Molding Info Page)"
     End If
     
     rsPMI.CLOSE
@@ -983,15 +983,15 @@ If rsPI!partType = 2 Or rsPI!partType = 5 Then
     Set rsAI = db.OpenRecordset("SELECT * from tblPartAssemblyInfo WHERE recordId = " & rsPI!assemblyInfoId)
 
     'always required
-    If Nz(rsAI!assemblyType) = "" Then errorArray.Add "Assembly Type is blank"
-    If Nz(rsAI!assemblyAnnealing) = "" Then errorArray.Add "Assembly Annealing Level is blank"
-    If Nz(rsAI!assemblyInspection) = "" Then errorArray.Add "Assembly Inspection Level)"
-    If Nz(rsAI!assemblyMeasPack) = "" Then errorArray.Add "Assembly Measure Pack Level is blank"
-    If Nz(rsAI!partsPerHour) = "" Then errorArray.Add "Assembly Parts Per Hour is blank"
+    If Nz(rsAI!assemblyType) = "" Then errorArray.Add "Assembly Type is blank" & vbTab & "(Assembly Info Page)"
+    If Nz(rsAI!assemblyAnnealing) = "" Then errorArray.Add "Assembly Annealing Level is blank" & vbTab & "(Assembly Info Page)"
+    If Nz(rsAI!assemblyInspection) = "" Then errorArray.Add "Assembly Inspection Level is blank" & vbTab & "(Assembly Info Page)"
+    If Nz(rsAI!assemblyMeasPack) = "" Then errorArray.Add "Assembly Measure Pack Level is blank" & vbTab & "(Assembly Info Page)"
+    If Nz(rsAI!partsPerHour) = "" Then errorArray.Add "Assembly Parts Per Hour is blank" & vbTab & "(Assembly Info Page)"
     
     If rsPI!dataStatus = 2 Then 'required for transfer
-        If Nz(rsAI!resource) = "" Then errorArray.Add "Assembly Resource is blank (req. for transfer)"
-        If Nz(rsAI!machineLine) = "" Then errorArray.Add "Assembly Machine Line is blank (req. for transfer)"
+        If Nz(rsAI!resource) = "" Then errorArray.Add "Assembly Resource is blank (req. for transfer)" & vbTab & "(Assembly Info Page)"
+        If Nz(rsAI!machineLine) = "" Then errorArray.Add "Assembly Machine Line is blank (req. for transfer)" & vbTab & "(Assembly Info Page)"
     End If
 
     rsAI.CLOSE
