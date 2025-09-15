@@ -295,7 +295,7 @@ Public Function AddFolderFromPath(PathString As String, _
 ' Creates a new Outlook folder placed according to the indicated path, and returns that new
 ' folder
     Dim PathArray As Variant
-    Dim FolderName As String
+    Dim folderName As String
     Dim xFolder As Object   'Outlook.Folder
     Dim yFolder As Object   'Outlook.Folder
     Dim counter As Long
@@ -303,24 +303,24 @@ Public Function AddFolderFromPath(PathString As String, _
     If Left(PathString, 2) = "\\" Then PathString = Mid(PathString, 3)
     PathArray = Split(PathString, "\\")
     
-    FolderName = PathArray(counter)
-    Set xFolder = Me.GetFolderFromPath(FolderName)
+    folderName = PathArray(counter)
+    Set xFolder = Me.GetFolderFromPath(folderName)
     If xFolder Is Nothing Then
         If FolderType = -999 Then
-            Set xFolder = Me.OutlookApplication.Session.Folders.Add(FolderName)
+            Set xFolder = Me.OutlookApplication.Session.Folders.Add(folderName)
         Else
-            Set xFolder = Me.OutlookApplication.Session.Folders.Add(FolderName, FolderType)
+            Set xFolder = Me.OutlookApplication.Session.Folders.Add(folderName, FolderType)
         End If
     End If
     
     For counter = 1 To UBound(PathArray)
-        FolderName = PathArray(counter)
-        Set yFolder = Me.GetSubFolder(xFolder, FolderName)
+        folderName = PathArray(counter)
+        Set yFolder = Me.GetSubFolder(xFolder, folderName)
         If yFolder Is Nothing Then
             If FolderType = -999 Then
-                Set yFolder = xFolder.Folders.Add(FolderName)
+                Set yFolder = xFolder.Folders.Add(folderName)
             Else
-                Set xFolder = xFolder.Folders.Add(FolderName, FolderType)
+                Set xFolder = xFolder.Folders.Add(folderName, FolderType)
             End If
         End If
         Set xFolder = yFolder
