@@ -372,6 +372,8 @@ ioR = val("&H" & Mid(tempHex, 5, 2)) * scalar
 ioG = val("&H" & Mid(tempHex, 3, 2)) * scalar
 ioB = val("&H" & Mid(tempHex, 1, 2)) * scalar
 
+'Debug.Print ioR & " "; ioG & " " & ioB
+
 If ioR > 255 Then ioR = 255
 If ioG > 255 Then ioG = 255
 If ioB > 255 Then ioB = 255
