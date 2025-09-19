@@ -1664,6 +1664,8 @@ End Function
 Public Function createPartProject(projId, Optional opT0 As Date)
 On Error GoTo Err_Handler
 
+'----SET UP VARIABLES---
+
 Dim db As DAO.Database
 Set db = CurrentDb()
 Dim rsProject As Recordset, rsStepTemplate As Recordset, rsApprovalsTemplate As Recordset, rsGateTemplate As Recordset, rsSess As Recordset
@@ -1679,6 +1681,7 @@ runningDate_OLDTEMPLATE = rsProject!projectStartDate
 
 If Nz(pNum) = "" Then Exit Function 'escape possible part number null projects
 
+'Add user to Cross Functional Team
 If DCount("recordId", "tblPartTeam", "partNumber = '" & pNum & "' AND person = '" & Environ("username") & "'") = 0 Then db.Execute "INSERT INTO tblPartTeam(partNumber,person) VALUES ('" & pNum & "','" & Environ("username") & "')", dbFailOnError 'assign project engineer
 
 Set rsGateTemplate = db.OpenRecordset("Select * FROM tblPartGateTemplate WHERE [projectTemplateId] = " & projTempId, dbOpenSnapshot)
@@ -1695,8 +1698,9 @@ Do While Not rsGateTemplate.EOF
     Set rsStepTemplate = db.OpenRecordset("SELECT * from tblPartStepTemplate WHERE [gateTemplateId] = " & rsGateTemplate![recordId] & " ORDER BY indexOrder Asc", dbOpenSnapshot)
     Do While Not rsStepTemplate.EOF
         If (IsNull(rsStepTemplate![Title]) Or rsStepTemplate![Title] = "") Then GoTo nextStep
-    
+        
         If rsStepTemplate!pillarStep Then
+            'rsSess.MoveFirst
             rsSess.FindFirst "pillarStepId = " & rsStepTemplate!recordId
             If rsSess.noMatch Then GoTo nextStep 'this means user deleted this pillar from the template
             
@@ -1756,6 +1760,8 @@ If projTempId = 8 Then
     Set rsAssyTemplate = Nothing
 End If
 
+
+'---CLEANUP RECORDSETS---
 rsSess.CLOSE
 Set rsSess = Nothing
 rsGateTemplate.CLOSE
