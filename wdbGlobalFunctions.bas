@@ -1239,10 +1239,19 @@ Do While Not rsPeople.EOF 'go through every active person
                 ni = ni + 1
         End Select
 nextStep:
-        rsOpenSteps.MoveNext
-    Loop
-    rsOpenSteps.CLOSE
-    Set rsOpenSteps = Nothing
+    rsOpenSteps.MoveNext
+Loop
+
+rsOpenSteps.CLOSE
+Set rsOpenSteps = Nothing
+
+Dim rsOpenIssues As Recordset
+Set rsOpenIssues = db.OpenRecordset("SELECT * FROM tblOpenIssues WHERE inCharge = '" & Environ("username") & "' AND closeDate is null AND dueDate <= Date()+7")
+
+Do While Not rsOpenIssues.EOF
+    
+    rsOpenIssues.MoveNext
+Loop
     
     If ti + li + ni > 0 Then
         Set rsNoti = db.OpenRecordset("tblNotificationsSP")
