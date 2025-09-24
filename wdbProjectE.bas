@@ -1085,7 +1085,7 @@ Err_Handler:
 End Function
 
 Public Function exportAIF(partNum As String) As String
-'On Error GoTo Err_Handler
+On Error GoTo Err_Handler
 exportAIF = False
 
 '---Setup Variables---

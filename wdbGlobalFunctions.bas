@@ -1239,19 +1239,32 @@ Do While Not rsPeople.EOF 'go through every active person
                 ni = ni + 1
         End Select
 nextStep:
-    rsOpenSteps.MoveNext
-Loop
+        rsOpenSteps.MoveNext
+    Loop
 
-rsOpenSteps.CLOSE
-Set rsOpenSteps = Nothing
-
-Dim rsOpenIssues As Recordset
-Set rsOpenIssues = db.OpenRecordset("SELECT * FROM tblOpenIssues WHERE inCharge = '" & Environ("username") & "' AND closeDate is null AND dueDate <= Date()+7")
-
-Do While Not rsOpenIssues.EOF
+    rsOpenSteps.CLOSE
+    Set rsOpenSteps = Nothing
     
-    rsOpenIssues.MoveNext
-Loop
+    Dim rsOpenIssues As Recordset
+    Set rsOpenIssues = db.OpenRecordset("SELECT * FROM qryOpenIssues_summaryEmail WHERE inCharge = '" & Environ("username") & "' AND closeDate is null AND dueDate <= Date()+7")
+    
+    Do While Not rsOpenIssues.EOF
+        Select Case rsOpenIssues!dueDate
+            Case Date 'due today
+                ReDim Preserve todaySteps(ti)
+                todaySteps(ti) = rsOpenIssues!partNumber & ",Open Issue: " & rsOpenIssues!issueType & "-" & rsOpenIssues!issueSource & ",Today"
+                ti = ti + 1
+            Case Is < Date 'over due
+                ReDim Preserve lateSteps(li)
+                lateSteps(li) = rsOpenIssues!partNumber & ",Open Issue: " & rsOpenIssues!issueType & "-" & rsOpenIssues!issueSource & "," & Format(rsOpenIssues!dueDate, "mm/dd/yyyy")
+                li = li + 1
+            Case Is <= (Date + 7) 'due in next week
+                ReDim Preserve nextSteps(ni)
+                nextSteps(ni) = rsOpenIssues!partNumber & ",Open Issue: " & rsOpenIssues!issueType & "-" & rsOpenIssues!issueSource & "," & Format(rsOpenIssues!dueDate, "mm/dd/yyyy")
+                ni = ni + 1
+        End Select
+        rsOpenIssues.MoveNext
+    Loop
     
     If ti + li + ni > 0 Then
         Set rsNoti = db.OpenRecordset("tblNotificationsSP")
