@@ -1,6 +1,48 @@
 Option Compare Database
 Option Explicit
 
+Function doStuffFiles()
+
+Dim folderName As String
+Dim fso As Object
+Dim folder As Object
+Dim file As Object
+
+Dim bit As String
+bit = "64"
+
+folderName = "\\data\mdbdata\WorkingDB\Pictures\Core\" & bit & "\"
+Set fso = CreateObject("Scripting.FileSystemObject")
+Set folder = fso.GetFolder(folderName)
+
+Dim newFold As String
+newFold = "\\data\mdbdata\WorkingDB\Pictures\SVG_theme_light\"
+
+On Error GoTo checkThis
+
+For Each file In folder.Files
+    Dim FileName As String, newFile As String
+    FileName = Replace(file.name, ".ico", ".svg")
+    newFile = FileName
+    
+    If InStr(FileName, "_" & bit & "px") Then
+        FileName = Replace(newFile, "_" & bit & "px", "")
+    End If
+    
+    Call fso.CopyFile("\\data\mdbdata\WorkingDB\Pictures\SVG_theme_light\" & FileName, "\\data\mdbdata\WorkingDB\Pictures\SVG_theme_light\" & bit & "\" & newFile)
+    
+    GoTo skipCheck
+checkThis:
+    Debug.Print file.name
+    Err.clear
+skipCheck:
+Next
+
+Set fso = Nothing
+Set folder = Nothing
+    
+End Function
+
 Function doStuff()
 
 Dim db As Database
