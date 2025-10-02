@@ -1255,7 +1255,7 @@ nextStep:
     Set rsOpenSteps = Nothing
     
     Dim rsOpenIssues As Recordset
-    Set rsOpenIssues = db.OpenRecordset("SELECT * FROM qryOpenIssues_summaryEmail WHERE inCharge = '" & Environ("username") & "' AND closeDate is null AND dueDate <= Date()+7")
+    Set rsOpenIssues = db.OpenRecordset("SELECT * FROM qryOpenIssues_summaryEmail WHERE inCharge = '" & rsPeople!User & "' AND closeDate is null AND dueDate <= Date()+7")
     
     Do While Not rsOpenIssues.EOF
         Select Case rsOpenIssues!dueDate
