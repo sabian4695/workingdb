@@ -43,7 +43,7 @@ Set folder = Nothing
     
 End Function
 
-Function doStuff()
+Function doStuffApprovals()
 
 Dim db As Database
 Set db = CurrentDb()
