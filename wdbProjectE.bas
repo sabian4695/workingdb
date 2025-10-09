@@ -447,7 +447,7 @@ Select Case DLookup("templateType", "tblPartProjectTemplate", "recordId = " & DL
         projectOwner = "Service"
 End Select
 
-'---First, check if this step is in the current gate---
+'---First, check if this step is in the current gate--- (you can only close it if true)
 Dim rsGate As Recordset
 Set rsGate = db.OpenRecordset("SELECT * FROM tblPartGates WHERE recordId = " & rsStep!partGateId)
 
@@ -459,7 +459,7 @@ If gateId <> rsGate!recordId Then
     GoTo errorOut
 End If
 
-'PILLARS ADDITION - check if all steps before this pillar are closed
+'PILLARS CHECK - check if all steps before this pillar are closed
 If Not IsNull(rsStep!dueDate) And DCount("recordId", "tblPartSteps", "partGateId = " & rsStep!partGateId & " AND indexOrder < " & rsStep!indexOrder & " AND [status] <> 'Closed'") > 0 Then
     errorText = "This step is a pillar. All steps before this pillar must be closed before this step."
     GoTo errorOut
@@ -610,19 +610,24 @@ End Select
 
 stepActionOK:
 
+'---Checks are OK, proceed with closing step!---
+'Before it's done, track this change (this allows us to have the current status in the tracking)
 Dim currentDate
 currentDate = Now()
 
 Call registerPartUpdates("tblPartSteps", rsStep!recordId, "closeDate", "", currentDate, rsStep!partNumber, rsStep!stepType, rsStep!partProjectId)
 Call registerPartUpdates("tblPartSteps", rsStep!recordId, "status", rsStep!status, "Closed", rsStep!partNumber, rsStep!stepType, rsStep!partProjectId)
 
+'---Close Step---
 rsStep.Edit
 rsStep!closeDate = currentDate
 rsStep!status = "Closed"
 rsStep.Update
 
+'send an email to the PE (if they are not the ones closing it)
 Call notifyPE(rsStep!partNumber, "Closed", rsStep!stepType)
 
+'check the gate. If this is the last step in the gate, close the actual gate
 If (DCount("recordId", "tblPartSteps", "[closeDate] is null AND partGateId = " & rsStep!partGateId) = 0) Then
     Call registerPartUpdates("tblPartGates", rsStep!partGateId, "actualDate", rsGate!actualDate, currentDate, rsStep!partNumber, rsGate!gateTitle, rsStep!partProjectId)
     rsGate.Edit
@@ -903,7 +908,7 @@ Set rsPI = db.OpenRecordset("SELECT * from tblPartInfo WHERE partNumber = '" & p
 
 If rsPI.RecordCount > 1 Then
     errorArray.Add "Rogue Part Info record. Please contact a WDB developer to have this fixed."
-    GoTo sendMsg
+    GoTo sendMsg 'this shouldn't be necessary anymore, the table is restricted to unique values only
 End If
 
 Set rsPack = db.OpenRecordset("SELECT * from tblPartPackagingInfo WHERE partInfoId = " & Nz(rsPI!recordId, 0) & " AND (packType = 1 OR packType = 99)")
@@ -921,7 +926,7 @@ If Nz(rsPI!customerId) = "" Then errorArray.Add "Customer is blank" & vbTab & "(
 If Nz(rsPI!developingLocation) = "" Then errorArray.Add "Developing Org is blank" & vbTab & "(Part Info Page)"
 If Nz(rsPI!unitId) = "" Then errorArray.Add "MP Unit is blank" & vbTab & "(Part Info Page)"
 
-'check part info stuff - always reqruied
+'TRANSFER ONLY info
 If rsPI!dataStatus = 2 Then
     If Nz(rsPI!developingUnit) = "" Then errorArray.Add "In-House Unit" & vbTab & "(Part Info Page)"
 End If
@@ -933,6 +938,8 @@ If Nz(rsPI!quoteInfoId) = "" Then errorArray.Add "Quote Information is blank" & 
 If Nz(DLookup("quotedCost", "tblPartQuoteInfo", "recordId = " & rsPI!quoteInfoId)) = "" Then errorArray.Add "Quoted Cost is blank" & vbTab & "(Part Info Page)"
 If Nz(rsPI!sellingPrice) = "" Then errorArray.Add "Selling Price is blank" & vbTab & "(Part Info Page)" 'required always if FG
 
+
+'---MOLDING INFORMATION---
 If rsPI!partType = 1 Or rsPI!partType = 4 Then 'molded / new color
     If Nz(rsPI!moldInfoId) = "" Then
         errorArray.Add "Molding Info is missing (req. for new mold / new color)" 'always required
@@ -974,6 +981,7 @@ If rsPI!partType = 1 Or rsPI!partType = 4 Then 'molded / new color
 End If
 skipMold:
 
+'---ASSEMBLY INFORMATION---
 If rsPI!partType = 2 Or rsPI!partType = 5 Then
     If Nz(rsPI!assemblyInfoId) = "" Then
         errorArray.Add "Assembly Info is missing (req. for assembly / subassembly)"
@@ -1020,13 +1028,14 @@ If rsPI!partType = 2 Or rsPI!partType = 5 Then
 End If
 skipAssy:
 
+'---PACKAGING INFORMATION---
 If rsPack.RecordCount = 0 Then
     If rsPI!dataStatus = 2 Then errorArray.Add "Packaging Information is missing (req. for transfer)" 'required for transfer
 Else
     Do While Not rsPack.EOF
-        If Nz(rsPack!packType) = "" Then errorArray.Add "Packaging Type" 'required for transfer
+        If Nz(rsPack!packType) = "" & rsPI!dataStatus = 2 Then errorArray.Add "Packaging Type" 'required for transfer
         If rsU!Org = "CUU" Then
-            If Nz(rsPack!boxesPerSkid) = "" Then errorArray.Add "Boxes Per Skid (req. for CUU)" 'if CUU org, then need to check this for transfer for MEX FREIGHT cost calc
+            If Nz(rsPack!boxesPerSkid) = "" & rsPI!dataStatus = 2 Then errorArray.Add "Boxes Per Skid (req. for CUU)" 'if CUU org, then need to check this for transfer for MEX FREIGHT cost calc
         End If
 
         Set rsPackC = db.OpenRecordset("SELECT * from tblPartPackagingComponents WHERE packagingInfoId = " & rsPack!recordId)
@@ -1045,6 +1054,8 @@ Else
     rsPack.CLOSE: Set rsPack = Nothing
 End If
 
+
+'---OUTSOURCE INFORMATION---
 If Nz(rsPI!unitId, 0) = 3 And rsPI!dataStatus = 2 Then 'if U06 - these are required for transfer
     If Nz(rsPI!outsourceInfoId) = "" Then
         errorArray.Add "Outsource Info is missing (req. for U06)"
@@ -1052,6 +1063,9 @@ If Nz(rsPI!unitId, 0) = 3 And rsPI!dataStatus = 2 Then 'if U06 - these are requi
         If Nz(DLookup("outsourceCost", "tblPartOutsourceInfo", "recordId = " & rsPI!outsourceInfoId)) = "" Then errorArray.Add "Outsource Cost is blank"
     End If
 End If
+
+
+'---END CHECKS---
 
 If errorArray.count > 0 Then GoTo sendMsg
 
@@ -1067,6 +1081,7 @@ Next element
 
 MsgBox "Please fix these items for " & partNum & ":" & vbNewLine & errorTxtLines, vbOKOnly, "ACTION REQUIRED"
 
+'cleanup
 exitFunction:
 On Error Resume Next
 rsPI.CLOSE: Set rsPI = Nothing
@@ -1173,6 +1188,8 @@ If rsU!DESCRIPTION = "Critical Parts" Then
 Else
     aifInsert "Critical Part", "FALSE", firstColBold:=True
 End If
+
+'aifInsert "Line Stopper", rsPI!lineStopper, firstColBold:=True
 
 aifInsert "Mexico Rates", Nz(rsU!Org) = "CUU", firstColBold:=True
 
@@ -1284,6 +1301,7 @@ Select Case rsPI!partType
     Case 3 'Purchased
 End Select
 
+'---on all part types, but grabbed in above if statements---
 aifInsert "100 Piece Weight (lb)", gramsToLbs(weight100Pc), firstColBold:=True, set5Dec:=True
 aifInsert "Pieces Per Hour", pph, firstColBold:=True
 aifInsert "Labor Type", laborType, firstColBold:=True
