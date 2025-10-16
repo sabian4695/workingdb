@@ -141,6 +141,8 @@ If (CurrentProject.Path = "H:\dev") Then
 End If
 
 Select Case errNum
+    Case 70
+        MsgBox "Permissions Error - Check if the file is already in use.", vbInformation, "Error Code: " & errNum
     Case 53
         MsgBox "File Not Found", vbInformation, "Error Code: " & errNum
         Exit Sub
