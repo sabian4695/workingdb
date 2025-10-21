@@ -23,7 +23,7 @@ Private Declare PtrSafe Function ShowWindow Lib "user32" (ByVal hwnd As Long, By
 Dim AppX As Long, AppY As Long, AppTop As Long, AppLeft As Long, WinRECT As RECT
 
 'Public Function localizeTblDropDownsSP()
-'On Error GoTo Err_Handler
+'on error GoTo Err_Handler
 '
 'Dim db As DAO.Database
 'Dim tdf As DAO.TableDef
@@ -48,7 +48,7 @@ Dim AppX As Long, AppY As Long, AppTop As Long, AppLeft As Long, WinRECT As RECT
 'End Function
 '
 'Public Function reconnectTblDropDownsSP()
-'On Error GoTo Err_Handler
+'on error GoTo Err_Handler
 '
 'Dim db As DAO.Database
 'Dim tdf As DAO.TableDef
@@ -62,9 +62,9 @@ Dim AppX As Long, AppY As Long, AppTop As Long, AppLeft As Long, WinRECT As RECT
 'Set db = CurrentDb
 '
 '' Check if the linked table already exists
-'On Error Resume Next
+'on error Resume Next
 'Set tdf = db.TableDefs(strLinkedTableName)
-'On Error GoTo 0
+'on error GoTo 0
 '
 'If Not tdf Is Nothing Then db.TableDefs.Delete strLinkedTableName
 '

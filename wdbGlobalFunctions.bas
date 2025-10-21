@@ -143,9 +143,11 @@ Dim classColor As String, fadeBack, fadeFore
 Dim Level
 Dim backCol As Long, levFore As Double
 
-For Each eachBtn In setForm.Controls
-    
-Next eachBtn
+Dim foreLevInt As Long
+
+'For Each eachBtn In setForm.Controls
+'
+'Next eachBtn
 
 For Each ctl In setForm.Controls
     If ctl.tag Like "*.L#*" Then
@@ -154,10 +156,15 @@ For Each ctl In setForm.Controls
     Else
         GoTo nextControl
     End If
+    foreLevInt = Level
+    If foreLevInt > 3 Then foreLevInt = 3
+    
     If darkMode Then
-        levFore = (1 / colorLevArr(Level)) + 0.2
+        foreLevInt = Level
+        If foreLevInt > 3 Then foreLevInt = 3
+        levFore = (1 / colorLevArr(foreLevInt)) + 0.2
     Else
-        levFore = colorLevArr(Level) * 7
+        levFore = colorLevArr(foreLevInt) * 7
     End If
 
     Select Case ctl.ControlType
@@ -434,15 +441,15 @@ If rs1.RecordCount = 0 Then 'not in main Oracle table, now look through SIFs
     If DCount("[ROW_ID]", "APPS_Q_SIF_NEW_ASSEMBLED_PART_V", "[NIFCO_PART_NUMBER] = '" & partNumber & "'") > 0 Then 'is it in assy table?
         Set rs1 = db.OpenRecordset("SELECT SIFNUM, PART_DESCRIPTION FROM APPS_Q_SIF_NEW_ASSEMBLED_PART_V WHERE NIFCO_PART_NUMBER = '" & partNumber & "'", dbOpenSnapshot)
         rs1.MoveLast
-        findDescription = rs1!Part_Description
+        findDescription = rs1!PART_DESCRIPTION
     ElseIf DCount("[ROW_ID]", "APPS_Q_SIF_NEW_MOLDED_PART_V ", "[NIFCO_PART_NUMBER] = '" & partNumber & "'") > 0 Then 'is it in molded table?
         Set rs1 = db.OpenRecordset("SELECT SIFNUM, PART_DESCRIPTION FROM APPS_Q_SIF_NEW_MOLDED_PART_V WHERE NIFCO_PART_NUMBER = '" & partNumber & "'", dbOpenSnapshot)
         rs1.MoveLast
-        findDescription = rs1!Part_Description
+        findDescription = rs1!PART_DESCRIPTION
     ElseIf DCount("[ROW_ID]", "APPS_Q_SIF_NEW_PURCHASING_PART_V ", "[NIFCO_PART_NUMBER] = '" & partNumber & "'") > 0 Then 'is it in molded table?
         Set rs1 = db.OpenRecordset("SELECT SIFNUM, PART_DESCRIPTION FROM APPS_Q_SIF_NEW_PURCHASING_PART_V WHERE NIFCO_PART_NUMBER = '" & partNumber & "'", dbOpenSnapshot)
         rs1.MoveLast
-        findDescription = rs1!Part_Description
+        findDescription = rs1!PART_DESCRIPTION
     End If
     Exit Function
 End If
@@ -1341,7 +1348,7 @@ Do While Not rsEvents.EOF
             !Design_Level = 4 'ETA
             !Due_Date = dueDate
             !Part_Number = "D8157"
-            !Part_Description = "Program Review"
+            !PART_DESCRIPTION = "Program Review"
             !Model_Code = rsProgram!modelCode
         End With
     rsWO.Update
