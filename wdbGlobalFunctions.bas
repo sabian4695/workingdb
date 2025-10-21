@@ -1190,6 +1190,7 @@ Dim rsPeople As Recordset, rsOpenSteps As Recordset, rsOpenWOs As Recordset, rsN
 Dim lateSteps() As String, todaySteps() As String, nextSteps() As String
 Dim li As Long, ti As Long, ni As Long
 Dim strQry, ranThisWeek As Boolean
+Dim recordsetName As String
 
 Set rsAnalytics = db.OpenRecordset("SELECT max(dateUsed) as anaDate from tblAnalytics WHERE module = 'firstTimeRun'")
 ranThisWeek = Format(rsAnalytics!anaDate, "ww", vbMonday, vbFirstFourDays) = Format(Date, "ww", vbMonday, vbFirstFourDays)
@@ -1216,9 +1217,15 @@ Do While Not rsPeople.EOF 'go through every active person
     ReDim lateSteps(li)
     ReDim todaySteps(ti)
     ReDim nextSteps(ni)
+    
+    If rsPeople!Level = "Engineer" Then
+        recordsetName = "SELECT * FROM qryStepApprovalTracker"
+    Else
+        recordsetName = "SELECT * FROM sqryStepApprovalTracker_Approvals_SupervisorsUp"
+    End If
 
-    Set rsOpenSteps = db.OpenRecordset("SELECT * from qryStepApprovalTracker " & _
-                                "WHERE person = '" & rsPeople!User & "' AND due <= Date()+7")
+    Set rsOpenSteps = db.OpenRecordset(recordsetName & _
+                                " WHERE person = '" & rsPeople!User & "' AND due <= Date()+7")
     
     Do While (Not rsOpenSteps.EOF And Not (ti > 15 And li > 15 And ni > 15))
         Select Case rsOpenSteps!Due

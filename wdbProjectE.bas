@@ -917,10 +917,10 @@ Set rsU = db.OpenRecordset("SELECT * from tblUnits WHERE recordId = " & Nz(rsPI!
 If Nz(rsPI!dataStatus) = "" Then errorArray.Add "Data Status is blank" & vbTab & "(Part Info Page)"
 
 'check catalog stuff
-If Nz(rsPI!partClassCode) = "" Then errorArray.Add "Part Class Code is blank" & vbTab & "(DE Manager Resp)"
-If Nz(rsPI!subClassCode) = "" Then errorArray.Add "Sub Class Code is blank" & vbTab & "(DE Manager Resp)"
-If Nz(rsPI!businessCode) = "" Then errorArray.Add "Business Code is blank" & vbTab & "(DE Manager Resp)"
-If Nz(rsPI!focusAreaCode) = "" Then errorArray.Add "Focus Area Code is blank" & vbTab & "(DE Manager Resp)"
+If Nz(rsPI!partClassCode) = "" Then errorArray.Add "Part Class Code is blank" & vbTab & "(Design Manager Responsibility)"
+If Nz(rsPI!subClassCode) = "" Then errorArray.Add "Sub Class Code is blank" & vbTab & "(Design Manager Responsibility)"
+If Nz(rsPI!businessCode) = "" Then errorArray.Add "Business Code is blank" & vbTab & "(Design Manager Responsibility)"
+If Nz(rsPI!focusAreaCode) = "" Then errorArray.Add "Focus Area Code is blank" & vbTab & "(Design Manager Responsibility)"
 
 If Nz(rsPI!customerId) = "" Then errorArray.Add "Customer is blank" & vbTab & "(Part Info Page)"
 If Nz(rsPI!developingLocation) = "" Then errorArray.Add "Developing Org is blank" & vbTab & "(Part Info Page)"
@@ -928,6 +928,7 @@ If Nz(rsPI!unitId) = "" Then errorArray.Add "MP Unit is blank" & vbTab & "(Part 
 
 'TRANSFER ONLY info
 If rsPI!dataStatus = 2 Then
+'    If Nz(rsPI!lineStopper) = 0 Then errorArray.Add "Line Stopper / Production Classification" & vbTab & "(Part Info Page)"
     If Nz(rsPI!developingUnit) = "" Then errorArray.Add "In-House Unit" & vbTab & "(Part Info Page)"
 End If
 
@@ -965,7 +966,7 @@ If rsPI!partType = 1 Or rsPI!partType = 4 Then 'molded / new color
     If Nz(rsPI!materialNumber1) <> "" Then 'if there is a second material, must enter wieght for that material
         'also check if this material exists in Oracle
         If idNAM(rsPI!materialNumber1, "NAM") = "" Then errorArray.Add "Second Material Number Not in Oracle" & vbTab & "(Part Info Page)"
-        If Nz(rsPI!matNum1PieceWeight) = "" Then errorArray.Add "Second Material Piece Weight is blank"
+        If Nz(rsPI!matNum1PieceWeight) = "" Then errorArray.Add "Second Material Piece Weight is blank" & vbTab & "(Part Info Page)"
     End If
     If Nz(rsPMI!toolNumber) = "" Then errorArray.Add "Tool Number is blank" & vbTab & "(Molding Info Page)"
     If Nz(rsPMI!pressSize) = "" Then errorArray.Add "Press Tonnage is blank" & vbTab & "(Molding Info Page)"
@@ -1007,7 +1008,7 @@ If rsPI!partType = 2 Or rsPI!partType = 5 Then
     
     Set rsComp = db.OpenRecordset("SELECT * from tblPartComponents WHERE assemblyNumber = '" & partNum & "'")
     If rsComp.RecordCount = 0 Then
-        errorArray.Add "Component Information is missing"
+        errorArray.Add "Component Information is missing (req. for assembly / subassembly)"
         GoTo skipAssy
     End If
     
@@ -1060,7 +1061,7 @@ If Nz(rsPI!unitId, 0) = 3 And rsPI!dataStatus = 2 Then 'if U06 - these are requi
     If Nz(rsPI!outsourceInfoId) = "" Then
         errorArray.Add "Outsource Info is missing (req. for U06)"
     Else
-        If Nz(DLookup("outsourceCost", "tblPartOutsourceInfo", "recordId = " & rsPI!outsourceInfoId)) = "" Then errorArray.Add "Outsource Cost is blank"
+        If Nz(DLookup("outsourceCost", "tblPartOutsourceInfo", "recordId = " & rsPI!outsourceInfoId)) = "" Then errorArray.Add "Outsource Cost is blank" & vbTab & "(Part Info Page)"
     End If
 End If
 
@@ -1171,8 +1172,6 @@ If plannerName = "" Then
 End If
 
 aifInsert "Planner", plannerName, firstColBold:=True
-
-
 aifInsert "Mark Code", Nz(rsPI!partMarkCode), firstColBold:=True
 aifInsert "Customer", DLookup("CUSTOMER_NAME", "APPS_XXCUS_CUSTOMERS", "CUSTOMER_ID = " & rsPI!customerId), firstColBold:=True
 
@@ -1184,12 +1183,18 @@ Else
 End If
 
 If rsU!DESCRIPTION = "Critical Parts" Then
-    aifInsert "Critical Part", "TRUE", firstColBold:=True
+    aifInsert "Critical Part (Unit)", "TRUE", firstColBold:=True
 Else
-    aifInsert "Critical Part", "FALSE", firstColBold:=True
+    aifInsert "Critical Part (Unit)", "FALSE", firstColBold:=True
 End If
 
-'aifInsert "Line Stopper", rsPI!lineStopper, firstColBold:=True
+'If rsPI!dataStatus = 2 Then '(transfer only)
+'    If Nz(rsPI!lineStopper) = 1 Then
+'        aifInsert "Production Classification", "", firstColBold:=True 'for general parts, put this as BLANK
+'    Else
+'        aifInsert "Production Classification", DLookup("lineStopper", "tblDropDownsSP", "ID = " & rsPI!lineStopper), firstColBold:=True
+'    End If
+'End If
 
 aifInsert "Mexico Rates", Nz(rsU!Org) = "CUU", firstColBold:=True
 

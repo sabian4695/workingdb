@@ -22,6 +22,53 @@ Private Declare PtrSafe Function ShowWindow Lib "user32" (ByVal hwnd As Long, By
 
 Dim AppX As Long, AppY As Long, AppTop As Long, AppLeft As Long, WinRECT As RECT
 
+Public Function localizeTblDropDownsSP()
+On Error GoTo Err_Handler
+
+DoCmd.SelectObject acTable, "tblDropDownsSP", True
+DoEvents
+DoCmd.RunCommand acCmdConvertLinkedTableToLocal
+
+Exit Function
+Err_Handler:
+    Call handleError("wdbGlobalFunctions", "localizeTblDropDownsSP", Err.DESCRIPTION, Err.number)
+End Function
+
+Public Function reconnectTblDropDownsSP()
+On Error GoTo Err_Handler
+
+Dim db As DAO.Database
+Dim tdf As DAO.TableDef
+Dim strSharePointSiteURL As String
+
+Dim strLinkedTableName As String
+
+strSharePointSiteURL = "https://nifcoam.sharepoint.com/sites/WorkingDB"
+strLinkedTableName = "tblDropDownsSP"
+
+Set db = CurrentDb
+
+' Check if the linked table already exists
+On Error Resume Next
+Set tdf = db.TableDefs(strLinkedTableName)
+On Error GoTo 0
+
+If Not tdf Is Nothing Then db.TableDefs.Delete strLinkedTableName
+
+Set tdf = db.CreateTableDef(strLinkedTableName)
+tdf.Connect = "WSS;DATABASE=" & strSharePointSiteURL & ";LIST={" & "48d63a49-ce5b-4fd0-9b0d-85bfc3b8c91b" & "}"
+tdf.SourceTableName = strLinkedTableName
+
+db.TableDefs.Append tdf
+
+Set tdf = Nothing
+Set db = Nothing
+
+Exit Function
+Err_Handler:
+    Call handleError("wdbGlobalFunctions", "reconnectTblDropDownsSP", Err.DESCRIPTION, Err.number)
+End Function
+
 Function readyForPublish() As Boolean
 On Error GoTo Err_Handler
 
