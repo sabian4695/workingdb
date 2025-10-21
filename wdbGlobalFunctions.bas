@@ -434,15 +434,15 @@ If rs1.RecordCount = 0 Then 'not in main Oracle table, now look through SIFs
     If DCount("[ROW_ID]", "APPS_Q_SIF_NEW_ASSEMBLED_PART_V", "[NIFCO_PART_NUMBER] = '" & partNumber & "'") > 0 Then 'is it in assy table?
         Set rs1 = db.OpenRecordset("SELECT SIFNUM, PART_DESCRIPTION FROM APPS_Q_SIF_NEW_ASSEMBLED_PART_V WHERE NIFCO_PART_NUMBER = '" & partNumber & "'", dbOpenSnapshot)
         rs1.MoveLast
-        findDescription = rs1!PART_DESCRIPTION
+        findDescription = rs1!Part_Description
     ElseIf DCount("[ROW_ID]", "APPS_Q_SIF_NEW_MOLDED_PART_V ", "[NIFCO_PART_NUMBER] = '" & partNumber & "'") > 0 Then 'is it in molded table?
         Set rs1 = db.OpenRecordset("SELECT SIFNUM, PART_DESCRIPTION FROM APPS_Q_SIF_NEW_MOLDED_PART_V WHERE NIFCO_PART_NUMBER = '" & partNumber & "'", dbOpenSnapshot)
         rs1.MoveLast
-        findDescription = rs1!PART_DESCRIPTION
+        findDescription = rs1!Part_Description
     ElseIf DCount("[ROW_ID]", "APPS_Q_SIF_NEW_PURCHASING_PART_V ", "[NIFCO_PART_NUMBER] = '" & partNumber & "'") > 0 Then 'is it in molded table?
         Set rs1 = db.OpenRecordset("SELECT SIFNUM, PART_DESCRIPTION FROM APPS_Q_SIF_NEW_PURCHASING_PART_V WHERE NIFCO_PART_NUMBER = '" & partNumber & "'", dbOpenSnapshot)
         rs1.MoveLast
-        findDescription = rs1!PART_DESCRIPTION
+        findDescription = rs1!Part_Description
     End If
     Exit Function
 End If
@@ -1341,7 +1341,7 @@ Do While Not rsEvents.EOF
             !Design_Level = 4 'ETA
             !Due_Date = dueDate
             !Part_Number = "D8157"
-            !PART_DESCRIPTION = "Program Review"
+            !Part_Description = "Program Review"
             !Model_Code = rsProgram!modelCode
         End With
     rsWO.Update
