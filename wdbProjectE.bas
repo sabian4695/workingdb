@@ -1984,10 +1984,14 @@ Function scanSteps(partNum As String, routineName As String, Optional identifier
 On Error GoTo Err_Handler
 
 scanSteps = False
-'this scans to see if there is a step that needs to be deleted or closed per its step action requirements
+
+'-----------------------
+'---this scans through tblPartSteps to see if there is a step that needs to be deleted or closed per its step action requirements---
+'-----------------------
 
 Dim rsSteps As Recordset, dFilt As String, eFilt As String, db As Database
 Set db = CurrentDb()
+
 'grab all steps that match this partNum and routine name, and are not closed
 dFilt = "SELECT * FROM tblPartSteps WHERE stepActionId IN (SELECT recordId FROM tblPartStepActions WHERE whenToRun = '" & routineName & "') AND status <> 'Closed'"
 eFilt = ""
@@ -1995,14 +1999,30 @@ If partNum <> "all" Then eFilt = " AND partNumber = '" & partNum & "'"
 
 Set rsSteps = db.OpenRecordset(dFilt & eFilt)
 
-If rsSteps.RecordCount = 0 Then Exit Function 'no steps have actions attached!
+If rsSteps.RecordCount = 0 Then GoTo exitThis 'no steps have actions attached, exit function
 
-Dim rsPI As Recordset, rsPMI As Recordset, rsStepActions As Recordset, rsMasterSetups As Recordset, rsPartAssemblyGates As Recordset, rsCostDocs As Recordset, rsECOrev As Recordset, rsLookItUp As Recordset
+'Set up all recordsets
+Dim rsPI As Recordset
+Dim rsPMI As Recordset
+Dim rsStepActions As Recordset
+Dim rsMasterSetups As Recordset
+Dim rsPartAssemblyGates As Recordset
+Dim rsCostDocs As Recordset
+Dim rsECOrev As Recordset
+Dim rsLookItUp As Recordset
+Dim rsSystemItems As Recordset
+
 Dim pnId As String, matches As Boolean, matchingCol As String, meetsCriteria As Boolean, noMatch As Boolean
+Dim temp As String
 
+'We will re-use the recordsets and just filter or findFirst on each
 Set rsStepActions = db.OpenRecordset("tblPartStepActions")
 Set rsPI = db.OpenRecordset("tblPartInfo")
 Set rsPMI = db.OpenRecordset("tblPartMoldingInfo")
+
+
+'---PRIMARY SCANNING LOOP---
+'looks through all steps found and checks parameters
 
 Do While Not rsSteps.EOF
     If Nz(rsSteps!partNumber) = "" Then GoTo nextOne
@@ -2054,8 +2074,24 @@ Do While Not rsSteps.EOF
             Set rsPartAssemblyGates = Nothing
             If noMatch Then GoTo nextOne
             GoTo performAction 'Automation gate is complete!
+        Case "APPS_MTL_SYSTEM_ITEMS"
+            Set rsSystemItems = db.OpenRecordset("SELECT " & rsStepActions!compareColumn & " FROM " & rsStepActions!compareTable & " WHERE SEGMENT1 = '" & rsSteps!partNumber & "'")
+            Set rsPI = db.OpenRecordset("SELECT lineStopper FROM tblPartInfo WHERE partNumber = '" & rsSteps!partNumber & "'")
+            
+            'for this one, check if the Oracle data matches tblPartInfo
+            temp = Nz(DLookup("lineStopper", "tblDropDownsSP", "ID = " & rsPI!lineStopper), "")
+            If temp = "General" Then temp = ""
+            
+            If Nz(rsSystemItems(rsStepActions!compareColumn), "") = temp Then
+                GoTo performAction 'they match
+            Else
+                GoTo nextOne 'they do NOT match
+            End If
     End Select
     
+    '---Information found!!--- (or not)
+    
+    '---Now do some comparisons to see if we should perform the specified action on this step---
     If Nz(rsStepActions!compareColumn, "") = "" And Nz(rsStepActions!compareTable, "") = "" Then GoTo performAction 'assuming this is just wanting me to do an action no matter what
     
     'if multiple columns exist
@@ -2105,7 +2141,8 @@ Do While Not rsSteps.EOF
         'if the action is not equal to what we actually have, skip it!
         If meetsCriteria <> rsStepActions!compareAction Then GoTo nextOne
     End If
-    
+
+'---now we have decided to perform the action---
 performAction:
     Select Case rsStepActions!stepAction 'everything matched - what should be done with this step??
         Case "deleteStep" 'delete the step!
@@ -2142,6 +2179,9 @@ nextOne:
     rsSteps.MoveNext
 Loop
 
+scanSteps = True
+
+exitThis:
 On Error Resume Next
 rsECOrev.CLOSE
 Set rsECOrev = Nothing
@@ -2163,10 +2203,10 @@ rsMasterSetups.CLOSE
 Set rsMasterSetups = Nothing
 rsPartAssemblyGates.CLOSE
 Set rsPartAssemblyGates = Nothing
+rsSystemItems.CLOSE
+Set rsSystemItems = Nothing
 
 Set db = Nothing
-
-scanSteps = True
 
 Exit Function
 Err_Handler:
