@@ -144,7 +144,7 @@ Select Case rsStepAction!stepAction
         If errorText <> "" Then GoTo errorOut
         
         toolNum = rsMoldInfo!toolNumber
-        shipMethod = DLookup("shipMethod", "tblDropDownsSP", "ID = " & rsMoldInfo!shipMethod)
+        shipMethod = DLookup("shipMethod", "tblDropDownsSP", "recordid = " & rsMoldInfo!shipMethod)
         
         Call toolShipAuthorizationEmail(toolNum, rsStep!ID, shipMethod, rsStep!partNumber)
     Case "PVtestPlanCreated"

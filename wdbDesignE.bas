@@ -297,15 +297,13 @@ Dim lookup As String
 
 Select Case columnName
     Case "Request_Type", "cboRequestType"
-        lookup = "DRStype"
+        lookup = "drs_type"
     Case "DR_Level"
-        lookup = "DRSdrLevels"
+        lookup = "drs_drlevel"
     Case "Design_Responsibility", "cboDesignResponsibility"
-        lookup = "DRSdesignResponsibility"
+        lookup = "drs_designresponsibility"
     Case "Part_Complexity", "cboComplexity"
-        lookup = "DRSpartComplexity"
-    Case "DRS_Location"
-        lookup = "DRSdesignGroup"
+        lookup = "drs_partcomplexity"
     Case "Assignee", "cboAssignee"
         GoTo personLookup
     Case "cboChecker1"
@@ -315,17 +313,17 @@ Select Case columnName
     Case "Dev_Responsibility"
         GoTo personLookup
     Case "Project_Location"
-        lookup = "DRSunit12Location"
+        lookup = "drs_unit12location"
     Case "Tooling_Department"
-        lookup = "DRStoolingDept"
+        lookup = "drs_toolingdept"
     Case "Customer"
         DRShistoryGrabReference = DLookup("[CUSTOMER_NAME]", "APPS_XXCUS_CUSTOMERS", "[CUSTOMER_ID] = " & inputVal)
     Case "Adjusted_Reason", "cboAdjustedReason"
-        lookup = "DRSadjustReasons"
+        lookup = "drs_adjustreaons"
     Case "Delay_Reason"
-        lookup = "DRSadjustReasons"
+        lookup = "drs_adjustreasons"
     Case "cboApprovalStatus"
-        lookup = "DRSapprovalStatus"
+        lookup = "drs_approvalstatus"
     Case "assigneeSign"
         GoTo trueFalse
     Case "checker1Sign"
@@ -336,7 +334,7 @@ Select Case columnName
         Exit Function
 End Select
 
-DRShistoryGrabReference = DLookup("[" & lookup & "]", "tblDropDowns", "ID = " & inputVal)
+DRShistoryGrabReference = DLookup("[" & lookup & "]", "tblDropDownsSP", "recordid = " & inputVal)
 
 Exit Function
 personLookup:

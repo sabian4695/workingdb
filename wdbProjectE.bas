@@ -548,7 +548,7 @@ Select Case rsStepAction!stepAction
         If errorText <> "" Then GoTo errorOut
         
         toolNum = rsMoldInfo!toolNumber
-        shipMethod = DLookup("shipMethod", "tblDropDownsSP", "ID = " & rsMoldInfo!shipMethod)
+        shipMethod = DLookup("shipMethod", "tblDropDownsSP", "recordid = " & rsMoldInfo!shipMethod)
         
         Call toolShipAuthorizationEmail(toolNum, rsStep!recordId, shipMethod, rsStep!partNumber)
     Case "PVtestPlanCreated"
@@ -1148,7 +1148,7 @@ WKS.Range("A1:E1").Font.Italic = True
 aifInsert "ACCOUNTING INFORMATION FORM", "", , "Exported: ", Date
 aifInsert "PRIMARY INFORMATION", "", , , , True
 aifInsert "Part Number", partNum, firstColBold:=True
-aifInsert "Data Status", DLookup("partDataStatus", "tblDropDownsSP", "ID = " & rsPI!dataStatus), firstColBold:=True
+aifInsert "Data Status", DLookup("partDataStatus", "tblDropDownsSP", "recordid = " & rsPI!dataStatus), firstColBold:=True
 
 Dim classCodes(3) As String, classCodeFin As String
 classCodes(0) = DLookup("partClassCode", "tblPartClassification", "recordId = " & rsPI!partClassCode)
@@ -1204,9 +1204,9 @@ Else
     aifInsert "Org", Nz(rsPI!developingLocation, ""), firstColBold:=True 'for KICKOFF, use Developing ORG
 End If
 
-aifInsert "Part Type", DLookup("partType", "tblDropDownsSP", "ID = " & rsPI!partType), firstColBold:=True
-aifInsert "Locator", Nz(DLookup("finishLocator", "tblDropDownsSP", "ID = " & rsPI!finishLocator)), firstColBold:=True
-aifInsert "Sub-Inventory", Nz(DLookup("finishSubInv", "tblDropDownsSP", "ID = " & rsPI!finishSubInv)), firstColBold:=True
+aifInsert "Part Type", DLookup("partType", "tblDropDownsSP", "recordid = " & rsPI!partType), firstColBold:=True
+aifInsert "Locator", Nz(DLookup("finishLocator", "tblDropDownsSP", "recordid = " & rsPI!finishLocator)), firstColBold:=True
+aifInsert "Sub-Inventory", Nz(DLookup("finishSubInv", "tblDropDownsSP", "recordid = " & rsPI!finishSubInv)), firstColBold:=True
 aifInsert "Mexico Freight", mexFr, firstColBold:=True, set5Dec:=True
 aifInsert "Quoted Cost", Nz(DLookup("quotedCost", "tblPartQuoteInfo", "recordId = " & rsPI!quoteInfoId), 0), firstColBold:=True, set5Dec:=True
 aifInsert "Selling Price", Nz(rsPI!sellingPrice), firstColBold:=True, set5Dec:=True
@@ -1226,7 +1226,7 @@ Select Case rsPI!partType
         If rsPMI!insertMold Then
             laborType = "Insert Mold"
         Else
-            laborType = DLookup("pressAutomation", "tblDropDownsSP", "ID = " & rsPMI!automated)
+            laborType = DLookup("pressAutomation", "tblDropDownsSP", "recordid = " & rsPMI!automated)
         End If
         pph = Nz(rsPMI!piecesPerHour)
         aifInsert "Tool Number", rsPMI!toolNumber, firstColBold:=True
@@ -1234,10 +1234,10 @@ Select Case rsPI!partType
         Dim pressSizeID
         If rsPI!developingLocation <> "SLB" And Nz(rsPMI!pressSize) <> "" Then 'if org = SLB, use exact tonnage. Otherwise, use range
             pressSizeFin = DLookup("pressSize", "tblDropDownsSP", "pressSizeAll = '" & rsPMI!pressSize & "'")
-            pressSizeID = DLookup("ID", "tblDropDownsSP", "pressSizeAll = '" & rsPMI!pressSize & "'")
+            pressSizeID = DLookup("recordid", "tblDropDownsSP", "pressSizeAll = '" & rsPMI!pressSize & "'")
         Else
             pressSizeFin = Nz(rsPMI!pressSize)
-            pressSizeID = DLookup("ID", "tblDropDownsSP", "pressSizeAll = '" & rsPMI!pressSize & "'")
+            pressSizeID = DLookup("recordid", "tblDropDownsSP", "pressSizeAll = '" & rsPMI!pressSize & "'")
         End If
         
         aifInsert "Press Tonnage", pressSizeFin, firstColBold:=True
@@ -1247,7 +1247,7 @@ Select Case rsPI!partType
         aifInsert "Insert Mold", rsPMI!insertMold, firstColBold:=True
         aifInsert "Family Mold", rsPMI!familyTool, firstColBold:=True
         If rsPI!glass Then
-            aifInsert "Glass Cost", DLookup("pressRate", "tblDropDownsSP", "ID = " & pressSizeID) / rsPMI!piecesPerHour / 408 / 12 / 0.85, firstColBold:=True, set5Dec:=True
+            aifInsert "Glass Cost", DLookup("pressRate", "tblDropDownsSP", "recordid = " & pressSizeID) / rsPMI!piecesPerHour / 408 / 12 / 0.85, firstColBold:=True, set5Dec:=True
         Else
             aifInsert "Glass Cost", "0", firstColBold:=True, set5Dec:=True
         End If
@@ -1285,7 +1285,7 @@ Select Case rsPI!partType
         aifInsert "ASSEMBLY INFORMATION", "", , , , True
         Set rsAI = db.OpenRecordset("SELECT * from tblPartAssemblyInfo WHERE recordId = " & rsPI!assemblyInfoId)
         weight100Pc = Nz(rsAI!assemblyWeight100Pc, 0)
-        laborType = DLookup("assemblyType", "tblDropDownsSP", "ID = " & rsAI!assemblyType)
+        laborType = DLookup("assemblyType", "tblDropDownsSP", "recordid = " & rsAI!assemblyType)
         anneal = Nz(rsAI!assemblyAnnealing, 0)
         insLev = Nz(rsAI!assemblyInspection, 0)
         mpLev = Nz(rsAI!assemblyMeasPack, 0)
@@ -1325,7 +1325,7 @@ Do While Not rsComp.EOF
         findDescription(rsComp!componentNumber), _
         rsComp!quantity, _
         Nz(rsComp!finishLocator), _
-        Nz(DLookup("finishSubInv", "tblDropDownsSP", "ID = " & Nz(rsComp!finishSubInv, 0)))
+        Nz(DLookup("finishSubInv", "tblDropDownsSP", "recordid = " & Nz(rsComp!finishSubInv, 0)))
     rsComp.MoveNext
 Loop
 rsComp.CLOSE
@@ -1337,11 +1337,11 @@ If rsPack.RecordCount > 0 Then
     aifInsert "PACKAGING INFORMATION", "", , , , True
 End If
 Do While Not rsPack.EOF
-    packType = DLookup("packagingType", "tblDropDownsSP", "ID = " & rsPack!packType)
+    packType = DLookup("packagingType", "tblDropDownsSP", "recordid = " & rsPack!packType)
     Set rsPackC = db.OpenRecordset("SELECT * from tblPartPackagingComponents WHERE packagingInfoId = " & rsPack!recordId)
     If rsPackC.RecordCount > 0 Then aifInsert "Packaging Type", "Component Type", "Component Number", "Component Qty", , , True
     Do While Not rsPackC.EOF
-        aifInsert packType, Nz(DLookup("packComponentType", "tblDropDownsSP", "ID = " & rsPackC!componentType)), Nz(rsPackC!componentPN), Nz(rsPackC!componentQuantity)
+        aifInsert packType, Nz(DLookup("packComponentType", "tblDropDownsSP", "recordid = " & rsPackC!componentType)), Nz(rsPackC!componentPN), Nz(rsPackC!componentQuantity)
         rsPackC.MoveNext
     Loop
     rsPack.MoveNext
@@ -1532,7 +1532,7 @@ dataValue = CDbl(dataValue)
 Dim db As Database
 Set db = CurrentDb()
 Dim rs1 As Recordset
-Set rs1 = db.OpenRecordset("SELECT " & columnName & " FROM tblDropDownsSP WHERE ID = " & dataValue)
+Set rs1 = db.OpenRecordset("SELECT " & columnName & " FROM tblDropDownsSP WHERE recordid = " & dataValue)
 
 grabHistoryRef = rs1(columnName)
 
@@ -2079,7 +2079,7 @@ Do While Not rsSteps.EOF
             Set rsPI = db.OpenRecordset("SELECT lineStopper FROM tblPartInfo WHERE partNumber = '" & rsSteps!partNumber & "'")
             
             'for this one, check if the Oracle data matches tblPartInfo
-            temp = Nz(DLookup("lineStopper", "tblDropDownsSP", "ID = " & rsPI!lineStopper), "")
+            temp = Nz(DLookup("lineStopper", "tblDropDownsSP", "recordid = " & rsPI!lineStopper), "")
             If temp = "General" Then temp = ""
             
             If Nz(rsSystemItems(rsStepActions!compareColumn), "") = temp Then

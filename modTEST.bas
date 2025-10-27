@@ -227,3 +227,80 @@ Loop
 
 Set db = Nothing
 End Function
+
+Function doToAllFormsAndThings()
+
+Dim obj As AccessObject, dbs As Object, testString As String
+Dim ctl As Control
+
+Dim frm As Form
+
+Set dbs = Application.CurrentProject
+' Search for open AccessObject objects in AllForms collection.
+
+For Each obj In dbs.AllForms
+    DoCmd.OpenForm obj.name, acDesign
+    
+    Set frm = Forms(obj.name)
+    
+    testString = frm.RecordSource
+    
+    If InStr(frm.RecordSource, "tblDropDowns.ID") Then
+'        frm.RecordSource = Replace(Forms(obj.name).RecordSource, "tblDropDownsSP.ID", "tblDropDownsSP.recordid")
+'        frm.RecordSource = Replace(Forms(obj.name).RecordSource, "tblDropDownsSP_1.ID", "tblDropDownsSP_1.recordid")
+'        frm.RecordSource = Replace(Forms(obj.name).RecordSource, "tblDropDownsSP_2.ID", "tblDropDownsSP_2.recordid")
+        
+        Debug.Print testString
+        testString = Replace(testString, "tblDropDowns", "tblDropDownsSP")
+        testString = Replace(testString, "tblDropDownsSP.ID", "tblDropDownsSP.recordid")
+        testString = Replace(testString, "DRSadjustReasons", "drs_adjustreasons")
+        testString = Replace(testString, "DRSapprovalStatus", "drs_status")
+        testString = Replace(testString, "DRSdesignResponsibility", "drs_designresponsibility")
+        testString = Replace(testString, "DFMEA", "drs_dfmea")
+        testString = Replace(testString, "DRSdrLevels", "drs_drlevel")
+        testString = Replace(testString, "DRSpartComplexity", "drs_partcomplexity")
+        testString = Replace(testString, "DRStoolingDept", "drs_toolingdept")
+        testString = Replace(testString, "DRSunit12Location", "drs_unit12location")
+        testString = Replace(testString, "DRSworkTypes", "drs_worktype")
+        testString = Replace(testString, "DRSeta", "drs_eta")
+        testString = Replace(testString, "DRSpermissionLevels", "drs_permissionlevel")
+        testString = Replace(testString, "DRSpartComplexitySort", "drs_partcomplexitysort")
+        testString = Replace(testString, "tblDRStrackerExtras1", "drs_status")
+        testString = Replace(testString, "DRStype", "drs_type")
+        Debug.Print testString
+        
+        frm.RecordSource = testString
+    End If
+    
+'    For Each ctl In Forms(obj.name).Controls
+'        If ctl.ControlType = acComboBox Then
+'            If InStr(ctl.RowSource, "tblDropDowns.") Then
+'                Debug.Print ctl.RowSource
+'                ctl.RowSource = Replace(ctl.RowSource, "tblDropDowns", "tblDropDownsSP")
+'                ctl.RowSource = Replace(ctl.RowSource, "tblDropDownsSP.ID", "tblDropDownsSP.recordid")
+'                ctl.RowSource = Replace(ctl.RowSource, "DRSadjustReasons", "drs_adjustreasons")
+'                ctl.RowSource = Replace(ctl.RowSource, "DRSapprovalStatus", "drs_status")
+'                ctl.RowSource = Replace(ctl.RowSource, "DRSdesignResponsibility", "drs_designresponsibility")
+'                ctl.RowSource = Replace(ctl.RowSource, "DFMEA", "drs_dfmea")
+'                ctl.RowSource = Replace(ctl.RowSource, "DRSdrLevels", "drs_drlevel")
+'                ctl.RowSource = Replace(ctl.RowSource, "DRSpartComplexity", "drs_partcomplexity")
+'                ctl.RowSource = Replace(ctl.RowSource, "DRStoolingDept", "drs_toolingdept")
+'                ctl.RowSource = Replace(ctl.RowSource, "DRSunit12Location", "drs_unit12location")
+'                ctl.RowSource = Replace(ctl.RowSource, "DRSworkTypes", "drs_worktype")
+'                ctl.RowSource = Replace(ctl.RowSource, "DRSeta", "drs_eta")
+'                ctl.RowSource = Replace(ctl.RowSource, "DRSpermissionLevels", "drs_permissionlevel")
+'                ctl.RowSource = Replace(ctl.RowSource, "DRSpartComplexitySort", "drs_partcomplexitysort")
+'                ctl.RowSource = Replace(ctl.RowSource, "tblDRStrackerExtras1", "drs_status")
+'                ctl.RowSource = Replace(ctl.RowSource, "DRStype", "drs_type")
+'                Debug.Print ctl.RowSource
+'            End If
+'        End If
+'    Next
+    
+    Set frm = Nothing
+    DoCmd.CLOSE acForm, obj.name, acSaveYes
+nextOne:
+Next obj
+
+
+End Function
