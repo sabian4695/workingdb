@@ -922,6 +922,34 @@ If Nz(rsPI!subClassCode) = "" Then errorArray.Add "Sub Class Code is blank" & vb
 If Nz(rsPI!businessCode) = "" Then errorArray.Add "Business Code is blank" & vbTab & "(Design Manager Responsibility)"
 If Nz(rsPI!focusAreaCode) = "" Then errorArray.Add "Focus Area Code is blank" & vbTab & "(Design Manager Responsibility)"
 
+'Also check that family parts match class codes. Cannot auto correct because we don't know which one is correct if they are different
+Dim rsRelatedParts As Recordset, rsRelPI As Recordset
+Set rsRelatedParts = db.OpenRecordset("SELECT * from sqryRelatedParts_ChildPNs WHERE primaryPN = '" & partNum & "' AND TYPE = 'LH/RH'")
+
+Do While Not rsRelatedParts.EOF
+        Set rsRelPI = db.OpenRecordset("SELECT * from tblPartInfo WHERE partNumber = '" & rsRelatedParts!relatedPN & "'")
+        If rsRelPI.RecordCount > 0 Then
+            If Nz(rsRelPI!partClassCode) <> Nz(rsPI!partClassCode) Then errorArray.Add "Part Class Code for related PN " & _
+                rsRelatedParts!relatedPN & " does not match " & partNum & _
+                vbTab & "(Design Manager Responsibility)"
+            If Nz(rsRelPI!subClassCode) <> Nz(rsPI!subClassCode) Then errorArray.Add "Sub Class Code for related PN " & _
+                rsRelatedParts!relatedPN & " does not match " & partNum & _
+                vbTab & "(Design Manager Responsibility)"
+            If Nz(rsRelPI!businessCode) <> Nz(rsPI!businessCode) Then errorArray.Add "Business Code for related PN " & _
+                rsRelatedParts!relatedPN & " does not match " & partNum & _
+                vbTab & "(Design Manager Responsibility)"
+            If Nz(rsRelPI!focusAreaCode) <> Nz(rsPI!focusAreaCode) Then errorArray.Add "Focus Area for related PN " & _
+                rsRelatedParts!relatedPN & " does not match " & partNum & _
+                vbTab & "(Design Manager Responsibility)"
+        End If
+        rsRelPI.CLOSE
+        Set rsRelPI = Nothing
+        rsRelatedParts.MoveNext
+Loop
+
+rsRelatedParts.CLOSE
+Set rsRelatedParts = Nothing
+
 If Nz(rsPI!customerId) = "" Then errorArray.Add "Customer is blank" & vbTab & "(Part Info Page)"
 If Nz(rsPI!developingLocation) = "" Then errorArray.Add "Developing Org is blank" & vbTab & "(Part Info Page)"
 If Nz(rsPI!unitId) = "" Then errorArray.Add "MP Unit is blank" & vbTab & "(Part Info Page)"
