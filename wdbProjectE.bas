@@ -1,7 +1,7 @@
 Option Compare Database
 Option Explicit
 
-Dim XL As Excel.Application, WB As Excel.Workbook, WKS As Excel.Worksheet
+Dim XL As Object, WB As Excel.Workbook, WKS As Excel.Worksheet
 Dim inV As Long
 
 Public Function grabGatePlannedDate(partNumber As String, gateNum As Long) As Date
@@ -1161,7 +1161,7 @@ If Nz(rsPI!outsourceInfoId) <> "" Then
 End If
                                     
 '---Setup Excel Form---
-Set XL = New Excel.Application
+Set XL = CreateObject("Excel.Application")
 Set WB = XL.Workbooks.Add
 XL.Visible = False
 WB.Activate

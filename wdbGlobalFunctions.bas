@@ -7,6 +7,19 @@ Declare PtrSafe Sub ChooseColor Lib "msaccess.exe" Alias "#53" (ByVal hwnd As Lo
 Declare PtrSafe Function LoadCursorFromFile Lib "user32" Alias "LoadCursorFromFileA" (ByVal lpFileName As String) As Long
 Declare PtrSafe Function setCursor Lib "user32" Alias "SetCursor" (ByVal hCursor As Long) As Long
 
+Function setSplashLoading(label As String)
+On Error GoTo Err_Handler
+
+TempVars.Add "loadAmount", TempVars!loadAmount + 1
+Form_frmSplash.lnLoading.Width = (TempVars!loadAmount / 12) * TempVars!loadWd
+Form_frmSplash.lblLoading.Caption = label
+Form_frmSplash.Repaint
+
+Exit Function
+Err_Handler:
+    Call handleError("wdbGlobalFunctions", "setSplashLoading", Err.DESCRIPTION, Err.number)
+End Function
+
 Function setCustomCursor()
 Dim lngRet As Long
 lngRet = LoadCursorFromFile("\\data\mdbdata\WorkingDB\Pictures\Theme_Pictures\cursor.cur")
