@@ -54,25 +54,41 @@ Function exportModulesTxt(sADPFilename, sExportpath)
 
     For Each myObj In oApplication.CurrentProject.AllForms
         WScript.Echo "  " & myObj.fullName
-        oApplication.SaveAsText acForm, myObj.fullName, sExportpath & "\" & myObj.fullName & ".form"
+		if Left(myObj.fullName ,1) = "s" Then
+			oApplication.SaveAsText acForm, myObj.fullName, sExportpath & "\Forms\SubForms\" & myObj.fullName & ".form"
+		Else
+			oApplication.SaveAsText acForm, myObj.fullName, sExportpath & "\Forms\" & myObj.fullName & ".form"
+		End
         oApplication.DoCmd.Close acForm, myObj.fullName
     Next
+	
     For Each myObj In oApplication.CurrentProject.AllModules
         WScript.Echo "  " & myObj.fullName
-        oApplication.SaveAsText acModule, myObj.fullName, sExportpath & "\" & myObj.fullName & ".bas"
+		oApplication.SaveAsText acForm, myObj.fullName, sExportpath & "\Modules\" & myObj.fullName & ".bas"
     Next
+	
     For Each myObj In oApplication.CurrentProject.AllMacros
         WScript.Echo "  " & myObj.fullName
-        oApplication.SaveAsText acMacro, myObj.fullName, sExportpath & "\" & myObj.fullName & ".mod"
+        oApplication.SaveAsText acMacro, myObj.fullName, sExportpath & "\Macros\" & myObj.fullName & ".mod"
     Next
+	
     For Each myObj In oApplication.CurrentProject.AllReports
         WScript.Echo "  " & myObj.fullName
-        oApplication.SaveAsText acReport, myObj.fullName, sExportpath & "\" & myObj.fullName & ".rpt"
+		if Left(myObj.fullName ,1) = "s" Then
+			oApplication.SaveAsText acForm, myObj.fullName, sExportpath & "\Reports\SubReports\" & myObj.fullName & ".rpt"
+		Else
+			oApplication.SaveAsText acForm, myObj.fullName, sExportpath & "\Reports\" & myObj.fullName & ".rpt"
+		End
     Next
+	
     For Each myObj In oApplication.CurrentDb.QueryDefs
         If Not Left(myObj.name, 3) = "~sq" Then 'exclude queries defined by the forms. Already included in the form itself
             WScript.Echo "  " & myObj.name
-            oApplication.SaveAsText acQuery, myObj.name, sExportpath & "\" & myObj.name & ".qry"
+			if Left(myObj.fullName ,1) = "s" Then
+				oApplication.SaveAsText acForm, myObj.fullName, sExportpath & "\Queries\SubQueries\" & myObj.fullName & ".qry"
+			Else
+				oApplication.SaveAsText acForm, myObj.fullName, sExportpath & "\Queries\" & myObj.fullName & ".qry"
+			End
             oApplication.DoCmd.Close acQuery, myObj.name
         End If
     Next
@@ -82,11 +98,7 @@ Function exportModulesTxt(sADPFilename, sExportpath)
 
     fso.DeleteFile sStubADPFilename
 
-msgbox "Dev submitted successfully", vbInformation, "Nicely Done"
-
-dim strUser
-strUser = CreateObject("WScript.Network").UserName
-fso.deletefile "H:\dev\WorkingDB_" & strUser & "_dev.accdb"
+msgbox "Files Decomposed from " & sADPFilename, vbInformation, "Nicely Done"
 
 End Function
 

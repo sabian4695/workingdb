@@ -1,0 +1,1 @@
+CScript "\\data\mdbdata\WorkingDB\build\Commands\decomposeForSubmission.vbs" "\\data\mdbdata\WorkingDB\build\Repo\Front_End\WorkingDB_FE.accdb" "\\data\mdbdata\WorkingDB\build\Repo\Front_End\"
