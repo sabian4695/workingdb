@@ -1,0 +1,1 @@
+CScript "\\data\mdbdata\WorkingDB\build\Repo\Commands\decompose_accdb.vbs" "\\data\mdbdata\WorkingDB\build\Repo\Reporting\WorkingDB_ForExcel.accdb" "\\data\mdbdata\WorkingDB\build\Repo\Reporting\"

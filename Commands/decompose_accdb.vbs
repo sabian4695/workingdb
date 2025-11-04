@@ -54,17 +54,17 @@ Function exportModulesTxt(sADPFilename, sExportpath)
 
     For Each myObj In oApplication.CurrentProject.AllForms
         WScript.Echo "  " & myObj.fullName
-		if Left(myObj.fullName ,1) = "s" Then
+		If Left(myObj.fullName ,1) = "s" Then
 			oApplication.SaveAsText acForm, myObj.fullName, sExportpath & "\Forms\SubForms\" & myObj.fullName & ".form"
 		Else
 			oApplication.SaveAsText acForm, myObj.fullName, sExportpath & "\Forms\" & myObj.fullName & ".form"
-		End
+		End If
         oApplication.DoCmd.Close acForm, myObj.fullName
     Next
 	
     For Each myObj In oApplication.CurrentProject.AllModules
         WScript.Echo "  " & myObj.fullName
-		oApplication.SaveAsText acForm, myObj.fullName, sExportpath & "\Modules\" & myObj.fullName & ".bas"
+		oApplication.SaveAsText acModule, myObj.fullName, sExportpath & "\Modules\" & myObj.fullName & ".bas"
     Next
 	
     For Each myObj In oApplication.CurrentProject.AllMacros
@@ -74,21 +74,21 @@ Function exportModulesTxt(sADPFilename, sExportpath)
 	
     For Each myObj In oApplication.CurrentProject.AllReports
         WScript.Echo "  " & myObj.fullName
-		if Left(myObj.fullName ,1) = "s" Then
-			oApplication.SaveAsText acForm, myObj.fullName, sExportpath & "\Reports\SubReports\" & myObj.fullName & ".rpt"
+		If Left(myObj.fullName ,1) = "s" Then
+			oApplication.SaveAsText acReport, myObj.fullName, sExportpath & "\Reports\SubReports\" & myObj.fullName & ".rpt"
 		Else
-			oApplication.SaveAsText acForm, myObj.fullName, sExportpath & "\Reports\" & myObj.fullName & ".rpt"
-		End
+			oApplication.SaveAsText acReport, myObj.fullName, sExportpath & "\Reports\" & myObj.fullName & ".rpt"
+		End If
     Next
 	
     For Each myObj In oApplication.CurrentDb.QueryDefs
         If Not Left(myObj.name, 3) = "~sq" Then 'exclude queries defined by the forms. Already included in the form itself
             WScript.Echo "  " & myObj.name
-			if Left(myObj.fullName ,1) = "s" Then
-				oApplication.SaveAsText acForm, myObj.fullName, sExportpath & "\Queries\SubQueries\" & myObj.fullName & ".qry"
+			If Left(myObj.name ,1) = "s" Then
+				oApplication.SaveAsText acQuery, myObj.name, sExportpath & "\Queries\SubQueries\" & myObj.name & ".qry"
 			Else
-				oApplication.SaveAsText acForm, myObj.fullName, sExportpath & "\Queries\" & myObj.fullName & ".qry"
-			End
+				oApplication.SaveAsText acQuery, myObj.name, sExportpath & "\Queries\" & myObj.name & ".qry"
+			End If
             oApplication.DoCmd.Close acQuery, myObj.name
         End If
     Next
