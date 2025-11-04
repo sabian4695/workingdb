@@ -1,1 +1,1 @@
-CScript "\\data\mdbdata\WorkingDB\build\Repo\Commands\decompose_accdb.vbs" "\\data\mdbdata\WorkingDB\build\Repo\Refresh_Reports\WorkingDB_RefreshReports.accdb" "\\data\mdbdata\WorkingDB\build\Repo\Refresh_Reports\"
+CScript "\\data\mdbdata\WorkingDB\build\Repo\Commands\decompose_accdb.vbs" "%~dp0WorkingDB_RefreshReports.accdb" "%~dp0"
