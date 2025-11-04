@@ -41,6 +41,15 @@ Function exportModulesTxt(sADPFilename, sExportpath)
     fso.CopyFile sADPFilename, sStubADPFilename
 
     WScript.Echo "starting Access..."
+	
+	Dim dbT, accT
+	set accT = CreateObject("Access.Application")
+	set dbT = accT.DBEngine.OpenDatabase(sStubADPFilename, False, False)
+
+	dbT.Properties("AllowByPassKey") = True
+	dbT.Close
+	Set dbT = Nothing
+	
     Dim oApplication
     Set oApplication = CreateObject("Access.Application")
     WScript.Echo "opening " & sStubADPFilename & " ..."
