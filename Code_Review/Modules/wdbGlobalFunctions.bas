@@ -43,8 +43,9 @@ emailContentGen = subject & "," & Title & "," & subTitle & "," & primaryMessage 
 End Function
 
 Function userData(data) As String
+
 Dim db As Database
-Set db = OpenDatabase("\\data\mdbdata\WorkingDB\build\Code_Review\WorkingDB_Connection.accdb")
+Set db = OpenDatabase("\\data\mdbdata\WorkingDB\build\Repo\WorkingDB_Connection\WorkingDB_Connection.accdb")
 
 Dim rsPermissions As Recordset
 Set rsPermissions = db.OpenRecordset("SELECT * from tblPermissions WHERE user = '" & Environ("username") & "'")

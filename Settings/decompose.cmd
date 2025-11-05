@@ -1,1 +1,1 @@
-CScript "\\data\mdbdata\WorkingDB\build\Repo\Commands\decompose_accdb.vbs" "\\data\mdbdata\WorkingDB\build\Repo\Settings\WorkingDB_SETTINGS.accdb" "\\data\mdbdata\WorkingDB\build\Repo\Settings\"
+CScript "\\data\mdbdata\WorkingDB\build\Repo\Commands\decompose_accdb.vbs" "%~dp0WorkingDB_SETTINGS.accdb" "%~dp0"
