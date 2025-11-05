@@ -1119,7 +1119,7 @@ End Function
 Function restrict(userName As String, dept As String, Optional reqLevel As String = "", Optional orAbove As Boolean = False) As Boolean
 On Error GoTo Err_Handler
 
-If (CurrentProject.Path = "H:\dev") Then
+If (CurrentProject.Path <> "C:\workingdb") Then
     If userData("Developer") Then
         restrict = False
         Exit Function
