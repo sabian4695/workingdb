@@ -195,7 +195,7 @@ End Function
 
 Public Sub handleError(modName As String, activeCon As String, errDesc As String, errNum As Long, Optional dataTag As String = "")
 On Error Resume Next
-If (CurrentProject.Path = "H:\dev") Then
+If (CurrentProject.Path <> "C:\workingdb") Then
     MsgBox errDesc, vbInformation, "Error Code: " & errNum
     Exit Sub
 End If

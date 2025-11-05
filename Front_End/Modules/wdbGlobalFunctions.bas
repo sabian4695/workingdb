@@ -1119,7 +1119,7 @@ End Function
 Function restrict(userName As String, dept As String, Optional reqLevel As String = "", Optional orAbove As Boolean = False) As Boolean
 On Error GoTo Err_Handler
 
-If (CurrentProject.Path = "H:\dev") Then
+If (CurrentProject.Path <> "C:\workingdb") Then
     If userData("Developer") Then
         restrict = False
         Exit Function
@@ -1181,12 +1181,12 @@ If Not DateSerial(Year(rsAnalytics!anaDate), Month(rsAnalytics!anaDate), Day(rsA
 End If
 
 Set rsRefreshReports = db.OpenRecordset("SELECT max(dateUsed) as anaDate from tblAnalytics WHERE module = 'refreshReports'")
-If Not DateSerial(Year(rsRefreshReports!anaDate), Month(rsRefreshReports!anaDate), Day(rsRefreshReports!anaDate)) >= Date Then Call openPath("\\data\mdbdata\WorkingDB\build\Commands\Misc_Commands\refreshReports.vbs")
+If Not DateSerial(Year(rsRefreshReports!anaDate), Month(rsRefreshReports!anaDate), Day(rsRefreshReports!anaDate)) >= Date Then Call openPath("\\data\mdbdata\WorkingDB\build_temp\refreshReports.vbs")
 
 If Weekday(Date) = 1 Or Weekday(Date) = 7 Then Exit Sub 'only run summaries on weekdays
 
 Set rsSummaryEmail = db.OpenRecordset("SELECT max(dateUsed) as anaDate from tblAnalytics WHERE module = 'summaryEmail'")
-If Not DateSerial(Year(rsSummaryEmail!anaDate), Month(rsSummaryEmail!anaDate), Day(rsSummaryEmail!anaDate)) >= Date Then Call openPath("\\data\mdbdata\WorkingDB\build\Commands\Misc_Commands\summaryEmail.vbs")
+If Not DateSerial(Year(rsSummaryEmail!anaDate), Month(rsSummaryEmail!anaDate), Day(rsSummaryEmail!anaDate)) >= Date Then Call openPath("\\data\mdbdata\WorkingDB\build_temp\summaryEmail.vbs")
 
 On Error Resume Next
 rsAnalytics.CLOSE: Set rsAnalytics = Nothing
