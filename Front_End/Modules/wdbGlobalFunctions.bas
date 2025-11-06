@@ -10,6 +10,8 @@ Declare PtrSafe Function setCursor Lib "user32" Alias "SetCursor" (ByVal hCursor
 Function setSplashLoading(label As String)
 On Error GoTo Err_Handler
 
+If IsNull(TempVars!loadAmount) Then Exit Function
+
 TempVars.Add "loadAmount", TempVars!loadAmount + 1
 Form_frmSplash.lnLoading.Width = (TempVars!loadAmount / 12) * TempVars!loadWd
 Form_frmSplash.lblLoading.Caption = label
