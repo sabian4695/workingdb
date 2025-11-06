@@ -64,75 +64,100 @@ Function exportModulesTxt(sADPFilename, sExportpath)
 	Dim delFold
 	Dim delFile
 
-'---FORMS---
-    For Each myObj In oApplication.CurrentProject.AllForms
-        WScript.Echo "  " & myObj.fullName
-		
-		'delete all files
+'delete all files
+	If fso.FolderExists(sExportpath & "\Forms\") Then
 		Set delFold = fso.GetFolder( sExportpath & "\Forms\")
 		For Each delFile In delFold.Files
+			WScript.Echo "  " & delFile.Path
 			fso.DeleteFile delFile.Path, True ' True for force deletion
 		Next
+	end if
+	
+	If fso.FolderExists(sExportpath & "\Forms\SubForms\") Then
 		Set delFold = fso.GetFolder( sExportpath & "\Forms\SubForms\")
 		For Each delFile In delFold.Files
+			WScript.Echo "  " & delFile.Path
 			fso.DeleteFile delFile.Path, True ' True for force deletion
 		Next
-		Set delFold = Nothing
-		
+	end if
+	
+	If fso.FolderExists(sExportpath & "\Modules\") Then
+		Set delFold = fso.GetFolder( sExportpath & "\Modules\")
+		For Each delFile In delFold.Files
+			WScript.Echo "  " & delFile.Path
+			fso.DeleteFile delFile.Path, True ' True for force deletion
+		Next
+	end if
+	
+	If fso.FolderExists(sExportpath & "\Macros\") Then
+		Set delFold = fso.GetFolder( sExportpath & "\Macros\")
+		For Each delFile In delFold.Files
+			WScript.Echo "  " & delFile.Path
+			fso.DeleteFile delFile.Path, True ' True for force deletion
+		Next
+	end if
+	
+	If fso.FolderExists(sExportpath & "\Reports\") Then
+		Set delFold = fso.GetFolder( sExportpath & "\Reports\")
+		For Each delFile In delFold.Files
+			WScript.Echo "  " & delFile.Path
+			fso.DeleteFile delFile.Path, True ' True for force deletion
+		Next
+	end if
+	
+	If fso.FolderExists(sExportpath & "\Reports\SubReports\") Then
+		Set delFold = fso.GetFolder( sExportpath & "\Reports\SubReports\")
+		For Each delFile In delFold.Files
+			WScript.Echo "  " & delFile.Path
+			fso.DeleteFile delFile.Path, True ' True for force deletion
+		Next
+	end if
+	
+	If fso.FolderExists(sExportpath & "\Queries\") Then
+		Set delFold = fso.GetFolder( sExportpath & "\Queries\")
+		For Each delFile In delFold.Files
+			WScript.Echo "  " & delFile.Path
+			fso.DeleteFile delFile.Path, True ' True for force deletion
+		Next
+	end if
+	
+	If fso.FolderExists(sExportpath & "\Queries\SubQueries\") Then
+		Set delFold = fso.GetFolder( sExportpath & "\Queries\SubQueries\")
+		For Each delFile In delFold.Files
+			WScript.Echo "  " & delFile.Path
+			fso.DeleteFile delFile.Path, True ' True for force deletion
+		Next
+	end if
+	
+	
+	Set delFold = Nothing
+	
+	
+	'---FORMS---
+    For Each myObj In oApplication.CurrentProject.AllForms
+        WScript.Echo "  " & myObj.fullName
 		'move all new files
 		If Left(myObj.fullName ,1) = "s" Then
 			oApplication.SaveAsText acForm, myObj.fullName, sExportpath & "\Forms\SubForms\" & myObj.fullName & ".form"
 		Else
 			oApplication.SaveAsText acForm, myObj.fullName, sExportpath & "\Forms\" & myObj.fullName & ".form"
 		End If
-        oApplication.DoCmd.Close acForm, myObj.fullName
     Next
 	
 	'---MODULES---
     For Each myObj In oApplication.CurrentProject.AllModules
         WScript.Echo "  " & myObj.fullName
-		
-		'delete all files
-		Set delFold = fso.GetFolder( sExportpath & "\Modules\")
-		For Each delFile In delFold.Files
-			fso.DeleteFile delFile.Path, True ' True for force deletion
-		Next
-		Set delFold = Nothing
-		
-		'move all new files
 		oApplication.SaveAsText acModule, myObj.fullName, sExportpath & "\Modules\" & myObj.fullName & ".bas"
     Next
 	
     For Each myObj In oApplication.CurrentProject.AllMacros
-        WScript.Echo "  " & myObj.fullName
-		
-		'delete all files
-		Set delFold = fso.GetFolder( sExportpath & "\Macros\")
-		For Each delFile In delFold.Files
-			fso.DeleteFile delFile.Path, True ' True for force deletion
-		Next
-		Set delFold = Nothing
-		
-		'move all new files
+        WScript.Echo "  " & myObj.fullName	
         oApplication.SaveAsText acMacro, myObj.fullName, sExportpath & "\Macros\" & myObj.fullName & ".mod"
     Next
 	
 	'---REPORTS---
     For Each myObj In oApplication.CurrentProject.AllReports
         WScript.Echo "  " & myObj.fullName
-		
-		'delete all files
-		Set delFold = fso.GetFolder( sExportpath & "\Reports\")
-		For Each delFile In delFold.Files
-			fso.DeleteFile delFile.Path, True ' True for force deletion
-		Next
-		Set delFold = fso.GetFolder( sExportpath & "\Reports\SubReports\")
-		For Each delFile In delFold.Files
-			fso.DeleteFile delFile.Path, True ' True for force deletion
-		Next
-		Set delFold = Nothing
-		
-		'move all new files
 		If Left(myObj.fullName ,1) = "s" Then
 			oApplication.SaveAsText acReport, myObj.fullName, sExportpath & "\Reports\SubReports\" & myObj.fullName & ".rpt"
 		Else
@@ -143,25 +168,11 @@ Function exportModulesTxt(sADPFilename, sExportpath)
     For Each myObj In oApplication.CurrentDb.QueryDefs
         If Not Left(myObj.name, 3) = "~sq" Then 'exclude queries defined by the forms. Already included in the form itself
             WScript.Echo "  " & myObj.name
-			
-			'delete all files
-			Set delFold = fso.GetFolder( sExportpath & "\Queries\")
-			For Each delFile In delFold.Files
-				fso.DeleteFile delFile.Path, True ' True for force deletion
-			Next
-			Set delFold = fso.GetFolder( sExportpath & "\Queries\SubQueries\")
-			For Each delFile In delFold.Files
-				fso.DeleteFile delFile.Path, True ' True for force deletion
-			Next
-			Set delFold = Nothing
-			
-			'move all new files
 			If Left(myObj.name ,1) = "s" Then
 				oApplication.SaveAsText acQuery, myObj.name, sExportpath & "\Queries\SubQueries\" & myObj.name & ".qry"
 			Else
 				oApplication.SaveAsText acQuery, myObj.name, sExportpath & "\Queries\" & myObj.name & ".qry"
 			End If
-            oApplication.DoCmd.Close acQuery, myObj.name
         End If
     Next
 

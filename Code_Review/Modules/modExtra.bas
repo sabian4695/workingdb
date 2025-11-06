@@ -15,3 +15,23 @@ db.Close
 Set db = Nothing
 
 End Function
+
+Function disableShift_FE()
+
+Dim db, acc, fso
+Set acc = CreateObject("Access.Application")
+
+Set fso = CreateObject("Scripting.FileSystemObject")
+
+Dim repoLoc As String
+repoLoc = fso.GetParentFolderName(CurrentProject.Path) & "\Front_End\WorkingDB_FE.accdb"
+
+Set db = acc.DBEngine.OpenDatabase(repoLoc, False, False)
+
+
+db.Properties("AllowByPassKey") = True
+
+db.Close
+Set db = Nothing
+
+End Function

@@ -798,7 +798,7 @@ Err_Handler:
 End Function
 
 Public Function autoUploadAIF(partNumber As String) As Boolean
-'on error GoTo Err_Handler
+On Error GoTo Err_Handler
 autoUploadAIF = False
 
 If checkAIFfields(partNumber) Then
@@ -1242,7 +1242,7 @@ aifInsert "Royalty", Nz(rsPI!sellingPrice) * 0.03, firstColBold:=True, set5Dec:=
 aifInsert "Outsource Cost", outsourceCost, firstColBold:=True, set5Dec:=True
 
 '---Molding / Assembly Specific Information---
-Dim insLev As String, mpLev As String, anneal As String, laborType As String, pph As String, weight100Pc As String, orgCalc, pressSizeFin As String
+Dim insLev As String, mpLev As String, anneal As String, laborType As String, pph As String, weight100Pc As Double, orgCalc, pressSizeFin As String
 Select Case rsPI!partType
     Case 1, 4 'molded / new color
         aifInsert "MOLDING INFORMATION", "", , , , True
