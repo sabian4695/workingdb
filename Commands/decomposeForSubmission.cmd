@@ -1,1 +1,0 @@
-CScript "\\data\mdbdata\WorkingDB\build\Commands\decomposeForSubmission.vbs" "\\data\mdbdata\WorkingDB\_docs\Dev_Submission_Review\%username%\WorkingDB_Submission.accdb" "\\data\mdbdata\WorkingDB\_docs\Dev_Submission_Review\%username%\export\"
