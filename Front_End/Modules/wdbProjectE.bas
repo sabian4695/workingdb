@@ -798,7 +798,7 @@ Err_Handler:
 End Function
 
 Public Function autoUploadAIF(partNumber As String) As Boolean
-On Error GoTo Err_Handler
+'on error GoTo Err_Handler
 autoUploadAIF = False
 
 If checkAIFfields(partNumber) Then
@@ -1384,7 +1384,6 @@ WKS.Range("A1:E" & inV - 1).BorderAround Weight:=xlMedium
 Dim FileName As String
 FileName = "H:\" & partNum & "_Accounting_Info_" & nowString & ".xlsx"
 WB.SaveAs FileName, , , , True
-MsgBox "Export Complete. File path: " & FileName, vbOKOnly, "Notice"
 
 '---Cleanup---
 XL.Visible = True
@@ -1398,6 +1397,8 @@ rsU.CLOSE: Set rsU = Nothing
 rsPack.CLOSE: Set rsPack = Nothing
 rsPackC.CLOSE: Set rsPackC = Nothing
 Set db = Nothing
+
+MsgBox "Export Complete. File path: " & FileName, vbOKOnly, "Notice"
 
 exportAIF = FileName
 
