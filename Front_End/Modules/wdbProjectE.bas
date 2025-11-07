@@ -1242,7 +1242,7 @@ aifInsert "Royalty", Nz(rsPI!sellingPrice) * 0.03, firstColBold:=True, set5Dec:=
 aifInsert "Outsource Cost", outsourceCost, firstColBold:=True, set5Dec:=True
 
 '---Molding / Assembly Specific Information---
-Dim insLev As String, mpLev As String, anneal As String, laborType As String, pph As String, weight100Pc As Double, orgCalc, pressSizeFin As String
+Dim insLev As String, mpLev As String, anneal As String, laborType As String, pph As String, weight100Pc As String, orgCalc, pressSizeFin As String
 Select Case rsPI!partType
     Case 1, 4 'molded / new color
         aifInsert "MOLDING INFORMATION", "", , , , True
@@ -1384,6 +1384,7 @@ WKS.Range("A1:E" & inV - 1).BorderAround Weight:=xlMedium
 Dim FileName As String
 FileName = "H:\" & partNum & "_Accounting_Info_" & nowString & ".xlsx"
 WB.SaveAs FileName, , , , True
+MsgBox "Export Complete. File path: " & FileName, vbOKOnly, "Notice"
 
 '---Cleanup---
 XL.Visible = True
@@ -1397,8 +1398,6 @@ rsU.CLOSE: Set rsU = Nothing
 rsPack.CLOSE: Set rsPack = Nothing
 rsPackC.CLOSE: Set rsPackC = Nothing
 Set db = Nothing
-
-MsgBox "Export Complete. File path: " & FileName, vbOKOnly, "Notice"
 
 exportAIF = FileName
 
