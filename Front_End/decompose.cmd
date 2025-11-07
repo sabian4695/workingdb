@@ -1,4 +1,4 @@
 echo
 cd ..
 
-CScript "%CD%\Commands\decompose_accdb.vbs" "%~dp0WorkingDB_FE.accdb" "%~dp0"
+CScript "%CD%\Commands\decompose_accdb.vbs" "%~dp0\WorkingDB_FE.accdb" "%~dp0"

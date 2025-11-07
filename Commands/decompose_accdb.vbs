@@ -33,7 +33,7 @@ Function exportModulesTxt(sADPFilename, sExportpath)
     myPath = fso.GetParentFolderName(sADPFilename)
 
     sStubADPFilename = sExportpath & "\" & myName & "_stub." & myType
-
+	WScript.Echo sStubADPFilename
     WScript.Echo "copy stub to " & sStubADPFilename & "..."
     On Error Resume Next
         fso.CreateFolder (sExportpath)
