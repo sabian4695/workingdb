@@ -18,20 +18,48 @@ End Function
 
 Function disableShift_FE()
 
-Dim db, acc, fso
+Dim db, acc
 Set acc = CreateObject("Access.Application")
 
-Set fso = CreateObject("Scripting.FileSystemObject")
-
 Dim repoLoc As String
-repoLoc = fso.GetParentFolderName(CurrentProject.Path) & "\Front_End\WorkingDB_FE.accdb"
+repoLoc = currentRepoLocation & "Front_End\WorkingDB_FE.accdb"
 
 Set db = acc.DBEngine.OpenDatabase(repoLoc, False, False)
-
 
 db.Properties("AllowByPassKey") = True
 
 db.Close
 Set db = Nothing
+
+End Function
+
+Function getPassword()
+
+Dim db As Database
+Set db = OpenDatabase("")
+
+Dim rs As Recordset
+Set rs = db.OpenRecordset("SELECT * FROM MSysObjects WHERE Connect is not null")
+
+Do While Not rs.EOF
+    Debug.Print "Database: " & rs!Database & vbTab & " Connection: " & rs!Connect
+    rs.MoveNext
+Loop
+
+rs.Close
+Set rs = Nothing
+db.Close
+Set db = Nothing
+
+End Function
+
+Function currentRepoLocation() As String
+
+Dim fso
+Set fso = CreateObject("Scripting.FileSystemObject")
+
+currentRepoLocation = fso.GetParentFolderName(CurrentProject.Path) & "\"
+
+Set fso = Nothing
 
 End Function

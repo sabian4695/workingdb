@@ -93,6 +93,12 @@ End If
 
 End Function
 
+Public Function StrQuoteReplace(strValue)
+
+StrQuoteReplace = Replace(Nz(strValue, ""), "'", "''")
+
+End Function
+
 Function ap_EnableShift()
 
 On Error GoTo errEnableShift
