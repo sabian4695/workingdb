@@ -1,1 +1,0 @@
-CScript "\\data\mdbdata\WorkingDB\build\Repo\Commands\decompose_accdb.vbs" "%~dp0WorkingDB_SummaryEmail.accdb" "%~dp0"
