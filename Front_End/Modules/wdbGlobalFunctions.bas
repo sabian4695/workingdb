@@ -48,7 +48,7 @@ Err_Handler:
     Call handleError("wdbGlobalFunctions", "getCustomerName", Err.DESCRIPTION, Err.number)
 End Function
 
-Function dueDay(dueDate, completedDate) As String
+Function dueDay(dueDate, completeddate) As String
 On Error Resume Next
 
 If IsNull(dueDate) Then
@@ -56,7 +56,7 @@ If IsNull(dueDate) Then
     Exit Function
 End If
 
-If IsNull(completedDate) Then
+If IsNull(completeddate) Then
     Select Case dueDate
         Case Date
             dueDay = "Today"
@@ -486,8 +486,8 @@ For Each obj In dbs.AllForms
         If obj.name = "frmSearchHistory" Then GoTo nextOne
         DoCmd.OpenForm obj.name, acDesign
         
-        If Forms(obj.name).DefaultView = 1 Then
-            Forms(obj.name).BorderStyle = 2
+        If forms(obj.name).DefaultView = 1 Then
+            forms(obj.name).BorderStyle = 2
         End If
         DoCmd.CLOSE acForm, obj.name, acSaveYes
     End If
@@ -537,12 +537,12 @@ TempVars.Add "snackAutoClose", autoClose
 
 If centerBool Then
     TempVars.Add "snackCenter", "True"
-    TempVars.Add "snackLeft", Forms(refForm).WindowLeft + Forms(refForm).WindowWidth / 2 - 3393
-    TempVars.Add "snackTop", Forms(refForm).WindowTop + Forms(refForm).WindowHeight / 2 - 500
+    TempVars.Add "snackLeft", forms(refForm).WindowLeft + forms(refForm).WindowWidth / 2 - 3393
+    TempVars.Add "snackTop", forms(refForm).WindowTop + forms(refForm).WindowHeight / 2 - 500
 Else
     TempVars.Add "snackCenter", "False"
-    TempVars.Add "snackLeft", Forms(refForm).WindowLeft + 200
-    TempVars.Add "snackTop", Forms(refForm).WindowTop + Forms(refForm).WindowHeight - 1250
+    TempVars.Add "snackLeft", forms(refForm).WindowLeft + 200
+    TempVars.Add "snackTop", forms(refForm).WindowTop + forms(refForm).WindowHeight - 1250
 End If
 
 DoCmd.OpenForm "frmSnack"

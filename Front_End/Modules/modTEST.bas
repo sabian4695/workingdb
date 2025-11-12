@@ -72,15 +72,45 @@ Set db = Nothing
 
 End Function
 
-Public Function setItUp()
+Public Function addPostgreSQL_DATA()
 
-Dim serverCon As String, tableName As String, tableNameTo As String
+Dim db As Database
+Set db = CurrentDb()
+
+Dim tbl As TableDef
+
+'For Each tbl In db.TableDefs
+'    If InStr(tbl.name, "_old") Then
+'        Debug.Print tbl.name & " START"
+'
+'        db.Execute "DELETE * FROM " & Replace(tbl.name, "_old", "")
+'        DoEvents
+'
+'        moveRecords (Replace(tbl.name, "_old", ""))
+'    End If
+'Next tbl
+
+Dim tblName As String
+tblName = "tblpartsteps"
+
+'db.Execute "DELETE * FROM " & tblName
+'DoEvents
+
+moveRecords (tblName)
+
+End Function
+
+Public Function setItUp(tableName As String)
+
+Dim serverCon As String, tableNameTo As String
 
 Dim dbName As String
 Dim serverName As String
 Dim Uid As String
 Dim Pwd As String
+Dim schemaName As String
 
+schemaName = "design."
 dbName = "dm2"
 serverName = "dw1v2-cluster.cluster-ro-c1aekkohw3x2.us-west-2.rds.amazonaws.com"
 Uid = "uDesign"
@@ -90,10 +120,12 @@ Pwd = "zNQG6230^b7-"
 
 serverCon = "DATABASE=" & dbName & ";SERVER=" & serverName & ";PORT=5432;Uid=" & Uid & ";Pwd=" & Pwd & ";"
 
-tableName = "design.tbltasks"
-tableNameTo = "tblTasks"
+tableName = schemaName & LCase(tableName)
+tableNameTo = tableName
 
 Call Link_ODBCTbl(serverCon, tableName, tableNameTo, CurrentDb())
+
+Call moveRecords(tableNameTo)
 
 End Function
 
@@ -198,15 +230,12 @@ Err_Handler:
 End Sub
 
 
-Function moveRecords()
+Function moveRecords(tableName As String)
 
 Dim db As Database
 Set db = CurrentDb()
 
 Dim rs As Recordset, rsOld As Recordset
-Dim tableName As String
-
-tableName = "tblTasks"
 
 Set rs = db.OpenRecordset(tableName)
 Set rsOld = db.OpenRecordset(tableName & "_old")
@@ -214,18 +243,65 @@ Set rsOld = db.OpenRecordset(tableName & "_old")
 Dim fld As DAO.Field
 
 Do While Not rsOld.EOF
-    Debug.Print rsOld!recordId
+    
     rs.addNew
     
     For Each fld In rsOld.Fields
-        rs(fld.name) = rsOld(fld.name).Value
+        Select Case LCase(fld.name)
+            Case "recordid"
+                'Debug.Print fld.Value
+                 rs("recordid") = rsOld(fld.name).Value
+            Case "id"
+                'Debug.Print fld.Value
+                 rs("recordid") = rsOld(fld.name).Value
+            Case "quantity", "pieceweight", "matnum1pieceweight", "outsourcecost"
+                rs(fld.name) = Round(rsOld(fld.name).Value, 5)
+            Case "3Dweight"
+                    rs("_" & fld.name) = rsOld(fld.name).Value
+           Case "shotsperhour", "piecesperhour"
+                rs(fld.name) = Round(rsOld(fld.name).Value, 2)
+            Case "toolnumber"
+                If IsNull(fld.Value) Then GoTo nextOne
+            Case "length"
+                rs("partlength") = rsOld(fld.name).Value
+            Case "width"
+                rs("partwidth") = rsOld(fld.name).Value
+            Case "packagingteststatus", "NPIFstatus", "customerapprovalstatus", "tooltips", "training_mode", "catiacustomcolor", "designwoid", "autoposition", "notifications", "themeid"
+                GoTo nextField
+            Case "user"
+                rs("username") = rsOld(fld.name).Value
+            Case "edit", "beta", "admin", "developer"
+                rs(fld.name & "permission") = rsOld(fld.name).Value
+            Case "dept"
+                rs("department") = rsOld(fld.name).Value
+            Case "level"
+                rs("englevel") = rsOld(fld.name).Value
+            Case "designwopermissions"
+                rs("designwopermission") = rsOld(fld.name).Value
+            Case "type"
+                rs("unittype") = rsOld(fld.name).Value
+            Case Else
+                rs(fld.name) = rsOld(fld.name).Value
+        End Select
+nextField:
     Next
-    
+
     rs.Update
+nextOne:
     rsOld.MoveNext
 Loop
 
 Set db = Nothing
+End Function
+
+Public Function FieldExists(ByVal rs As Recordset, ByVal fieldName As String) As Boolean
+    On Error GoTo merr
+
+    FieldExists = rs.Fields(fieldName).name <> ""
+    Exit Function
+
+merr:
+    FieldExists = False
 End Function
 
 Function doToAllFormsAndThings()
@@ -241,7 +317,7 @@ Set dbs = Application.CurrentProject
 For Each obj In dbs.AllForms
     DoCmd.OpenForm obj.name, acDesign
     
-    Set frm = Forms(obj.name)
+    Set frm = forms(obj.name)
     
     testString = frm.RecordSource
     
