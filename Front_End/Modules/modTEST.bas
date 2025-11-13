@@ -96,7 +96,7 @@ tblName = "tblpartsteps"
 'db.Execute "DELETE * FROM " & tblName
 'DoEvents
 
-moveRecords (tblName)
+'moveRecords (tblName)
 
 End Function
 
@@ -125,7 +125,7 @@ tableNameTo = tableName
 
 Call Link_ODBCTbl(serverCon, tableName, tableNameTo, CurrentDb())
 
-Call moveRecords(tableNameTo)
+'Call moveRecords(tableNameTo)
 
 End Function
 
