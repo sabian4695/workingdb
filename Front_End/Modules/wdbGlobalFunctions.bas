@@ -801,6 +801,83 @@ Err_Handler:
     Call handleError("wdbGlobalFunctions", "loadECOtype", Err.DESCRIPTION, Err.number)
 End Function
 
+Function getAvatar(userName As String, initials As String)
+On Error GoTo Err_Handler
+
+Dim FilePath As String
+Dim fileNumber As Integer
+
+FilePath = "\\data\mdbdata\WorkingDB\Pictures\Avatars\svg\" & userName & ".svg"
+fileNumber = FreeFile
+Open FilePath For Output As #fileNumber
+
+Dim randomR As Integer, randomG As Integer, randomB As Integer
+Dim inputColor, tempHex, fullHex
+
+randomR = randomNumber(30, 170)
+randomG = randomNumber(30, 170)
+randomB = randomNumber(30, 170)
+
+'try to further randomize the color
+Randomize
+Select Case True
+    Case randomR > randomG And randomR > randomB
+        randomG = randomG * Rnd()
+    Case randomG > randomB And randomG > randomR
+        randomB = randomB * Rnd()
+    Case Else
+        randomR = randomR * Rnd()
+End Select
+
+inputColor = rgb(randomR, randomG, randomB)
+tempHex = Hex(inputColor)
+fullHex = Mid(tempHex, 5, 2) & Mid(tempHex, 3, 2) & Mid(tempHex, 1, 2)
+
+Print #fileNumber, "<svg xmlns=""http://www.w3.org/2000/svg"" viewBox=""0 0 100 100""><mask id=""viewboxMask"">" & _
+"<rect width=""100"" height=""100"" rx=""50"" ry=""50"" x=""0"" y=""0"" fill=""#fff"" /></mask><g mask=""url(#viewboxMask)""><rect fill=""#" & fullHex & """ widt" & _
+"h=""100"" height=""100"" x=""0"" y=""0"" /><text x=""50%"" y=""50%"" font-family=""Arial, sans-serif"" font-size=""50"" font-" & _
+"weight=""600"" fill=""#ffffff"" text-anchor=""middle"" dy=""17.800"">" & initials & "</text></g></svg>"
+
+Close #fileNumber
+
+Exit Function
+Err_Handler:
+    Call handleError("wdbGlobalFunctions", "getAvatar", Err.DESCRIPTION, Err.number)
+End Function
+
+Function convertSVGtoPNG(currentFile As String, newFile As String)
+On Error GoTo Err_Handler
+
+Dim ppt As New PowerPoint.Application
+Dim pptPres As PowerPoint.Presentation
+Dim curSlide As PowerPoint.Slide
+Dim pptLayout As CustomLayout
+Dim shp As PowerPoint.Shape
+
+ppt.Visible = msoFalse
+
+ppt.Presentations.Add
+Set pptPres = ppt.ActivePresentation
+Set pptLayout = pptPres.Designs(1).SlideMaster.CustomLayouts(7)
+Set curSlide = pptPres.Slides.AddSlide(1, pptLayout)
+
+Set shp = curSlide.Shapes.AddPicture(currentFile, msoFalse, msoTrue, 0, 0, 200, 200)
+
+'shp.PictureFormat.TransparencyColor = rgb(255, 255, 255)
+shp.export newFile, ppShapeFormatPNG
+
+On Error Resume Next
+pptPres.CLOSE
+ppt.Quit
+Set ppt = Nothing
+Set pptPres = Nothing
+Set curSlide = Nothing
+
+Exit Function
+Err_Handler:
+    Call handleError("wdbGlobalFunctions", "getAvatar", Err.DESCRIPTION, Err.number)
+End Function
+
 Function getAPI(url, header1, header2)
 On Error GoTo Err_Handler
 

@@ -54,7 +54,7 @@ Set rs1 = db.OpenRecordset("SELECT * FROM tblPartSteps WHERE stepType = 'Upload'
 Dim rsApprovals As Recordset
 
 Do While Not rs1.EOF
-    Set rsApprovals = db.OpenRecordset("SELECT * FROM tblPartTrackingApprovals WHERE approvedOn is null AND tableRecordId = " & rs1!recordId)
+    Set rsApprovals = db.OpenRecordset("SELECT * FROM tblPartTrackingApprovals WHERE approvedOn is null AND tableRecordId = " & rs1!recordid)
     
     Do While Not rsApprovals.EOF
         rsApprovals.Delete
