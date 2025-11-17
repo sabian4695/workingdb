@@ -200,7 +200,7 @@ If rsPIcopy.RecordCount = 1 Then
     For Each fld In rsPIcopy.Fields
         If fld.name = "quoteInfoId" Or fld.name = "assemblyInfoId" Or fld.name = "outsourceInfoId" Or fld.name = "moldInfoId" Then GoTo nextFld
         If Nz(rsPIpaste(fld.name)) = "" Then
-            Call registerPartUpdates("tblPartInfo", rsPIpaste!recordid, fld.name, rsPIpaste(fld.name), rsPIcopy(fld.name), toPN, module, "copyPartInformation")
+            Call registerPartUpdates("tblPartInfo", rsPIpaste!recordId, fld.name, rsPIpaste(fld.name), rsPIcopy(fld.name), toPN, module, "copyPartInformation")
             rsPIpaste(fld.name) = rsPIcopy(fld.name)
         End If
 nextFld:
@@ -225,15 +225,15 @@ If rsPQIcopy.RecordCount > 0 Then
     
     For Each fld In rsPQIcopy.Fields
         If Nz(rsPQIpaste(fld.name)) = 0 Then
-            Call registerPartUpdates("tblPartQuoteInfo", rsPQIpaste!recordid, fld.name, rsPQIpaste(fld.name), rsPQIcopy(fld.name), toPN, module, "copyPartInformation")
+            Call registerPartUpdates("tblPartQuoteInfo", rsPQIpaste!recordId, fld.name, rsPQIpaste(fld.name), rsPQIcopy(fld.name), toPN, module, "copyPartInformation")
             rsPQIpaste(fld.name) = rsPQIcopy(fld.name)
         End If
     Next
     rsPQIpaste.Update
     
-    If rsPIpaste!quoteInfoId <> rsPQIpaste!recordid Then
+    If rsPIpaste!quoteInfoId <> rsPQIpaste!recordId Then
         rsPIpaste.Edit
-        rsPIpaste!quoteInfoId = rsPQIpaste!recordid
+        rsPIpaste!quoteInfoId = rsPQIpaste!recordId
         rsPIpaste.Update
     End If
 End If
@@ -253,15 +253,15 @@ If rsPMIcopy.RecordCount > 0 Then
     
     For Each fld In rsPMIpaste.Fields
         If Nz(rsPMIpaste(fld.name)) = 0 Then
-            Call registerPartUpdates("tblPartMoldingInfo", rsPMIpaste!recordid, fld.name, rsPMIpaste(fld.name), rsPMIcopy(fld.name), toPN, module, "copyPartInformation")
+            Call registerPartUpdates("tblPartMoldingInfo", rsPMIpaste!recordId, fld.name, rsPMIpaste(fld.name), rsPMIcopy(fld.name), toPN, module, "copyPartInformation")
             rsPMIpaste(fld.name) = rsPMIcopy(fld.name)
         End If
     Next
     rsPMIpaste.Update
     
-    If rsPIpaste!moldInfoId <> rsPMIpaste!recordid Then
+    If rsPIpaste!moldInfoId <> rsPMIpaste!recordId Then
         rsPIpaste.Edit
-        rsPIpaste!moldInfoId = rsPMIpaste!recordid
+        rsPIpaste!moldInfoId = rsPMIpaste!recordId
         rsPIpaste.Update
     End If
 End If
@@ -283,15 +283,15 @@ If rsAIcopy.RecordCount > 0 Then
     
     For Each fld In rsAIcopy.Fields
         If Nz(rsAIpaste(fld.name)) = "" Then
-            Call registerPartUpdates("tblPartAssemblyInfo", rsAIpaste!recordid, fld.name, rsAIpaste(fld.name), rsAIcopy(fld.name), toPN, module, "copyPartInformation")
+            Call registerPartUpdates("tblPartAssemblyInfo", rsAIpaste!recordId, fld.name, rsAIpaste(fld.name), rsAIcopy(fld.name), toPN, module, "copyPartInformation")
             rsAIpaste(fld.name) = rsAIcopy(fld.name)
         End If
     Next
     
     rsAIpaste.Update
-    If rsPIpaste!assemblyInfoId <> rsAIpaste!recordid Then
+    If rsPIpaste!assemblyInfoId <> rsAIpaste!recordId Then
         rsPIpaste.Edit
-        rsPIpaste!assemblyInfoId = rsAIpaste!recordid
+        rsPIpaste!assemblyInfoId = rsAIpaste!recordId
         rsPIpaste.Update
     End If
 End If
@@ -310,7 +310,7 @@ If rsCOcopy.RecordCount > 0 Then
         rsCOpaste!assemblyNumber = toPN
         For Each fld In rsCOcopy.Fields
             If Nz(rsCOpaste(fld.name)) = "" Then
-                Call registerPartUpdates("tblPartComponents", rsAIpaste!recordid, fld.name, rsCOpaste(fld.name), rsCOcopy(fld.name), toPN, module, "copyPartInformation")
+                Call registerPartUpdates("tblPartComponents", rsAIpaste!recordId, fld.name, rsCOpaste(fld.name), rsCOcopy(fld.name), toPN, module, "copyPartInformation")
                 rsCOpaste(fld.name) = rsCOcopy(fld.name)
             End If
         Next
@@ -334,15 +334,15 @@ If rsOSIcopy.RecordCount > 0 Then
     End If
     For Each fld In rsOSIcopy.Fields
         If Nz(rsOSIpaste(fld.name), "") = "" Then
-            Call registerPartUpdates("tblPartOutsourceInfo", rsOSIpaste!recordid, fld.name, rsOSIpaste(fld.name), rsOSIcopy(fld.name), toPN, module, "copyPartInformation")
+            Call registerPartUpdates("tblPartOutsourceInfo", rsOSIpaste!recordId, fld.name, rsOSIpaste(fld.name), rsOSIcopy(fld.name), toPN, module, "copyPartInformation")
             rsOSIpaste(fld.name) = rsOSIcopy(fld.name)
         End If
     Next
     rsOSIpaste.Update
     
-    If rsPIpaste!outsourceInfoId <> rsOSIpaste!recordid Then
+    If rsPIpaste!outsourceInfoId <> rsOSIpaste!recordId Then
         rsPIpaste.Edit
-        rsPIpaste!outsourceInfoId = rsOSIpaste!recordid
+        rsPIpaste!outsourceInfoId = rsOSIpaste!recordId
         rsPIpaste.Update
     End If
 End If
@@ -351,17 +351,17 @@ skipOutsource:
 
 '---tblPartPackingInfo---
 Dim rsPackIcopy As Recordset, rsPackIpaste As Recordset, rsPackIcompCopy As Recordset, rsPackIcompPaste As Recordset
-Set rsPackIcopy = db.OpenRecordset("SELECT * FROM tblPartPackagingInfo WHERE partInfoId = " & rsPIcopy!recordid, dbOpenSnapshot)
+Set rsPackIcopy = db.OpenRecordset("SELECT * FROM tblPartPackagingInfo WHERE partInfoId = " & rsPIcopy!recordId, dbOpenSnapshot)
 
 If rsPackIcopy.RecordCount > 0 Then
-    Set rsPackIpaste = db.OpenRecordset("SELECT * from tblPartPackagingInfo WHERE partInfoId = " & rsPIpaste!recordid)
+    Set rsPackIpaste = db.OpenRecordset("SELECT * from tblPartPackagingInfo WHERE partInfoId = " & rsPIpaste!recordId)
     If rsPackIpaste.RecordCount > 0 Then GoTo skipPackaging
     Do While Not rsPackIcopy.EOF
         rsPackIpaste.addNew
-        rsPackIpaste!partInfoId = rsPIpaste!recordid
+        rsPackIpaste!partInfoId = rsPIpaste!recordId
         For Each fld In rsPackIcopy.Fields
             If Nz(rsPackIpaste(fld.name)) = "" Then
-                Call registerPartUpdates("tblPartPackagingInfo", rsPackIpaste!recordid, fld.name, rsPackIpaste(fld.name), rsPackIcopy(fld.name), toPN, module, "copyPartInformation")
+                Call registerPartUpdates("tblPartPackagingInfo", rsPackIpaste!recordId, fld.name, rsPackIpaste(fld.name), rsPackIcopy(fld.name), toPN, module, "copyPartInformation")
                 rsPackIpaste(fld.name) = rsPackIcopy(fld.name)
             End If
         Next
@@ -369,16 +369,16 @@ If rsPackIcopy.RecordCount > 0 Then
         rsPackIpaste.MoveLast
         
         '---tblPartPackagingComponents---
-        Set rsPackIcompCopy = db.OpenRecordset("SELECT * from tblPartPackagingComponents WHERE packagingInfoId = " & Nz(rsPackIcopy!recordid), dbOpenSnapshot)
-        Set rsPackIcompPaste = db.OpenRecordset("SELECT * from tblPartPackagingComponents WHERE packagingInfoId = " & Nz(rsPackIpaste!recordid))
+        Set rsPackIcompCopy = db.OpenRecordset("SELECT * from tblPartPackagingComponents WHERE packagingInfoId = " & Nz(rsPackIcopy!recordId), dbOpenSnapshot)
+        Set rsPackIcompPaste = db.OpenRecordset("SELECT * from tblPartPackagingComponents WHERE packagingInfoId = " & Nz(rsPackIpaste!recordId))
         
         Do While Not rsPackIcompCopy.EOF
             rsPackIcompPaste.addNew
-            rsPackIcompPaste!packagingInfoId = rsPackIpaste!recordid
+            rsPackIcompPaste!packagingInfoId = rsPackIpaste!recordId
             
             For Each fld In rsPackIcompCopy.Fields
                 If Nz(rsPackIcompPaste(fld.name)) = "" Then
-                    Call registerPartUpdates("tblPartPackagingInfo", rsPackIcompPaste!recordid, fld.name, rsPackIcompPaste(fld.name), rsPackIcompCopy(fld.name), toPN, module, "copyPartInformation")
+                    Call registerPartUpdates("tblPartPackagingInfo", rsPackIcompPaste!recordId, fld.name, rsPackIcompPaste(fld.name), rsPackIcompCopy(fld.name), toPN, module, "copyPartInformation")
                     rsPackIcompPaste(fld.name) = rsPackIcompCopy(fld.name)
                 End If
             Next
@@ -454,7 +454,7 @@ Set rsGate = db.OpenRecordset("SELECT * FROM tblPartGates WHERE recordId = " & r
 Dim gateId As Long 'show steps for current open gate
 gateId = Nz(DMin("[partGateId]", "tblPartSteps", "partProjectId = " & rsStep!partProjectId & " AND [status] <> 'Closed'"), DMin("[partGateId]", "tblPartSteps", "partProjectId = " & rsStep!partProjectId))
 
-If gateId <> rsGate!recordid Then
+If gateId <> rsGate!recordId Then
     errorText = "This step is not in the current gate, you can't close it yet"
     GoTo errorOut
 End If
@@ -476,20 +476,20 @@ GoTo exit_handler
 theCorrectFellow:
 
 If IsNull(rsStep!closeDate) = False Then errorText = "This is already closed - what's the point in closing again?"
-If getApprovalsComplete(rsStep!recordid, rsStep!partNumber) < getTotalApprovals(rsStep!recordid, rsStep!partNumber) Then errorText = "I spy with my little eye: open approval(s) on this step!"
+If getApprovalsComplete(rsStep!recordId, rsStep!partNumber) < getTotalApprovals(rsStep!recordId, rsStep!partNumber) Then errorText = "I spy with my little eye: open approval(s) on this step!"
 
 'IF DOCUMENT REQUIRED, CHECK FOR DOCUMENTS
 If Nz(rsStep!documentType, 0) <> 0 Then
     'First, check if any files are added. error out if not
     Dim countAttach As Long
-    countAttach = DCount("ID", "tblPartAttachmentsSP", "partStepId = " & rsStep!recordid)
+    countAttach = DCount("ID", "tblPartAttachmentsSP", "partStepId = " & rsStep!recordId)
     If countAttach = 0 Then
         errorText = "This step required a file to be added to close it"
         GoTo errorOut
     End If
     
     Dim rsAttach As Recordset, rsAttStd As Recordset, rsProjPNs As Recordset
-    Set rsAttach = db.OpenRecordset("SELECT * FROM tblPartAttachmentsSP WHERE partStepId = " & rsStep!recordid)
+    Set rsAttach = db.OpenRecordset("SELECT * FROM tblPartAttachmentsSP WHERE partStepId = " & rsStep!recordId)
     Set rsAttStd = db.OpenRecordset("SELECT uniqueFile FROM tblPartAttachmentStandards WHERE recordId = " & rsStep!documentType)
     Set rsProjPNs = db.OpenRecordset("SELECT * from tblPartProjectPartNumbers WHERE projectId = " & rsStep!partProjectId)
     
@@ -550,7 +550,7 @@ Select Case rsStepAction!stepAction
         toolNum = rsMoldInfo!toolNumber
         shipMethod = DLookup("shipMethod", "tblDropDownsSP", "recordid = " & rsMoldInfo!shipMethod)
         
-        Call toolShipAuthorizationEmail(toolNum, rsStep!recordid, shipMethod, rsStep!partNumber)
+        Call toolShipAuthorizationEmail(toolNum, rsStep!recordId, shipMethod, rsStep!partNumber)
     Case "PVtestPlanCreated"
         If DCount("recordId", "tblPartTesting", "partNumber = '" & rsStep!partNumber & "'") = 0 Then 'are there any tests added?
             errorText = "Tests need added to the testing tracker for this part!"
@@ -566,7 +566,7 @@ Select Case rsStepAction!stepAction
             GoTo errorOut
         End If
     Case "emailPartApprovalNotification"
-        Call emailPartApprovalNotification(rsStep!recordid, rsStep!partNumber)
+        Call emailPartApprovalNotification(rsStep!recordId, rsStep!partNumber)
     Case "closeStep"
         'these steps are closed based on Oracle values being present - this is checked on the firstTimeRun module
         'we can have it check here as well! just run the exact same module
@@ -590,19 +590,19 @@ Select Case rsStepAction!stepAction
             errorText = "Please enter a Capital Packet Number"
             GoTo errorOut
         End If
-        If emailApprovedCapitalPacket(rsStep!recordid, rsStep!partNumber, CapNum) = False Then
+        If emailApprovedCapitalPacket(rsStep!recordId, rsStep!partNumber, CapNum) = False Then
             errorText = "Couldn't send email, double-check the attachments"
             GoTo errorOut
         End If
     Case "emailKOaif"
         'email all KO AIF attachments to COST_BOM_MAILBOX
-        If emailAIF(rsStep!recordid, rsStep!partNumber, "Kickoff", rsStep!partProjectId) = False Then
+        If emailAIF(rsStep!recordId, rsStep!partNumber, "Kickoff", rsStep!partProjectId) = False Then
             errorText = "Couldn't send email"
             GoTo errorOut
         End If
     Case "emailTSFRaif"
         'email all TRANSFER AIF attachments to COST_BOM_MAILBOX
-        If emailAIF(rsStep!recordid, rsStep!partNumber, "Transfer", rsStep!partProjectId) = False Then
+        If emailAIF(rsStep!recordId, rsStep!partNumber, "Transfer", rsStep!partProjectId) = False Then
             errorText = "Couldn't send email"
             GoTo errorOut
         End If
@@ -615,8 +615,8 @@ stepActionOK:
 Dim currentDate
 currentDate = Now()
 
-Call registerPartUpdates("tblPartSteps", rsStep!recordid, "closeDate", "", currentDate, rsStep!partNumber, rsStep!stepType, rsStep!partProjectId)
-Call registerPartUpdates("tblPartSteps", rsStep!recordid, "status", rsStep!status, "Closed", rsStep!partNumber, rsStep!stepType, rsStep!partProjectId)
+Call registerPartUpdates("tblPartSteps", rsStep!recordId, "closeDate", "", currentDate, rsStep!partNumber, rsStep!stepType, rsStep!partProjectId)
+Call registerPartUpdates("tblPartSteps", rsStep!recordId, "status", rsStep!status, "Closed", rsStep!partNumber, rsStep!stepType, rsStep!partProjectId)
 
 '---Close Step---
 rsStep.Edit
@@ -804,7 +804,7 @@ autoUploadAIF = False
 If checkAIFfields(partNumber) Then
     Dim currentLoc As String
     currentLoc = exportAIF(partNumber)
-    Call registerPartUpdates("tblPartProject", Form_frmPartDashboard.recordid, "Report Created", "From: " & Environ("username"), "Exported AIF", partNumber, "AIF", Form_frmPartDashboard.recordid)
+    Call registerPartUpdates("tblPartProject", Form_frmPartDashboard.recordId, "Report Created", "From: " & Environ("username"), "Exported AIF", partNumber, "AIF", Form_frmPartDashboard.recordId)
     If MsgBox("Do you want to auto-attach this to your AIF step?", vbYesNo, "Lemme know") = vbYes Then
         'What type of AIF is this? KO or Transfer?
         Dim dataStatus, docType As Long
@@ -823,7 +823,7 @@ If checkAIFfields(partNumber) Then
         Dim db As DAO.Database
         Set db = CurrentDb
         Dim rsStep As Recordset, rsDocType As Recordset, rsPartAtt As DAO.Recordset, rsPartAttChild As DAO.Recordset2
-        Set rsStep = db.OpenRecordset("SELECT * from tblPartSteps WHERE partProjectId = " & Form_frmPartDashboard.recordid & " AND documentType=" & docType & " AND status <> 'Closed' Order By dueDate Asc")
+        Set rsStep = db.OpenRecordset("SELECT * from tblPartSteps WHERE partProjectId = " & Form_frmPartDashboard.recordId & " AND documentType=" & docType & " AND status <> 'Closed' Order By dueDate Asc")
         Set rsDocType = db.OpenRecordset("SELECT * FROM tblPartAttachmentStandards WHERE recordId = " & docType)
         
         If rsStep.RecordCount = 0 Then
@@ -852,8 +852,8 @@ If checkAIFfields(partNumber) Then
         
         rsPartAtt!partNumber = partNumber
         rsPartAtt!testId = Null
-        rsPartAtt!partStepId = rsStep!recordid
-        rsPartAtt!partProjectId = Form_frmPartDashboard.recordid
+        rsPartAtt!partStepId = rsStep!recordId
+        rsPartAtt!partProjectId = Form_frmPartDashboard.recordId
         rsPartAtt!documentType = docType
         rsPartAtt!uploadedBy = Environ("username")
         rsPartAtt!uploadedDate = Now()
@@ -875,7 +875,7 @@ If checkAIFfields(partNumber) Then
         rsDocType.CLOSE: Set rsDocType = Nothing
         Set db = Nothing
         
-        Call registerPartUpdates("tblPartAttachmentsSP", Null, "Step Attachment", attachName, "Uploaded", partNumber, rsStep!stepType, Form_frmPartDashboard.recordid)
+        Call registerPartUpdates("tblPartAttachmentsSP", Null, "Step Attachment", attachName, "Uploaded", partNumber, rsStep!stepType, Form_frmPartDashboard.recordId)
     End If
 End If
 
@@ -911,7 +911,7 @@ If rsPI.RecordCount > 1 Then
     GoTo sendMsg 'this shouldn't be necessary anymore, the table is restricted to unique values only
 End If
 
-Set rsPack = db.OpenRecordset("SELECT * from tblPartPackagingInfo WHERE partInfoId = " & Nz(rsPI!recordid, 0) & " AND (packType = 1 OR packType = 99)")
+Set rsPack = db.OpenRecordset("SELECT * from tblPartPackagingInfo WHERE partInfoId = " & Nz(rsPI!recordId, 0) & " AND (packType = 1 OR packType = 99)")
 Set rsU = db.OpenRecordset("SELECT * from tblUnits WHERE recordId = " & Nz(rsPI!unitId, 0))
 
 If Nz(rsPI!dataStatus) = "" Then errorArray.Add "Data Status is blank" & vbTab & "(Part Info Page)"
@@ -1067,7 +1067,7 @@ Else
             If Nz(rsPack!boxesPerSkid) = "" & rsPI!dataStatus = 2 Then errorArray.Add "Boxes Per Skid (req. for CUU)" 'if CUU org, then need to check this for transfer for MEX FREIGHT cost calc
         End If
 
-        Set rsPackC = db.OpenRecordset("SELECT * from tblPartPackagingComponents WHERE packagingInfoId = " & rsPack!recordid)
+        Set rsPackC = db.OpenRecordset("SELECT * from tblPartPackagingComponents WHERE packagingInfoId = " & rsPack!recordId)
         If rsPackC.RecordCount = 0 And rsPI!dataStatus = 2 Then errorArray.Add "Packaging Components missing (req. for transfer)" 'required for transfer
         
         Do While Not rsPackC.EOF 'always check available records to avoid null errors
@@ -1142,13 +1142,13 @@ Dim mexFr As String, cartQty, mat0 As Double, mat1 As Double, resourceCSV() As S
 
 '---Grab General Data---
 Set rsPI = db.OpenRecordset("SELECT * from tblPartInfo WHERE partNumber = '" & partNum & "'")
-Set rsPack = db.OpenRecordset("SELECT * from tblPartPackagingInfo WHERE partInfoId = " & rsPI!recordid)
+Set rsPack = db.OpenRecordset("SELECT * from tblPartPackagingInfo WHERE partInfoId = " & rsPI!recordId)
 Set rsU = db.OpenRecordset("SELECT * from tblUnits WHERE recordId = " & rsPI!unitId)
 Set rsDevU = db.OpenRecordset("SELECT * from tblUnits WHERE recordId = " & Nz(rsPI!developingUnit, 0))
 
 mexFr = "0"
 If rsU!Org = "CUU" And rsPI!dataStatus = 2 Then
-    cartQty = Nz(DLookup("componentQuantity", "tblPartPackagingComponents", "packagingInfoId = " & rsPack!recordid & " AND componentType = 1"))
+    cartQty = Nz(DLookup("componentQuantity", "tblPartPackagingComponents", "packagingInfoId = " & rsPack!recordId & " AND componentType = 1"))
     mexFr = (cartQty * rsPack!boxesPerSkid)
     If mexFr <> 0 Then mexFr = 83.7 / (cartQty * rsPack!boxesPerSkid)
 End If
@@ -1366,7 +1366,7 @@ If rsPack.RecordCount > 0 Then
 End If
 Do While Not rsPack.EOF
     packType = DLookup("packagingType", "tblDropDownsSP", "recordid = " & rsPack!packType)
-    Set rsPackC = db.OpenRecordset("SELECT * from tblPartPackagingComponents WHERE packagingInfoId = " & rsPack!recordid)
+    Set rsPackC = db.OpenRecordset("SELECT * from tblPartPackagingComponents WHERE packagingInfoId = " & rsPack!recordId)
     If rsPackC.RecordCount > 0 Then aifInsert "Packaging Type", "Component Type", "Component Number", "Component Qty", , , True
     Do While Not rsPackC.EOF
         aifInsert packType, Nz(DLookup("packComponentType", "tblDropDownsSP", "recordid = " & rsPackC!componentType)), Nz(rsPackC!componentPN), Nz(rsPackC!componentQuantity)
@@ -1597,7 +1597,7 @@ db.Execute "delete * from tblPartComponents where assemblyNumber = '" & partNum 
 Dim rsPartInfo As Recordset, rsPackaging As Recordset
 Set rsPartInfo = db.OpenRecordset("SELECT * from tblPartInfo WHERE partNumber = '" & partNum & "'")
 
-partInfoId = rsPartInfo!recordid
+partInfoId = rsPartInfo!recordId
 db.Execute "delete * from tblPartQuoteInfo where recordId = " & rsPartInfo!quoteInfoId
 db.Execute "delete * from tblPartAssemblyInfo where recordId = " & rsPartInfo!assemblyInfoId
 db.Execute "delete * from tblPartOutsourceInfo where recordId = " & rsPartInfo!outsourceInfoId
@@ -1608,7 +1608,7 @@ Set rsPartInfo = Nothing
 '-----Part Packaging and Components
 Set rsPackaging = db.OpenRecordset("SELECT * from tblPartPackaging WHERE partInfoId = " & partInfoId)
 Do While Not rsPackaging.EOF
-    db.Execute "Delete * from tblPartPackagingComponents WHERE packagingInfoId = " & rsPackaging!recordid
+    db.Execute "Delete * from tblPartPackagingComponents WHERE packagingInfoId = " & rsPackaging!recordId
     rsPackaging.MoveNext
 Loop
 rsPackaging.Delete
@@ -1619,7 +1619,7 @@ Set rsPackaging = Nothing
 Dim rsMeetings As Recordset
 Set rsMeetings = db.OpenRecordset("SELECT * from tblPartMeetings where partNum = '" & partNum & "'")
 Do While Not rsMeetings.EOF
-    db.Execute "Delete * from tblPartMeetingAttendees WHERE meetingId = " & rsMeetings!recordid
+    db.Execute "Delete * from tblPartMeetingAttendees WHERE meetingId = " & rsMeetings!recordId
     rsMeetings.MoveNext
 Loop
 rsMeetings.CLOSE
@@ -1746,13 +1746,13 @@ Do While Not rsGateTemplate.EOF
     TempVars.Add "gateId", db.OpenRecordset("SELECT @@identity")(0).Value
     
     '--ADD STEPS FOR THIS GATE
-    Set rsStepTemplate = db.OpenRecordset("SELECT * from tblPartStepTemplate WHERE [gateTemplateId] = " & rsGateTemplate![recordid] & " ORDER BY indexOrder Asc", dbOpenSnapshot)
+    Set rsStepTemplate = db.OpenRecordset("SELECT * from tblPartStepTemplate WHERE [gateTemplateId] = " & rsGateTemplate![recordId] & " ORDER BY indexOrder Asc", dbOpenSnapshot)
     Do While Not rsStepTemplate.EOF
         If (IsNull(rsStepTemplate![Title]) Or rsStepTemplate![Title] = "") Then GoTo nextStep
         
         If rsStepTemplate!pillarStep Then
             'rsSess.MoveFirst
-            rsSess.FindFirst "pillarStepId = " & rsStepTemplate!recordid
+            rsSess.FindFirst "pillarStepId = " & rsStepTemplate!recordId
             If rsSess.noMatch Then GoTo nextStep 'this means user deleted this pillar from the template
             
             strInsert = "INSERT INTO tblPartSteps" & _
@@ -1774,7 +1774,7 @@ Do While Not rsGateTemplate.EOF
         
         '--ADD APPROVALS FOR THIS STEP
         TempVars.Add "stepId", db.OpenRecordset("SELECT @@identity")(0).Value
-        Set rsApprovalsTemplate = db.OpenRecordset("SELECT * FROM tblPartStepTemplateApprovals WHERE [stepTemplateId] = " & rsStepTemplate![recordid], dbOpenSnapshot)
+        Set rsApprovalsTemplate = db.OpenRecordset("SELECT * FROM tblPartStepTemplateApprovals WHERE [stepTemplateId] = " & rsStepTemplate![recordId], dbOpenSnapshot)
         
         Do While Not rsApprovalsTemplate.EOF
             strInsert1 = "INSERT INTO tblPartTrackingApprovals(partNumber,requestedBy,requestedDate,dept,reqLevel,tableName,tableRecordId) VALUES ('" & _
@@ -1803,7 +1803,7 @@ If projTempId = 8 Then
     
     Do While Not rsAssyTemplate.EOF
         assyRunningDate = addWorkdays(assyRunningDate, Nz(rsAssyTemplate![duration], 1))
-        db.Execute "INSERT INTO tblPartAssemblyGates(projectId,templateGateId,partNumber,gateStatus,plannedDate) VALUES (" & projId & "," & rsAssyTemplate!recordid & ",'" & pNum & "',1,'" & assyRunningDate & "')", dbFailOnError
+        db.Execute "INSERT INTO tblPartAssemblyGates(projectId,templateGateId,partNumber,gateStatus,plannedDate) VALUES (" & projId & "," & rsAssyTemplate!recordId & ",'" & pNum & "',1,'" & assyRunningDate & "')", dbFailOnError
         rsAssyTemplate.MoveNext
     Loop
     
@@ -2174,14 +2174,14 @@ Do While Not rsSteps.EOF
 performAction:
     Select Case rsStepActions!stepAction 'everything matched - what should be done with this step??
         Case "deleteStep" 'delete the step!
-            Call registerPartUpdates("tblPartSteps", rsSteps!recordid, "Deleted - stepAction", rsSteps!stepType, "", partNum, rsSteps!stepType, "stepAction")
+            Call registerPartUpdates("tblPartSteps", rsSteps!recordId, "Deleted - stepAction", rsSteps!stepType, "", partNum, rsSteps!stepType, "stepAction")
             rsSteps.Delete
             If CurrentProject.AllForms("frmPartDashboard").IsLoaded Then Form_frmPartDashboard.partDash_refresh_Click
         Case "closeStep" 'close the step!
             Dim currentDate
             currentDate = Now()
-            Call registerPartUpdates("tblPartSteps", rsSteps!recordid, "closeDate", rsSteps!closeDate, currentDate, rsSteps!partNumber, rsSteps!stepType, rsSteps!partProjectId, "stepAction")
-            Call registerPartUpdates("tblPartSteps", rsSteps!recordid, "status", rsSteps!status, "Closed", rsSteps!partNumber, rsSteps!stepType, rsSteps!partProjectId, "stepAction")
+            Call registerPartUpdates("tblPartSteps", rsSteps!recordId, "closeDate", rsSteps!closeDate, currentDate, rsSteps!partNumber, rsSteps!stepType, rsSteps!partProjectId, "stepAction")
+            Call registerPartUpdates("tblPartSteps", rsSteps!recordId, "status", rsSteps!status, "Closed", rsSteps!partNumber, rsSteps!stepType, rsSteps!partProjectId, "stepAction")
             rsSteps.Edit
             rsSteps!closeDate = currentDate
             rsSteps!status = "Closed"
