@@ -117,7 +117,7 @@ Err_Handler:
     Call handleError("wdbAdminFunctions", "readyForPublish", Err.DESCRIPTION, Err.number)
 End Function
 
-Function logClick(modName As String, formName As String, Optional dataTag0 = "")
+Function logClick(modName As String, formname As String, Optional dataTag0 = "")
 On Error Resume Next
 
 If DLookup("paramVal", "tblDBinfoBE", "parameter = '" & "recordAnalytics'") = False Then Exit Function
@@ -130,7 +130,7 @@ Set rs1 = db.OpenRecordset("tblAnalytics")
 With rs1
     .addNew
         !module = modName
-        !Form = formName
+        !Form = formname
         !userName = Environ("username")
         !dateUsed = Now()
         !dataTag0 = StrQuoteReplace(dataTag0)

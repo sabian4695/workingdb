@@ -726,7 +726,7 @@ Set db = Nothing
 Err_Handler:
 End Function
 
-Function grabPartTeam(partNum As String, Optional withEmail As Boolean = False, Optional includeMe As Boolean = False, Optional searchForPrimaryProj As Boolean = False) As String
+Function grabPartTeam(partNum As String, Optional withEmail As Boolean = False, Optional includeMe As Boolean = False, Optional searchForPrimaryProj As Boolean = False, Optional onlyEngineers As Boolean = False) As String
 On Error GoTo Err_Handler
 
 grabPartTeam = ""
@@ -745,6 +745,8 @@ Dim rs2 As Recordset
 Set rs2 = db.OpenRecordset("SELECT * FROM tblPartTeam WHERE partNumber = '" & partNum & "'", dbOpenSnapshot)
 
 Do While Not rs2.EOF
+    If (onlyEngineers) Then If userData("level", rs2!person) <> "Engineer" Then GoTo skip
+
     If includeMe = False Then
         If rs2!person = Environ("username") Then GoTo skip
     End If
@@ -2429,7 +2431,7 @@ End If
 Dim SendItems As New clsOutlookCreateItem
 Set SendItems = New clsOutlookCreateItem
 
-SendItems.CreateMailItem sendTo:=grabPartTeam(partNumber, True), _
+SendItems.CreateMailItem sendTo:=grabPartTeam(partNumber, True, onlyEngineers:=True), _
                              subject:=subjectLine, _
                              htmlBody:=toolEmail
     Set SendItems = Nothing
