@@ -801,6 +801,39 @@ Err_Handler:
     Call handleError("wdbGlobalFunctions", "loadECOtype", Err.DESCRIPTION, Err.number)
 End Function
 
+Function getAvatarAPI(apiOption As String)
+On Error GoTo Err_Handler
+
+Dim FilePath As String, pngPath As String
+Dim fileNumber As Integer
+
+Dim svgContents As String
+Dim reader As New XMLHTTP60
+    reader.open "GET", "https://api.dicebear.com/9.x/" & apiOption & "/svg?seed=" & Environ("username") & "&radius=50", False
+    reader.send
+        Do Until reader.ReadyState = 4
+            DoEvents
+        Loop
+If reader.status = 200 Then
+    svgContents = reader.responseText
+Else
+    MsgBox reader.status
+End If
+
+FilePath = "\\data\mdbdata\WorkingDB\Pictures\Avatars\svg\" & Environ("username") & ".svg"
+pngPath = "\\data\mdbdata\WorkingDB\Pictures\Avatars\" & Environ("username") & ".png"
+fileNumber = FreeFile
+Open FilePath For Output As #fileNumber
+Print #fileNumber, Split(svgContents, ">")(0) & ">" & Split(svgContents, "</metadata>")(1)
+Close #fileNumber
+
+Call convertSVGtoPNG(FilePath, pngPath)
+
+Exit Function
+Err_Handler:
+    Call handleError("wdbGlobalFunctions", "getAvatar", Err.DESCRIPTION, Err.number)
+End Function
+
 Function getAvatar(userName As String, initials As String)
 On Error GoTo Err_Handler
 
@@ -840,6 +873,8 @@ Print #fileNumber, "<svg xmlns=""http://www.w3.org/2000/svg"" viewBox=""0 0 100 
 
 Close #fileNumber
 
+Call convertSVGtoPNG(FilePath, "\\data\mdbdata\WorkingDB\Pictures\Avatars\" & userName & ".png")
+
 Exit Function
 Err_Handler:
     Call handleError("wdbGlobalFunctions", "getAvatar", Err.DESCRIPTION, Err.number)
@@ -853,8 +888,6 @@ Dim pptPres As PowerPoint.Presentation
 Dim curSlide As PowerPoint.Slide
 Dim pptLayout As CustomLayout
 Dim shp As PowerPoint.Shape
-
-ppt.Visible = msoFalse
 
 ppt.Presentations.Add
 Set pptPres = ppt.ActivePresentation
