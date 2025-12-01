@@ -4,6 +4,116 @@ Option Explicit
 Dim XL As Object, WB As Excel.Workbook, WKS As Excel.Worksheet
 Dim inV As Long
 
+Public Function addMissingProjectSteps(partNumber As String) As Boolean
+'On Error GoTo Err_Handler
+
+Dim db As Database
+Dim rsSteps As Recordset, rsProject As Recordset, rsGates As Recordset
+Dim rsGateTemp As Recordset, rsStepTemp As Recordset, rsApprovalsTemplate As Recordset
+Dim dueDate
+Dim indexOrder As Long
+Dim indexTest As Long, indexMax As Long
+
+Set db = CurrentDb()
+
+'look at each step
+'if gate is closed, skip
+'check if step is closed
+Set rsProject = db.OpenRecordset("SELECT * FROM tblPartProject WHERE partNumber = '" & partNumber & "'")
+Set rsGates = db.OpenRecordset("SELECT * FROM tblPartGates WHERE projectId = " & rsProject!recordId & " AND actualDate is null")
+
+Do While Not rsGates.EOF
+    Set rsGateTemp = db.OpenRecordset("SELECT * FROM tblPartGateTemplate WHERE projectTemplateId = " & rsProject!projectTemplateId & " AND gateTitle = '" & rsGates!gateTitle & "'")
+    Set rsStepTemp = db.OpenRecordset("SELECT * FROM tblPartStepTemplate WHERE gateTemplateId = " & rsGateTemp!recordId)
+    
+    Do While Not rsStepTemp.EOF
+        Set rsSteps = db.OpenRecordset("SELECT * FROM tblPartSteps WHERE partGateId = " & rsGates!recordId & " AND stepType = '" & rsStepTemp!Title & "'")
+        If rsSteps.RecordCount = 0 Then
+        
+        'Debug.Print rsStepTemp!Title
+        
+            Select Case rsStepTemp!Title
+                Case "Verify Tool Arrival", "Schedule Validation Trial", "Receive Appearance Approval", "Upload Packaging Test", "Run LVPT / HVPT", "Upload Approved Production Checklist", "Off Process Trial"
+
+                    'get indexorder and get duedate
+                    'set index order to current template value, then correct other indices
+
+                    indexMax = DMax("indexOrder", "tblPartSteps", "partGateId = " & rsGates!recordId)
+
+                    If rsStepTemp!indexOrder > indexMax Then
+                        indexOrder = indexMax + 1
+                    Else
+                        indexOrder = rsStepTemp!indexOrder
+                        db.Execute "UPDATE tblPartSteps SET indexOrder = indexOrder + 1 WHERE partGateId = " & rsGates!recordId & " AND indexOrder >= " & indexOrder
+                    End If
+
+                    If rsStepTemp!pillarStep Then
+                        'find last pillar or gate date and add the duration of this step to get the due date
+                        dueDate = DMax("dueDate", "tblPartSteps", "partGateId = " & rsGates!recordId & " AND indexOrder < " & indexOrder)
+                        If IsNull(dueDate) Then
+                            dueDate = DMax("plannedDate", "tblPartGates", "projectId = " & rsGates!projectId & " AND recordId < " & rsGates!recordId)
+                            dueDate = addWorkdays(CDate(dueDate), rsStepTemp!duration)
+                        End If
+                    End If
+
+                    rsSteps.addNew
+
+                    rsSteps!partNumber = partNumber
+                    rsSteps!partProjectId = rsProject!recordId
+                    rsSteps!partGateId = rsGates!recordId
+                    rsSteps!stepType = StrQuoteReplace(rsStepTemp!Title)
+                    rsSteps!openedBy = "automation"
+                    rsSteps!status = "Not Started"
+                    rsSteps!openDate = Now()
+                    rsSteps!lastUpdatedDate = Now()
+                    rsSteps!lastUpdatedBy = Environ("username")
+                    rsSteps!stepActionId = rsStepTemp!stepActionId
+                    rsSteps!documentType = rsStepTemp!documentType
+                    rsSteps!responsible = rsStepTemp!responsible
+                    rsSteps!indexOrder = indexOrder
+                    rsSteps!duration = rsStepTemp!duration
+                    rsSteps!dueDate = dueDate
+
+                    rsSteps.Update
+
+                    '--ADD APPROVALS FOR THIS STEP
+                    TempVars.Add "stepId", db.OpenRecordset("SELECT @@identity")(0).Value
+                    Set rsApprovalsTemplate = db.OpenRecordset("SELECT * FROM tblPartStepTemplateApprovals WHERE [stepTemplateId] = " & rsStepTemp![recordId], dbOpenSnapshot)
+
+                    Do While Not rsApprovalsTemplate.EOF
+                        db.Execute "INSERT INTO tblPartTrackingApprovals(partNumber,requestedBy,requestedDate,dept,reqLevel,tableName,tableRecordId) VALUES ('" & _
+                            partNumber & "','" & Environ("username") & "','" & Now() & "','" & _
+                            Nz(rsApprovalsTemplate![dept], "") & "','" & Nz(rsApprovalsTemplate![reqLevel], "") & "','tblPartSteps'," & TempVars!stepId & ");"
+                        rsApprovalsTemplate.MoveNext
+                    Loop
+
+                    Debug.Print rsStepTemp!Title & " ADDED"
+            End Select
+            
+        End If
+        
+skipStep:
+        rsStepTemp.MoveNext
+    Loop
+    
+    rsStepTemp.CLOSE
+    Set rsStepTemp = Nothing
+    rsGateTemp.CLOSE
+    Set rsGateTemp = Nothing
+    rsGates.MoveNext
+Loop
+
+
+On Error Resume Next
+rsSteps.CLOSE
+Set rsSteps = Nothing
+Set db = Nothing
+
+Exit Function
+Err_Handler:
+    Call handleError("wdbProjectE", "addMissingProjectSteps", Err.DESCRIPTION, Err.number)
+End Function
+
 Public Function grabGatePlannedDate(partNumber As String, gateNum As Long) As Date
 On Error GoTo Err_Handler
 
@@ -1571,72 +1681,6 @@ Set rs1 = Nothing
 Set db = Nothing
 
 Err_Handler:
-End Function
-
-Public Function completelyDeletePartProjectAndInfo()
-On Error GoTo Err_Handler
-'-----THIS SUB IS NOT YET USABLE
-
-Dim db As Database, partInfoId, partNum
-
-partNum = "26587"
-
-Set db = CurrentDb()
-
-'-----Part Project Data
-db.Execute "delete * from tblPartProject where partNumber = '" & partNum & "'"
-db.Execute "delete * from tblPartGates where partNumber = '" & partNum & "'"
-db.Execute "delete * from tblPartSteps where partNumber = '" & partNum & "'"
-db.Execute "delete * from tblPartTrackingApprovals where partNumber = '" & partNum & "'"
-db.Execute "UPDATE tblPartAttachmentsSP SET fileStatus='deleting' where partNumber = '" & partNum & "'"
-
-'-----Part Number based data
-db.Execute "delete * from tblPartTesting where partNumber = '" & partNum & "'"
-db.Execute "delete * from tblPartTeam where partNumber = '" & partNum & "'"
-db.Execute "delete * from tblPartComponents where assemblyNumber = '" & partNum & "'"
-
-'-----Part Info based data
-Dim rsPartInfo As Recordset, rsPackaging As Recordset
-Set rsPartInfo = db.OpenRecordset("SELECT * from tblPartInfo WHERE partNumber = '" & partNum & "'")
-
-partInfoId = rsPartInfo!recordId
-db.Execute "delete * from tblPartQuoteInfo where recordId = " & rsPartInfo!quoteInfoId
-db.Execute "delete * from tblPartAssemblyInfo where recordId = " & rsPartInfo!assemblyInfoId
-db.Execute "delete * from tblPartOutsourceInfo where recordId = " & rsPartInfo!outsourceInfoId
-
-rsPartInfo.CLOSE
-Set rsPartInfo = Nothing
-
-'-----Part Packaging and Components
-Set rsPackaging = db.OpenRecordset("SELECT * from tblPartPackaging WHERE partInfoId = " & partInfoId)
-Do While Not rsPackaging.EOF
-    db.Execute "Delete * from tblPartPackagingComponents WHERE packagingInfoId = " & rsPackaging!recordId
-    rsPackaging.MoveNext
-Loop
-rsPackaging.Delete
-rsPackaging.CLOSE
-Set rsPackaging = Nothing
-
-'-----Part Meetings and Attendees
-Dim rsMeetings As Recordset
-Set rsMeetings = db.OpenRecordset("SELECT * from tblPartMeetings where partNum = '" & partNum & "'")
-Do While Not rsMeetings.EOF
-    db.Execute "Delete * from tblPartMeetingAttendees WHERE meetingId = " & rsMeetings!recordId
-    rsMeetings.MoveNext
-Loop
-rsMeetings.CLOSE
-Set rsMeetings = Nothing
-
-'-----Part Info
-db.Execute "delete * from tblPartInfo where partNumber = '" & partNum & "'"
-Set db = Nothing
-
-MsgBox "All done.", vbInformation, "It is finished."
-
-'Call registerWdbUpdates("tblPartProjects", partNum, "Part Project", partNum, "Deleted", "frmPartTrackingSettings")
-Exit Function
-Err_Handler:
-    Call handleError("wdbProjectE", "completelyDeletePartProjectAndInfo", Err.DESCRIPTION, Err.number)
 End Function
 
 Public Function getApprovalsComplete(stepId As Long, partNumber As String) As Long

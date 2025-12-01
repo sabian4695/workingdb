@@ -266,7 +266,7 @@ Else
     hundZeros = Left(partNum, 3) & "00\"
     mainfolderpath = mainFolder("modelV5search")
     prtpath = mainfolderpath & thousZeros & hundZeros
-tryagain:
+tryAgain:
     FolName = Dir(prtpath & partNum & "*", vbDirectory)
     strFilePath = prtpath & FolName
     
@@ -274,7 +274,7 @@ tryagain:
         If Len(FolName) = 0 Then
             If partNum Like "*_" Then
                 partNum = Left(partNum, 5)
-                GoTo tryagain
+                GoTo tryAgain
             End If
             If openFold Then DoCmd.OpenForm "frmCreateDesignFolders"
         Else
