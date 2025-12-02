@@ -51,7 +51,7 @@ readyForPublish = True
 
 Exit Function
 Err_Handler:
-    Call handleError("wdbAdminFunctions", "readyForPublish", Err.DESCRIPTION, Err.number)
+    Call handleError("wdbAdminFunctions", "readyForPublish", Err.DESCRIPTION, Err.Number)
 End Function
 
 Function logClick(modName As String, formName As String, Optional dataTag0 = "")
@@ -195,7 +195,7 @@ Set db = Nothing
 
 Exit Function
 Err_Handler:
-    Call handleError("wdbAdminFunctions", "grabVersion", Err.DESCRIPTION, Err.number)
+    Call handleError("wdbAdminFunctions", "grabVersion", Err.DESCRIPTION, Err.Number)
 End Function
 
 Sub SizeAccess(ByVal dx As Long, ByVal dy As Long)
@@ -228,5 +228,5 @@ End If
 
 Exit Sub
 Err_Handler:
-    Call handleError("wdbAdminFunctions", "SizeAccess", Err.DESCRIPTION, Err.number)
+    Call handleError("wdbAdminFunctions", "SizeAccess", Err.DESCRIPTION, Err.Number)
 End Sub

@@ -22,7 +22,7 @@ dataValue = CDbl(dataValue)
 Dim db As Database
 Set db = CurrentDb()
 Dim rs1 As Recordset
-Set rs1 = db.OpenRecordset("SELECT " & columnName & " FROM tblDropDownsSP WHERE ID = " & dataValue)
+Set rs1 = db.OpenRecordset("SELECT " & columnName & " FROM tblDropDownsSP WHERE recordID = " & dataValue)
 
 grabHistoryRef = rs1(columnName)
 
@@ -96,7 +96,7 @@ MsgBox "All done.", vbInformation, "It is finished."
 'Call registerWdbUpdates("tblPartProjects", partNum, "Part Project", partNum, "Deleted", "frmPartTrackingSettings")
 Exit Function
 Err_Handler:
-    Call handleError("wdbProjectE", "completelyDeletePartProjectAndInfo", Err.DESCRIPTION, Err.number)
+    Call handleError("wdbProjectE", "completelyDeletePartProjectAndInfo", Err.DESCRIPTION, Err.Number)
 End Function
 
 Public Function grabTitle(User) As String
@@ -173,7 +173,7 @@ Set db = Nothing
 
 Exit Function
 Err_Handler:
-    Call handleError("wdbProjectE", "notifyPE", Err.DESCRIPTION, Err.number)
+    Call handleError("wdbProjectE", "notifyPE", Err.DESCRIPTION, Err.Number)
 End Function
 
 Function findDept(partNumber As String, dept As String, Optional returnMe As Boolean = False) As String
@@ -200,7 +200,7 @@ Set db = Nothing
 
 Exit Function
 Err_Handler:
-    Call handleError("wdbProjectE", "findDept", Err.DESCRIPTION, Err.number)
+    Call handleError("wdbProjectE", "findDept", Err.DESCRIPTION, Err.Number)
 End Function
 
 Public Function registerPartUpdates(table As String, ID As Variant, column As String, _
@@ -249,7 +249,7 @@ Set db = Nothing
 
 Exit Function
 Err_Handler:
-    Call handleError("wdbProjectE", "registerPartUpdates", Err.DESCRIPTION, Err.number)
+    Call handleError("wdbProjectE", "registerPartUpdates", Err.DESCRIPTION, Err.Number)
 End Function
 
 Function generateEmailWarray(Title As String, subTitle As String, primaryMessage As String, detailTitle As String, arr() As Variant) As String
@@ -307,5 +307,5 @@ generateEmailWarray = strHTMLBody
 
 Exit Function
 Err_Handler:
-    Call handleError("wdbProjectE", "generateEmailWarray", Err.DESCRIPTION, Err.number)
+    Call handleError("wdbProjectE", "generateEmailWarray", Err.DESCRIPTION, Err.Number)
 End Function

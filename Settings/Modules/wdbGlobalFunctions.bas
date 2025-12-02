@@ -282,7 +282,7 @@ Next
 
 Exit Function
 Err_Handler:
-    Call handleError("wdbGlobalFunctions", "setTheme", Err.DESCRIPTION, Err.number)
+    Call handleError("wdbGlobalFunctions", "setTheme", Err.DESCRIPTION, Err.Number)
 End Function
 
 Function findColorLevel(tagText As String) As Long
@@ -295,7 +295,7 @@ findColorLevel = Mid(tagText, InStr(tagText, ".L") + 2, 1)
 
 Exit Function
 Err_Handler:
-    Call handleError("wdbGlobalFunctions", "setTheme", Err.DESCRIPTION, Err.number)
+    Call handleError("wdbGlobalFunctions", "setTheme", Err.DESCRIPTION, Err.Number)
 End Function
 
 Function shadeColor(inputColor As Long, scalar As Double) As Long
@@ -327,7 +327,7 @@ shadeColor = rgb(ioR, ioG, ioB)
 
 Exit Function
 Err_Handler:
-    Call handleError("wdbGlobalFunctions", "shadeColor", Err.DESCRIPTION, Err.number)
+    Call handleError("wdbGlobalFunctions", "shadeColor", Err.DESCRIPTION, Err.Number)
 End Function
 
 Public Function colorPicker(Optional lngColor As Long) As Long
@@ -337,7 +337,7 @@ On Error GoTo Err_Handler
     colorPicker = lngColor
 Exit Function
 Err_Handler:
-    Call handleError("wdbGlobalFunctions", "colorPicker", Err.DESCRIPTION, Err.number)
+    Call handleError("wdbGlobalFunctions", "colorPicker", Err.DESCRIPTION, Err.Number)
 End Function
 
 Function doStuff()
@@ -390,7 +390,7 @@ Set db = Nothing
 
 Exit Function
 Err_Handler:
-    Call handleError("wdbGlobalFunctions", "dbExecute", Err.DESCRIPTION, Err.number, sql)
+    Call handleError("wdbGlobalFunctions", "dbExecute", Err.DESCRIPTION, Err.Number, sql)
 End Function
 
 Public Function nowString() As String
@@ -400,7 +400,7 @@ nowString = Format(Now(), "yyyymmddTHHmmss")
 
 Exit Function
 Err_Handler:
-    Call handleError("wdbGlobalFunctions", "nowString", Err.DESCRIPTION, Err.number)
+    Call handleError("wdbGlobalFunctions", "nowString", Err.DESCRIPTION, Err.Number)
 End Function
 
 Public Function snackBox(sType As String, sTitle As String, sMessage As String, refForm As String, Optional centerBool As Boolean = False, Optional autoClose As Boolean = True)
@@ -425,7 +425,7 @@ DoCmd.OpenForm "frmSnack"
 
 Exit Function
 Err_Handler:
-    Call handleError("wdbGlobalFunctions", "snackBox", Err.DESCRIPTION, Err.number)
+    Call handleError("wdbGlobalFunctions", "snackBox", Err.DESCRIPTION, Err.Number)
 End Function
 
 Public Function registerWdbUpdates(table As String, ID As Variant, column As String, oldVal As Variant, newVal As Variant, Optional tag0 As String = "", Optional tag1 As Variant = "")
@@ -465,7 +465,7 @@ Set db = Nothing
 
 Exit Function
 Err_Handler:
-    Call handleError("wdbGlobalFunctions", "registerWdbUpdates", Err.DESCRIPTION, Err.number, table & " " & ID)
+    Call handleError("wdbGlobalFunctions", "registerWdbUpdates", Err.DESCRIPTION, Err.Number, table & " " & ID)
 End Function
 
 Public Function registerSalesUpdates(table As String, ID As Variant, column As String, oldVal As Variant, newVal As Variant, Optional tag0 As String = "", Optional tag1 As Variant = "")
@@ -502,7 +502,7 @@ Set db = Nothing
 
 Exit Function
 Err_Handler:
-    Call handleError("wdbGlobalFunctions", "registerSalesUpdates", Err.DESCRIPTION, Err.number)
+    Call handleError("wdbGlobalFunctions", "registerSalesUpdates", Err.DESCRIPTION, Err.Number)
 End Function
 
 Function getFullName() As String
@@ -518,7 +518,7 @@ Set db = Nothing
 
 Exit Function
 Err_Handler:
-    Call handleError("wdbGlobalFunctions", "getFullName", Err.DESCRIPTION, Err.number)
+    Call handleError("wdbGlobalFunctions", "getFullName", Err.DESCRIPTION, Err.Number)
 End Function
 
 Function generateHTML(Title As String, subTitle As String, primaryMessage As String, detail1 As String, detail2 As String, detail3 As String, Optional Link As String = "") As String
@@ -567,7 +567,7 @@ generateHTML = strHTMLBody
 
 Exit Function
 Err_Handler:
-    Call handleError("wdbGlobalFunctions", "generateHTML", Err.DESCRIPTION, Err.number)
+    Call handleError("wdbGlobalFunctions", "generateHTML", Err.DESCRIPTION, Err.Number)
 End Function
 
 Function emailContentGen(subject As String, Title As String, subTitle As String, primaryMessage As String, detail1 As String, detail2 As String, detail3 As String) As String
@@ -577,7 +577,7 @@ emailContentGen = subject & "," & Title & "," & subTitle & "," & primaryMessage 
 
 Exit Function
 Err_Handler:
-    Call handleError("wdbGlobalFunctions", "emailContentGen", Err.DESCRIPTION, Err.number)
+    Call handleError("wdbGlobalFunctions", "emailContentGen", Err.DESCRIPTION, Err.Number)
 End Function
 
 Function idNAM(inputVal As Variant, typeVal As Variant) As Variant
@@ -663,7 +663,7 @@ Set db = Nothing
 Exit Function
 Err_Handler:
 sendNotification = False
-    Call handleError("wdbGlobalFunctions", "sendNotification", Err.DESCRIPTION, Err.number)
+    Call handleError("wdbGlobalFunctions", "sendNotification", Err.DESCRIPTION, Err.Number)
 End Function
 
 Function privilege(pref) As Boolean
@@ -673,7 +673,7 @@ privilege = DLookup("[" & pref & "]", "[tblPermissions]", "[User] = '" & Environ
     
 Exit Function
 Err_Handler:
-    Call handleError("wdbGlobalFunctions", "privilege", Err.DESCRIPTION, Err.number)
+    Call handleError("wdbGlobalFunctions", "privilege", Err.DESCRIPTION, Err.Number)
 End Function
 
 Function userData(data) As String
@@ -683,7 +683,7 @@ userData = Nz(DLookup("[" & data & "]", "[tblPermissions]", "[User] = '" & Envir
 
 Exit Function
 Err_Handler:
-    Call handleError("wdbGlobalFunctions", "replaceDriveLetters", Err.DESCRIPTION, Err.number)
+    Call handleError("wdbGlobalFunctions", "replaceDriveLetters", Err.DESCRIPTION, Err.Number)
 End Function
 
 Function restrict(userName As String, dept As String, Optional reqLevel As String = "", Optional orAbove As Boolean = False) As Boolean
@@ -732,7 +732,7 @@ Set db = Nothing
 
 Exit Function
 Err_Handler:
-    Call handleError("wdbGlobalFunctions", "restrict", Err.DESCRIPTION, Err.number)
+    Call handleError("wdbGlobalFunctions", "restrict", Err.DESCRIPTION, Err.Number)
 End Function
 
 Function getEmail(userName As String) As String
@@ -762,7 +762,7 @@ Set db = Nothing
 
 Exit Function
 Err_Handler:
-    Call handleError("wdbGlobalFunctions", "getEmail", Err.DESCRIPTION, Err.number)
+    Call handleError("wdbGlobalFunctions", "getEmail", Err.DESCRIPTION, Err.Number)
 End Function
 
 Function splitString(a, b, c) As String
@@ -780,7 +780,7 @@ StrQuoteReplace = Replace(Nz(strValue, ""), "'", "''")
 
 Exit Function
 Err_Handler:
-    Call handleError("wdbGlobalFunctions", "StrQuoteReplace", Err.DESCRIPTION, Err.number)
+    Call handleError("wdbGlobalFunctions", "StrQuoteReplace", Err.DESCRIPTION, Err.Number)
 End Function
 
 Public Function wdbEmail(ByVal strTo As String, ByVal strCC As String, ByVal strSubject As String, body As String) As Boolean
@@ -800,5 +800,5 @@ SendItems.CreateMailItem sendTo:=strTo, _
 Exit Function
 Err_Handler:
 wdbEmail = False
-    Call handleError("wdbGlobalFunctions", "wdbEmail", Err.DESCRIPTION, Err.number)
+    Call handleError("wdbGlobalFunctions", "wdbEmail", Err.DESCRIPTION, Err.Number)
 End Function

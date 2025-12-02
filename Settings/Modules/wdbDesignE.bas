@@ -44,7 +44,7 @@ Set db = Nothing
 
 Exit Sub
 Err_Handler:
-    Call handleError("wdbDesignE", "registerDRSUpdates", Err.DESCRIPTION, Err.number)
+    Call handleError("wdbDesignE", "registerDRSUpdates", Err.DESCRIPTION, Err.Number)
 End Sub
 
 Function DRShistoryGrabReference(columnName As String, inputVal As Variant) As String

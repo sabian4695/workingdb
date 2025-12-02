@@ -38,5 +38,5 @@ dbExecute "INSERT INTO tblCPC_UpdateTracking" & sqlColumns & sqlValues
 
 Exit Sub
 Err_Handler:
-    Call handleError("wdbCPCfunctions", "registerCPCUpdates", Err.DESCRIPTION, Err.number)
+    Call handleError("wdbCPCfunctions", "registerCPCUpdates", Err.DESCRIPTION, Err.Number)
 End Sub
