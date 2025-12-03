@@ -10,6 +10,7 @@ Declare PtrSafe Function setCursor Lib "user32" Alias "SetCursor" (ByVal hCursor
 Function setSplashLoading(label As String)
 On Error GoTo Err_Handler
 
+If IsNull(TempVars!loadAmount) Then Exit Function
 TempVars.Add "loadAmount", TempVars!loadAmount + 1
 Form_frmSplash.lnLoading.Width = (TempVars!loadAmount / 12) * TempVars!loadWd
 Form_frmSplash.lblLoading.Caption = label
@@ -95,7 +96,7 @@ Public Function setTheme(setForm As Form)
 On Error Resume Next
 
 Dim scalarBack As Double, scalarFront As Double, darkMode As Boolean
-Dim backBase As Long, foreBase As Long, colorLevels(4), backSecondary As Long, btnXback As Long
+Dim backBase As Long, foreBase As Long, colorLevels(4), backSecondary As Long, btnXback As Long, btnXbackShade As Long
 
 'IF NO THEME SET, APPLY DEFAULT THEME (for Dev mode)
 If Nz(TempVars!themePrimary, "") = "" Then
@@ -155,12 +156,8 @@ Dim ctl As Control, eachBtn As CommandButton
 Dim classColor As String, fadeBack, fadeFore
 Dim Level
 Dim backCol As Long, levFore As Double
-
-Dim foreLevInt As Long
-
-'For Each eachBtn In setForm.Controls
-'
-'Next eachBtn
+Dim disFore As Double
+Dim foreLevInt As Long, maxLev As Long
 
 For Each ctl In setForm.Controls
     If ctl.tag Like "*.L#*" Then
@@ -171,38 +168,43 @@ For Each ctl In setForm.Controls
     End If
     foreLevInt = Level
     If foreLevInt > 3 Then foreLevInt = 3
+    maxLev = Level + 1
+    If maxLev > 4 Then maxLev = 4
     
     If darkMode Then
         foreLevInt = Level
         If foreLevInt > 3 Then foreLevInt = 3
         levFore = (1 / colorLevArr(foreLevInt)) + 0.2
+        disFore = 1.4 - levFore
     Else
-        levFore = colorLevArr(foreLevInt) * 7
+        levFore = (colorLevArr(foreLevInt))
+        disFore = 15 - levFore
     End If
 
     Select Case ctl.ControlType
         Case acCommandButton, acToggleButton 'OPTIONS: cardBtn.L#, cardBtnContrastBorder.L#, btn.L#
-            If ctl.tag Like "*btn*" Then
-                ctl.BackColor = backCol
-                If (ctl.Picture <> "") Then
-                    If darkMode Then
-                        If InStr(ctl.Picture, "Core_theme_light") Then ctl.Picture = Replace(ctl.Picture, "Core_theme_light", "Core")
-                    Else
-                        If InStr(ctl.Picture, "Core") Then ctl.Picture = Replace(ctl.Picture, "Core", "Core_theme_light")
-                    End If
-                End If
+            If Not (ctl.tag Like "*btn*") Then GoTo skipAhead0
+            ctl.BackColor = backCol
+            
+            If (ctl.Picture = "") Then GoTo skipAhead0
+            If darkMode Then
+                If InStr(ctl.Picture, "\Core_theme_light\") Then ctl.Picture = Replace(ctl.Picture, "\Core_theme_light\", "\Core\")
+            Else
+                If InStr(ctl.Picture, "\Core\") Then ctl.Picture = Replace(ctl.Picture, "\Core\", "\Core_theme_light\")
             End If
+            
+skipAhead0:
             Select Case True
                 Case ctl.tag Like "*cardBtn.L#*"
                     ctl.BorderColor = backCol
                 Case ctl.tag Like "*cardBtnContrastBorder.L#*"
-                    If ctl.BorderStyle <> 0 Then ctl.BorderColor = colorLevels(Level + 1)
+                    If ctl.BorderStyle <> 0 Then ctl.BorderColor = colorLevels(maxLev)
                 Case ctl.tag Like "*btn.L#*"
                     If ctl.BorderStyle <> 0 Then ctl.BorderColor = backCol
                     
                     'fade the colors
                     fadeBack = shadeColor(backCol, scalarBack)
-                    fadeFore = shadeColor(foreBase, scalarFront)
+                    fadeFore = shadeColor(foreBase, levFore - 0.2)
                     
                     ctl.ForeColor = foreBase
                     ctl.HoverColor = fadeBack
@@ -214,7 +216,7 @@ For Each ctl In setForm.Controls
                     
                     'fade the colors
                     fadeBack = shadeColor(backCol, scalarBack)
-                    fadeFore = shadeColor(foreBase, levFore - 0.2)
+                    fadeFore = shadeColor(foreBase, disFore)
                     
                     ctl.ForeColor = fadeFore
                     ctl.HoverColor = fadeBack
@@ -222,11 +224,11 @@ For Each ctl In setForm.Controls
                     ctl.HoverForeColor = fadeFore
                     ctl.PressedForeColor = fadeFore
                 Case ctl.tag Like "*btnDisContrastBorder.L#*" 'for disabled look
-                    If ctl.BorderStyle <> 0 Then ctl.BorderColor = colorLevels(Level + 1)
+                    If ctl.BorderStyle <> 0 Then ctl.BorderColor = colorLevels(maxLev)
                     
                     'fade the colors
                     fadeBack = shadeColor(backCol, scalarBack)
-                    fadeFore = shadeColor(foreBase, levFore - 0.2)
+                    fadeFore = shadeColor(foreBase, disFore)
                     
                     ctl.ForeColor = fadeFore
                     ctl.HoverColor = fadeBack
@@ -240,8 +242,10 @@ For Each ctl In setForm.Controls
                     
                     'fade the colors
                     fadeBack = shadeColor(btnXback, scalarBack)
-                    fadeFore = shadeColor(foreBase, levFore - 0.2)
+                    fadeFore = shadeColor(foreBase, disFore)
+                    btnXbackShade = shadeColor(btnXback, (0.1 * Level) + scalarBack)
                     
+                    ctl.BackColor = btnXbackShade
                     ctl.ForeColor = fadeFore
                     ctl.HoverColor = fadeBack
                     ctl.PressedColor = fadeBack
@@ -250,29 +254,31 @@ For Each ctl In setForm.Controls
                 Case ctl.tag Like "*btnX.L#*"
                     If ctl.BorderStyle <> 0 Then ctl.BorderColor = btnXback
                     ctl.ForeColor = foreBase
-                    ctl.BackColor = btnXback
                     'fade the colors
                     fadeBack = shadeColor(btnXback, scalarBack)
                     fadeFore = shadeColor(foreBase, scalarFront)
+                    btnXbackShade = shadeColor(btnXback, (0.1 * Level) + scalarBack)
                     
+                    ctl.BackColor = btnXbackShade
                     ctl.HoverColor = fadeBack
                     ctl.PressedColor = fadeBack
                     ctl.HoverForeColor = fadeFore
                     ctl.PressedForeColor = fadeFore
                 Case ctl.tag Like "*btnXcontrastBorder.L#*"
-                    If ctl.BorderStyle <> 0 Then ctl.BorderColor = colorLevels(Level + 1)
+                    If ctl.BorderStyle <> 0 Then ctl.BorderColor = colorLevels(maxLev)
                     ctl.ForeColor = foreBase
-                    ctl.BackColor = btnXback
                     'fade the colors
                     fadeBack = shadeColor(btnXback, scalarBack)
                     fadeFore = shadeColor(foreBase, scalarFront)
+                    btnXbackShade = shadeColor(btnXback, (0.1 * Level) + scalarBack)
                     
+                    ctl.BackColor = btnXbackShade
                     ctl.HoverColor = fadeBack
                     ctl.PressedColor = fadeBack
                     ctl.HoverForeColor = fadeFore
                     ctl.PressedForeColor = fadeFore
                 Case ctl.tag Like "*btnContrastBorder.L#*"
-                    If ctl.BorderStyle <> 0 Then ctl.BorderColor = colorLevels(Level + 1)
+                    If ctl.BorderStyle <> 0 Then ctl.BorderColor = colorLevels(maxLev)
                     ctl.ForeColor = foreBase
                     
                     'fade the colors
@@ -310,12 +316,12 @@ For Each ctl In setForm.Controls
                 Case ctl.tag Like "*txtBackBorder*"
                     If ctl.BorderStyle <> 0 Then ctl.BorderColor = backCol
                 Case ctl.tag Like "*txtContrastBorder*"
-                    If ctl.BorderStyle <> 0 Then ctl.BorderColor = colorLevels(Level + 1)
+                    If ctl.BorderStyle <> 0 Then ctl.BorderColor = colorLevels(maxLev)
                 Case ctl.tag Like "*txtTransFore*"
                     ctl.ForeColor = backCol
             End Select
         Case acRectangle, acSubform 'OPTIONS: cardBox.L#, cardBoxContrastBorder.L#
-            ctl.BackColor = backCol
+            If Not ctl.name Like "sfrm*" Then ctl.BackColor = backCol
             Select Case True
                 Case ctl.tag Like "*cardBox.L#*"
                     ctl.BorderColor = backCol
@@ -355,7 +361,7 @@ For Each ctl In setForm.Controls
                 End If
             End If
             If ctl.tag Like "*contrastBorder*" Then
-                ctl.BorderColor = colorLevels(Level + 1)
+                ctl.BorderColor = colorLevels(maxLev)
             End If
         Case acImage 'OPTIONS: pic.L#
             If ctl.tag Like "*pic*" Then ctl.BackColor = backCol
@@ -406,6 +412,10 @@ ioB = val("&H" & Mid(tempHex, 1, 2)) * scalar
 If ioR > 255 Then ioR = 255
 If ioG > 255 Then ioG = 255
 If ioB > 255 Then ioB = 255
+
+If ioR < 0 Then ioR = 0
+If ioG < 0 Then ioG = 0
+If ioB < 0 Then ioB = 0
 
 shadeColor = rgb(ioR, ioG, ioB)
 

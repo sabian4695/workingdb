@@ -5,7 +5,7 @@ Dim XL As Object, WB As Excel.Workbook, WKS As Excel.Worksheet
 Dim inV As Long
 
 Public Function addMissingProjectSteps(partNumber As String) As Boolean
-'On Error GoTo Err_Handler
+On Error GoTo Err_Handler
 
 Dim db As Database
 Dim rsSteps As Recordset, rsProject As Recordset, rsGates As Recordset

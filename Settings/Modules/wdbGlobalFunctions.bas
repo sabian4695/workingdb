@@ -9,7 +9,7 @@ Public Function setTheme(setForm As Form)
 On Error Resume Next
 
 Dim scalarBack As Double, scalarFront As Double, darkMode As Boolean
-Dim backBase As Long, foreBase As Long, colorLevels(4), backSecondary As Long, btnXback As Long
+Dim backBase As Long, foreBase As Long, colorLevels(4), backSecondary As Long, btnXback As Long, btnXbackShade As Long
 
 'IF NO THEME SET, APPLY DEFAULT THEME (for Dev mode)
 If Nz(TempVars!themePrimary, "") = "" Then
@@ -69,12 +69,8 @@ Dim ctl As Control, eachBtn As CommandButton
 Dim classColor As String, fadeBack, fadeFore
 Dim Level
 Dim backCol As Long, levFore As Double
-
+Dim disFore As Double
 Dim foreLevInt As Long, maxLev As Long
-
-'For Each eachBtn In setForm.Controls
-'
-'Next eachBtn
 
 For Each ctl In setForm.Controls
     If ctl.tag Like "*.L#*" Then
@@ -92,22 +88,25 @@ For Each ctl In setForm.Controls
         foreLevInt = Level
         If foreLevInt > 3 Then foreLevInt = 3
         levFore = (1 / colorLevArr(foreLevInt)) + 0.2
+        disFore = 1.4 - levFore
     Else
-        levFore = colorLevArr(foreLevInt) * 7
+        levFore = (colorLevArr(foreLevInt))
+        disFore = 15 - levFore
     End If
 
     Select Case ctl.ControlType
         Case acCommandButton, acToggleButton 'OPTIONS: cardBtn.L#, cardBtnContrastBorder.L#, btn.L#
-            If ctl.tag Like "*btn*" Then
-                ctl.BackColor = backCol
-                If (ctl.Picture <> "") Then
-                    If darkMode Then
-                        If InStr(ctl.Picture, "Core_theme_light") Then ctl.Picture = Replace(ctl.Picture, "Core_theme_light", "Core")
-                    Else
-                        If InStr(ctl.Picture, "Core") Then ctl.Picture = Replace(ctl.Picture, "Core", "Core_theme_light")
-                    End If
-                End If
+            If Not (ctl.tag Like "*btn*") Then GoTo skipAhead0
+            ctl.BackColor = backCol
+            
+            If (ctl.Picture = "") Then GoTo skipAhead0
+            If darkMode Then
+                If InStr(ctl.Picture, "\Core_theme_light\") Then ctl.Picture = Replace(ctl.Picture, "\Core_theme_light\", "\Core\")
+            Else
+                If InStr(ctl.Picture, "\Core\") Then ctl.Picture = Replace(ctl.Picture, "\Core\", "\Core_theme_light\")
             End If
+            
+skipAhead0:
             Select Case True
                 Case ctl.tag Like "*cardBtn.L#*"
                     ctl.BorderColor = backCol
@@ -118,7 +117,7 @@ For Each ctl In setForm.Controls
                     
                     'fade the colors
                     fadeBack = shadeColor(backCol, scalarBack)
-                    fadeFore = shadeColor(foreBase, scalarFront)
+                    fadeFore = shadeColor(foreBase, levFore - 0.2)
                     
                     ctl.ForeColor = foreBase
                     ctl.HoverColor = fadeBack
@@ -130,7 +129,7 @@ For Each ctl In setForm.Controls
                     
                     'fade the colors
                     fadeBack = shadeColor(backCol, scalarBack)
-                    fadeFore = shadeColor(foreBase, levFore - 0.2)
+                    fadeFore = shadeColor(foreBase, disFore)
                     
                     ctl.ForeColor = fadeFore
                     ctl.HoverColor = fadeBack
@@ -142,7 +141,7 @@ For Each ctl In setForm.Controls
                     
                     'fade the colors
                     fadeBack = shadeColor(backCol, scalarBack)
-                    fadeFore = shadeColor(foreBase, levFore - 0.2)
+                    fadeFore = shadeColor(foreBase, disFore)
                     
                     ctl.ForeColor = fadeFore
                     ctl.HoverColor = fadeBack
@@ -156,8 +155,10 @@ For Each ctl In setForm.Controls
                     
                     'fade the colors
                     fadeBack = shadeColor(btnXback, scalarBack)
-                    fadeFore = shadeColor(foreBase, levFore - 0.2)
+                    fadeFore = shadeColor(foreBase, disFore)
+                    btnXbackShade = shadeColor(btnXback, (0.1 * Level) + scalarBack)
                     
+                    ctl.BackColor = btnXbackShade
                     ctl.ForeColor = fadeFore
                     ctl.HoverColor = fadeBack
                     ctl.PressedColor = fadeBack
@@ -166,11 +167,12 @@ For Each ctl In setForm.Controls
                 Case ctl.tag Like "*btnX.L#*"
                     If ctl.BorderStyle <> 0 Then ctl.BorderColor = btnXback
                     ctl.ForeColor = foreBase
-                    ctl.BackColor = btnXback
                     'fade the colors
                     fadeBack = shadeColor(btnXback, scalarBack)
                     fadeFore = shadeColor(foreBase, scalarFront)
+                    btnXbackShade = shadeColor(btnXback, (0.1 * Level) + scalarBack)
                     
+                    ctl.BackColor = btnXbackShade
                     ctl.HoverColor = fadeBack
                     ctl.PressedColor = fadeBack
                     ctl.HoverForeColor = fadeFore
@@ -178,11 +180,12 @@ For Each ctl In setForm.Controls
                 Case ctl.tag Like "*btnXcontrastBorder.L#*"
                     If ctl.BorderStyle <> 0 Then ctl.BorderColor = colorLevels(maxLev)
                     ctl.ForeColor = foreBase
-                    ctl.BackColor = btnXback
                     'fade the colors
                     fadeBack = shadeColor(btnXback, scalarBack)
                     fadeFore = shadeColor(foreBase, scalarFront)
+                    btnXbackShade = shadeColor(btnXback, (0.1 * Level) + scalarBack)
                     
+                    ctl.BackColor = btnXbackShade
                     ctl.HoverColor = fadeBack
                     ctl.PressedColor = fadeBack
                     ctl.HoverForeColor = fadeFore
@@ -323,6 +326,10 @@ If ioR > 255 Then ioR = 255
 If ioG > 255 Then ioG = 255
 If ioB > 255 Then ioB = 255
 
+If ioR < 0 Then ioR = 0
+If ioG < 0 Then ioG = 0
+If ioB < 0 Then ioB = 0
+
 shadeColor = rgb(ioR, ioG, ioB)
 
 Exit Function
@@ -401,31 +408,6 @@ nowString = Format(Now(), "yyyymmddTHHmmss")
 Exit Function
 Err_Handler:
     Call handleError("wdbGlobalFunctions", "nowString", Err.DESCRIPTION, Err.Number)
-End Function
-
-Public Function snackBox(sType As String, sTitle As String, sMessage As String, refForm As String, Optional centerBool As Boolean = False, Optional autoClose As Boolean = True)
-On Error GoTo Err_Handler
-
-TempVars.Add "snackType", sType
-TempVars.Add "snackTitle", sTitle
-TempVars.Add "snackMessage", sMessage
-TempVars.Add "snackAutoClose", autoClose
-
-If centerBool Then
-    TempVars.Add "snackCenter", "True"
-    TempVars.Add "snackLeft", forms(refForm).WindowLeft + forms(refForm).WindowWidth / 2 - 3393
-    TempVars.Add "snackTop", forms(refForm).WindowTop + forms(refForm).WindowHeight / 2 - 500
-Else
-    TempVars.Add "snackCenter", "False"
-    TempVars.Add "snackLeft", forms(refForm).WindowLeft + 200
-    TempVars.Add "snackTop", forms(refForm).WindowTop + forms(refForm).WindowHeight - 1250
-End If
-
-DoCmd.OpenForm "frmSnack"
-
-Exit Function
-Err_Handler:
-    Call handleError("wdbGlobalFunctions", "snackBox", Err.DESCRIPTION, Err.Number)
 End Function
 
 Public Function registerWdbUpdates(table As String, ID As Variant, column As String, oldVal As Variant, newVal As Variant, Optional tag0 As String = "", Optional tag1 As Variant = "")
