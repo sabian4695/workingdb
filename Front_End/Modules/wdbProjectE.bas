@@ -781,7 +781,7 @@ lastNudgeDate = Nz(DLookup("updatedDate", "tblPartUpdateTracking", "tableRecordI
 If Nz(lastNudgeDate, 0) = 0 Then
     daysSinceLastNudge = "N/A"
 Else
-    daysSinceLastNudge = Date - lastNudgeDate
+    daysSinceLastNudge = date - lastNudgeDate
 End If
 
 Exit Function
@@ -1285,7 +1285,7 @@ inV = 1
 
 '---Import General Data---
 WKS.Range("A1:E1").Font.Italic = True
-aifInsert "ACCOUNTING INFORMATION FORM", "", , "Exported: ", Date
+aifInsert "ACCOUNTING INFORMATION FORM", "", , "Exported: ", date
 aifInsert "PRIMARY INFORMATION", "", , , , True
 aifInsert "Part Number", partNum, firstColBold:=True
 aifInsert "Data Status", DLookup("partDataStatus", "tblDropDownsSP", "recordid = " & rsPI!dataStatus), firstColBold:=True
@@ -1988,7 +1988,7 @@ Do While Not rsPartTeam.EOF
         bodyTitle = "This step has been " & notiType
     End If
     
-    body = emailContentGen(subjectLine, emailTitle, bodyTitle, stepTitle, "Part Number: " & partNum, "Who: " & closedBy, "When: " & CStr(Date), appName:="Part Project", appId:=partNum)
+    body = emailContentGen(subjectLine, emailTitle, bodyTitle, stepTitle, "Part Number: " & partNum, "Who: " & closedBy, "When: " & CStr(date), appName:="Part Project", appId:=partNum)
     Call sendNotification(sendTo, 10, 2, stepTitle & " for " & partNum & " has been " & notiType, body, "Part Project", partNum)
     
 nextRec:
@@ -2362,7 +2362,7 @@ Dim SendItems As New clsOutlookCreateItem               ' outlook class
     Dim z As String, tempFold As String
     tempFold = getTempFold
     If FolderExists(tempFold) = False Then MkDir (tempFold)
-    z = tempFold & Format(Date, "YYMMDD") & "_" & partNum & "_Part_Information.pdf"
+    z = tempFold & Format(date, "YYMMDD") & "_" & partNum & "_Part_Information.pdf"
     DoCmd.OpenReport "rptPartInformation", acViewPreview, , "[partNumber]='" & partNum & "'", acHidden
     DoCmd.OutputTo acOutputReport, "rptPartInformation", acFormatPDF, z, False
     DoCmd.CLOSE acReport, "rptPartInformation"
