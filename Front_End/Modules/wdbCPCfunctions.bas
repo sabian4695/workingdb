@@ -10,7 +10,7 @@ lastNudgeDate = Nz(DLookup("updatedDate", "tblCPC_UpdateTracking", "tableRecordI
 If Nz(lastNudgeDate, 0) = 0 Then
     daysSinceLastNudgeCPC = "N/A"
 Else
-    daysSinceLastNudgeCPC = Date - lastNudgeDate
+    daysSinceLastNudgeCPC = date - lastNudgeDate
 End If
 
 Exit Function
@@ -50,7 +50,7 @@ Do While Not rsPartTeam.EOF
     emailTitle = "WDB Step " & notiType
     bodyTitle = "This step has been " & notiType
     
-    body = emailContentGen(subjectLine, emailTitle, bodyTitle, stepTitle & " Issue", "Who: " & closedBy, "When: " & CStr(Date), "")
+    body = emailContentGen(subjectLine, emailTitle, bodyTitle, stepTitle & " Issue", "Who: " & closedBy, "When: " & CStr(date), "")
     Call sendNotification(sendTo, 10, 2, stepTitle & " has been " & notiType, body, "CPC Project", projId)
     
 nextRec:

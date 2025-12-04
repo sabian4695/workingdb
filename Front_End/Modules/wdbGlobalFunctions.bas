@@ -111,29 +111,29 @@ End If
 
 If IsNull(completeddate) Then
     Select Case dueDate
-        Case Date
+        Case date
             dueDay = "Today"
-        Case Date + 1
+        Case date + 1
             dueDay = "Tomorrow"
-        Case Is < Date
+        Case Is < date
             dueDay = "Overdue"
-        Case Is < Date + 7
+        Case Is < date + 7
             dueDay = WeekdayName(Weekday(dueDate))
-        Case Date + 7
+        Case date + 7
             dueDay = "1 Week"
-        Case Is < Date + 14
+        Case Is < date + 14
             dueDay = "<2 Weeks"
-        Case Date + 14
+        Case date + 14
             dueDay = "2 Weeks"
-        Case Is < Date + 21
+        Case Is < date + 21
             dueDay = "<3 Weeks"
-        Case Date + 21
+        Case date + 21
             dueDay = "3 Weeks"
-        Case Is < Date + 28
+        Case Is < date + 28
             dueDay = "<4 Weeks"
-        Case Date + 28
+        Case date + 28
             dueDay = "4 Weeks"
-        Case Is > Date + 28
+        Case Is > date + 28
             dueDay = ">4 Weeks"
         Case Else
             dueDay = dueDate
@@ -1170,7 +1170,7 @@ Set db = CurrentDb()
 
 'has this person been notified about this thing today already?
 Dim rsNotifications As Recordset
-Set rsNotifications = db.OpenRecordset("SELECT * from tblNotificationsSP WHERE recipientUser = '" & sendTo & "' AND notificationDescription = '" & StrQuoteReplace(desc) & "' AND sentDate > #" & Date - 1 & "#")
+Set rsNotifications = db.OpenRecordset("SELECT * from tblNotificationsSP WHERE recipientUser = '" & sendTo & "' AND notificationDescription = '" & StrQuoteReplace(desc) & "' AND sentDate > #" & date - 1 & "#")
 If rsNotifications.RecordCount > 0 Then
     If rsNotifications!notificationType = 1 Then
         Dim msgTxt As String
@@ -1358,7 +1358,7 @@ Set db = CurrentDb()
 Dim rsAnalytics As Recordset, rsRefreshReports As Recordset, rsSummaryEmail As Recordset
 
 Set rsAnalytics = db.OpenRecordset("SELECT max(dateUsed) as anaDate from tblAnalytics WHERE module = 'firstTimeRun'")
-If Not DateSerial(Year(rsAnalytics!anaDate), Month(rsAnalytics!anaDate), Day(rsAnalytics!anaDate)) >= Date Then
+If Not DateSerial(Year(rsAnalytics!anaDate), Month(rsAnalytics!anaDate), Day(rsAnalytics!anaDate)) >= date Then
     'if max date is today, then this has already ran.
     Call checkProgramEvents
     Call scanSteps("all", "firstTimeRun")
@@ -1366,12 +1366,12 @@ If Not DateSerial(Year(rsAnalytics!anaDate), Month(rsAnalytics!anaDate), Day(rsA
 End If
 
 Set rsRefreshReports = db.OpenRecordset("SELECT max(dateUsed) as anaDate from tblAnalytics WHERE module = 'refreshReports'")
-If Not DateSerial(Year(rsRefreshReports!anaDate), Month(rsRefreshReports!anaDate), Day(rsRefreshReports!anaDate)) >= Date Then Call openPath("\\data\mdbdata\WorkingDB\build_temp\refreshReports.vbs")
+If Not DateSerial(Year(rsRefreshReports!anaDate), Month(rsRefreshReports!anaDate), Day(rsRefreshReports!anaDate)) >= date Then Call openPath("\\data\mdbdata\WorkingDB\build_temp\refreshReports.vbs")
 
-If Weekday(Date) = 1 Or Weekday(Date) = 7 Then Exit Sub 'only run summaries on weekdays
+If Weekday(date) = 1 Or Weekday(date) = 7 Then Exit Sub 'only run summaries on weekdays
 
 Set rsSummaryEmail = db.OpenRecordset("SELECT max(dateUsed) as anaDate from tblAnalytics WHERE module = 'summaryEmail'")
-If Not DateSerial(Year(rsSummaryEmail!anaDate), Month(rsSummaryEmail!anaDate), Day(rsSummaryEmail!anaDate)) >= Date Then Call openPath("\\data\mdbdata\WorkingDB\build_temp\summaryEmail.vbs")
+If Not DateSerial(Year(rsSummaryEmail!anaDate), Month(rsSummaryEmail!anaDate), Day(rsSummaryEmail!anaDate)) >= date Then Call openPath("\\data\mdbdata\WorkingDB\build_temp\summaryEmail.vbs")
 
 On Error Resume Next
 rsAnalytics.CLOSE: Set rsAnalytics = Nothing
@@ -1398,7 +1398,7 @@ Dim strQry, ranThisWeek As Boolean
 Dim recordsetName As String
 
 Set rsAnalytics = db.OpenRecordset("SELECT max(dateUsed) as anaDate from tblAnalytics WHERE module = 'firstTimeRun'")
-ranThisWeek = Format(rsAnalytics!anaDate, "ww", vbMonday, vbFirstFourDays) = Format(Date, "ww", vbMonday, vbFirstFourDays)
+ranThisWeek = Format(rsAnalytics!anaDate, "ww", vbMonday, vbFirstFourDays) = Format(date, "ww", vbMonday, vbFirstFourDays)
 
 strQry = ""
 If specificUser <> "" Then strQry = " AND user = '" & specificUser & "'"
@@ -1434,7 +1434,7 @@ Do While Not rsPeople.EOF 'go through every active person
     
     Do While (Not rsOpenSteps.EOF And Not (ti > 15 And li > 15 And ni > 15))
         Select Case rsOpenSteps!Due
-            Case Date 'due today
+            Case date 'due today
                 If ti > 15 Then
                     ti = ti + 1
                     GoTo nextStep
@@ -1442,7 +1442,7 @@ Do While Not rsPeople.EOF 'go through every active person
                 ReDim Preserve todaySteps(ti)
                 todaySteps(ti) = rsOpenSteps!partNumber & "," & rsOpenSteps!Action & ",Today"
                 ti = ti + 1
-            Case Is < Date 'over due
+            Case Is < date 'over due
                 If li > 15 Then
                     li = li + 1
                     GoTo nextStep
@@ -1450,7 +1450,7 @@ Do While Not rsPeople.EOF 'go through every active person
                 ReDim Preserve lateSteps(li)
                 lateSteps(li) = rsOpenSteps!partNumber & "," & rsOpenSteps!Action & "," & Format(rsOpenSteps!Due, "mm/dd/yyyy")
                 li = li + 1
-            Case Is <= (Date + 7) 'due in next week
+            Case Is <= (date + 7) 'due in next week
                 If ni > 15 Then
                     ni = ni + 1
                     GoTo nextStep
@@ -1471,15 +1471,15 @@ nextStep:
     
     Do While Not rsOpenIssues.EOF
         Select Case rsOpenIssues!dueDate
-            Case Date 'due today
+            Case date 'due today
                 ReDim Preserve todaySteps(ti)
                 todaySteps(ti) = rsOpenIssues!partNumber & ",Open Issue: " & rsOpenIssues!issueType & "-" & rsOpenIssues!issueSource & ",Today"
                 ti = ti + 1
-            Case Is < Date 'over due
+            Case Is < date 'over due
                 ReDim Preserve lateSteps(li)
                 lateSteps(li) = rsOpenIssues!partNumber & ",Open Issue: " & rsOpenIssues!issueType & "-" & rsOpenIssues!issueSource & "," & Format(rsOpenIssues!dueDate, "mm/dd/yyyy")
                 li = li + 1
-            Case Is <= (Date + 7) 'due in next week
+            Case Is <= (date + 7) 'due in next week
                 ReDim Preserve nextSteps(ni)
                 nextSteps(ni) = rsOpenIssues!partNumber & ",Open Issue: " & rsOpenIssues!issueType & "-" & rsOpenIssues!issueSource & "," & Format(rsOpenIssues!dueDate, "mm/dd/yyyy")
                 ni = ni + 1
@@ -1527,9 +1527,9 @@ Set db = CurrentDb()
 Dim rsProgram As Recordset, rsEvents As Recordset, rsWO As Recordset, rsComments As Recordset, rsPeople As Recordset, rsNoti As Recordset
 Dim controlNum As Long, Comments As String, dueDate, body As String, strValues
 
-dueDate = addWorkdays(Date, 5)
+dueDate = addWorkdays(date, 5)
 
-Set rsEvents = db.OpenRecordset("SELECT * from tblProgramEvents WHERE designWOcreated = False AND eventDate BETWEEN #" & Date & "# AND #" & Date + 50 & "#")
+Set rsEvents = db.OpenRecordset("SELECT * from tblProgramEvents WHERE designWOcreated = False AND eventDate BETWEEN #" & date & "# AND #" & date + 50 & "#")
 Set rsPeople = db.OpenRecordset("SELECT * from tblPermissions WHERE designWOid = 1 AND InActive = FALSE")
 
 Do While Not rsEvents.EOF
@@ -1538,7 +1538,7 @@ Do While Not rsEvents.EOF
     Set rsWO = db.OpenRecordset("dbo_tblDRS")
     rsWO.addNew
         With rsWO
-            !Issue_Date = Date
+            !Issue_Date = date
             !Approval_Status = 1
             !Requester = "automated"
             !DR_Level = 1
@@ -1635,9 +1635,9 @@ Err_Handler:
     Call handleError("wdbGlobalFunctions", "getEmail", Err.DESCRIPTION, Err.number)
 End Function
 
-Function splitString(a, b, c) As String
+Function splitString(A, B, C) As String
     On Error GoTo errorCatch
-    splitString = Split(a, b)(c)
+    splitString = Split(A, B)(C)
     Exit Function
 errorCatch:
     splitString = ""
