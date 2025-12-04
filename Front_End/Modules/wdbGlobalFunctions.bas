@@ -21,6 +21,58 @@ Err_Handler:
     Call handleError("wdbGlobalFunctions", "setSplashLoading", Err.DESCRIPTION, Err.number)
 End Function
 
+Function openNotificationFromEmail()
+On Error GoTo Err_Handler
+
+Dim olApp As Object
+Dim olInspector As Object
+Dim olMail As Object
+Dim emailBody As String
+
+Set olApp = GetObject(, "Outlook.Application")
+
+If olApp.ActiveInspector Is Nothing Then
+    Set olMail = olApp.ActiveExplorer.Selection.ITEM(1)
+Else
+    Set olMail = olApp.ActiveInspector.CurrentItem
+End If
+
+emailBody = olMail.htmlBody
+
+Set olMail = Nothing
+Set olInspector = Nothing
+Set olApp = Nothing
+
+Dim appName As String
+Dim ID As String
+
+appName = Split(Split(emailBody, "AppName:[")(1), "]")(0)
+ID = Split(Split(emailBody, "AppId:[")(1), "]")(0)
+
+Select Case appName
+    Case "Design WO"
+        If CurrentProject.AllForms("frmDRSdashboard").IsLoaded = True Then
+             DoCmd.CLOSE acForm, "frmDRSdashboard"
+                  On Error Resume Next
+            TempVars.Add "controlNumber", ID
+            DoCmd.OpenForm "frmDRSdashboard"
+        Else
+            TempVars.Add "controlNumber", ID
+            DoCmd.OpenForm "frmDRSdashboard"
+        End If
+    Case "Part Project"
+        openPartProject (ID)
+    Case "Issue"
+        DoCmd.OpenForm "frmPartIssues", , , "recordId = " & ID
+    Case "Trial"
+        DoCmd.OpenForm "frmPartTrialDetails", , , "recordId = " & ID
+End Select
+
+Exit Function
+Err_Handler:
+    Call handleError("wdbGlobalFunctions", "openNotificationFromEmail", Err.DESCRIPTION, Err.number)
+End Function
+
 Function setCustomCursor()
 Dim lngRet As Long
 lngRet = LoadCursorFromFile("\\data\mdbdata\WorkingDB\Pictures\Theme_Pictures\cursor.cur")
@@ -942,7 +994,13 @@ Err_Handler:
     Call handleError("wdbGlobalFunctions", "getAPI", Err.DESCRIPTION, Err.number)
 End Function
 
-Function generateHTML(Title As String, subTitle As String, primaryMessage As String, detail1 As String, detail2 As String, detail3 As String, Optional Link As String = "", Optional addLines As Boolean = False) As String
+Function generateHTML(Title As String, subTitle As String, primaryMessage As String, _
+        detail1 As String, detail2 As String, detail3 As String, _
+        Optional Link As String = "", _
+        Optional addLines As Boolean = False, _
+        Optional appName As String = "", _
+        Optional appId As String = "") As String
+        
 On Error GoTo Err_Handler
 
 Dim tblHeading As String, tblFooter As String, strHTMLBody As String
@@ -985,6 +1043,7 @@ strHTMLBody = "" & _
             "<tbody>" & _
                 "<tr><td>" & tblHeading & "</td></tr>" & _
                 "<tr><td>" & tblFooter & "</td></tr>" & _
+                "<tr><td><p style=""color: rgb(192, 192, 192); text-align: center;"">AppName:[" & appName & "], AppId:[" & appId & "]</p></td></tr>" & _
                 "<tr><td><p style=""color: rgb(192, 192, 192); text-align: center;"">This email was created by  &copy; workingDB</p></td></tr>" & _
             "</tbody>" & _
         "</table>" & _
@@ -1085,10 +1144,10 @@ Err_Handler:
     Call handleError("wdbGlobalFunctions", "dailySummary", Err.DESCRIPTION, Err.number)
 End Function
 
-Function emailContentGen(subject As String, Title As String, subTitle As String, primaryMessage As String, detail1 As String, detail2 As String, detail3 As String) As String
+Function emailContentGen(subject As String, Title As String, subTitle As String, primaryMessage As String, detail1 As String, detail2 As String, detail3 As String, Optional appName As String = "", Optional appId As String = "") As String
 On Error GoTo Err_Handler
 
-emailContentGen = subject & "," & Title & "," & subTitle & "," & primaryMessage & "," & detail1 & "," & detail2 & "," & detail3
+emailContentGen = subject & "," & Title & "," & subTitle & "," & primaryMessage & "," & detail1 & "," & detail2 & "," & detail3 & "," & appName & "," & appId
 
 Exit Function
 Err_Handler:

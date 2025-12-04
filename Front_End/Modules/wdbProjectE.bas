@@ -2555,7 +2555,7 @@ attachLink = "https://nifcoam.sharepoint.com/sites/NewModelEngineering/Part%20In
 
 Dim emailBody As String, subjectLine As String, strTo As String
 subjectLine = partNumber & " " & aifType & " AIF"
-emailBody = generateHTML(subjectLine, aifType & " AIF " & partNumber & " is now ready", aifType & " AIF", "No extra details...", "", "", attachLink)
+emailBody = generateHTML(subjectLine, aifType & " AIF " & partNumber & " is now ready", aifType & " AIF", "No extra details...", "", "", attachLink, appName:="Part Project", appId:=partNumber)
 
 strTo = "cost_team_mailbox@us.nifco.com"
 
@@ -2580,7 +2580,7 @@ If attachLink = "" Then Exit Function
 
 Dim emailBody As String, subjectLine As String
 subjectLine = partNumber & " Capital Packet Approval"
-emailBody = generateHTML(subjectLine, capitalPacketNum & " Capital Packet for " & partNumber & " is now Approved", "Capital Packet", "No extra details...", "", "", attachLink)
+emailBody = generateHTML(subjectLine, capitalPacketNum & " Capital Packet for " & partNumber & " is now Approved", "Capital Packet", "No extra details...", "", "", attachLink, appName:="Part Project", appId:=partNumber)
 
 Call sendNotification(grabPartTeam(partNumber), 9, 2, partNumber & " Capital Packet Approval", emailBody, "Part Project", partNumber, True)
 
