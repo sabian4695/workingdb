@@ -1007,6 +1007,8 @@ Dim tblHeading As String, tblFooter As String, strHTMLBody As String
 
 If Link <> "" Then
     primaryMessage = "<a href = '" & Link & "'>" & primaryMessage & "</a>"
+ElseIf appId <> "" Then
+    primaryMessage = "<a href = ""\\data\mdbdata\WorkingDB\build\Repo\Commands\openNotification.vbs"">" & primaryMessage & "</a>"
 End If
 
 tblHeading = "<table style=""width: 100%; margin: 0 auto; padding: 2em 3em; text-align: center; background-color: #fafafa;"">" & _
@@ -1147,9 +1149,13 @@ End Function
 Function emailContentGen(subject As String, Title As String, subTitle As String, primaryMessage As String, detail1 As String, detail2 As String, detail3 As String, Optional appName As String = "", Optional appId As String = "") As String
 On Error GoTo Err_Handler
 
+If appId <> "" Then
+    primaryMessage = "<a href = ""\\data\mdbdata\WorkingDB\build\Repo\Commands\openNotification.vbs"">" & primaryMessage & "</a>"
+End If
+
 emailContentGen = subject & "," & Title & "," & subTitle & "," & primaryMessage & "," & detail1 & "," & detail2 & "," & detail3 & "," & appName & "," & appId
 
-Exit Function
+    Exit Function
 Err_Handler:
     Call handleError("wdbGlobalFunctions", "emailContentGen", Err.DESCRIPTION, Err.number)
 End Function

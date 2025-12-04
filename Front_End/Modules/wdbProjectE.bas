@@ -1988,7 +1988,7 @@ Do While Not rsPartTeam.EOF
         bodyTitle = "This step has been " & notiType
     End If
     
-    body = emailContentGen(subjectLine, emailTitle, bodyTitle, stepTitle, "Part Number: " & partNum, "Who: " & closedBy, "When: " & CStr(Date))
+    body = emailContentGen(subjectLine, emailTitle, bodyTitle, stepTitle, "Part Number: " & partNum, "Who: " & closedBy, "When: " & CStr(Date), appName:="Part Project", appId:=partNum)
     Call sendNotification(sendTo, 10, 2, stepTitle & " for " & partNum & " has been " & notiType, body, "Part Project", partNum)
     
 nextRec:
