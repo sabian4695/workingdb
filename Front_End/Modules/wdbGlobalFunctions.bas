@@ -261,8 +261,8 @@ skipAhead0:
                     ctl.ForeColor = foreBase
                     ctl.HoverColor = fadeBack
                     ctl.PressedColor = fadeBack
-                    ctl.HoverForeColor = fadeFore
-                    ctl.PressedForeColor = fadeFore
+                    ctl.HoverForeColor = foreBase
+                    ctl.PressedForeColor = foreBase
                 Case ctl.tag Like "*btnDis.L#*" 'for disabled look
                     If ctl.BorderStyle <> 0 Then ctl.BorderColor = backCol
                     
