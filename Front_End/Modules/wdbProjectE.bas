@@ -2497,13 +2497,34 @@ On Error GoTo Err_Handler
 emailPartApprovalNotification = False
 
 Dim emailBody As String, subjectLine As String
-subjectLine = "Part Approval Notification"
-emailBody = generateHTML(subjectLine, partNumber & " has received customer approval", "Part Approved", "No extra details...", "", "")
+subjectLine = partNumber & " Part Approval Notification"
+
+Dim db As Database
+Dim detail1 As String, detail2 As String, detail3 As String
+Dim rsPI As Recordset
+detail1 = "Part Type: Not Found"
+detail2 = "Customer: Not Found"
+detail3 = "Tool Reason: Not Found"
+
+Set db = CurrentDb()
+Set rsPI = db.OpenRecordset("SELECT * FROM tblPartInfo WHERE partNumber = '" & partNumber & "'")
+
+If rsPI.RecordCount > 0 Then
+    Dim toolType As Long
+    toolType = Nz(DLookup("toolReason", "tblPartMoldingInfo", "recordId = " & Nz(rsPI!moldInfoId, 0)), 0)
+    detail1 = "Part Type: " & Nz(DLookup("partType", "tblDropDownsSP", "recordId = " & Nz(rsPI!partType, 0)), "Not Found")
+    detail2 = "Customer: " & Nz(DLookup("CUSTOMER_NAME", "APPS_XXCUS_CUSTOMERS", "CUSTOMER_ID = " & Nz(rsPI!customerId, 0)), "Not Found")
+    
+    If toolType > 0 Then detail3 = "Tool Reason: " & Nz(DLookup("toolReason", "tblDropDownsSP", "recordId = " & toolType), "Not Found")
+End If
+
+emailBody = generateHTML(subjectLine, partNumber & " has received customer approval", "Open Project", detail1, detail2, detail3, appName:="Part Project", appId:=partNumber)
 
 Dim SendItems As New clsOutlookCreateItem
 Set SendItems = New clsOutlookCreateItem
 
-SendItems.CreateMailItem sendTo:=grabPartTeam(partNumber, True), _
+'add Cara and Casey for capacity tool notifications
+SendItems.CreateMailItem sendTo:=grabPartTeam(partNumber, True) & ";taylorc@us.nifco.com;GriffeyC@us.nifco.com", _
                              subject:=subjectLine, _
                              htmlBody:=emailBody
     Set SendItems = Nothing
