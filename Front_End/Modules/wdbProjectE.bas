@@ -746,10 +746,24 @@ If (DCount("recordId", "tblPartSteps", "[closeDate] is null AND partGateId = " &
     If frmActive = "frmPartDashboard" Then Form_frmPartDashboard.partDash_refresh_Click
 End If
 
+'Check for open notifications on this step. Mark as "read" if any are open
+Dim rsNotifications As Recordset
+Set rsNotifications = db.OpenRecordset("SELECT * FROM tblNotificationsSP WHERE notificationDescription LIKE '*step " & rsStep!stepType & " for " & rsStep!partNumber & "'")
+
+Do While Not rsNotifications.EOF
+    rsNotifications.Edit
+    rsNotifications!readDate = Now()
+    rsNotifications.Update
+    
+    rsNotifications.MoveNext
+Loop
+
 closeProjectStep = True
 
 exit_handler:
 On Error Resume Next
+rsNotifications.CLOSE
+Set rsNotifications = Nothing
 rsStepAction.CLOSE
 Set rsStepAction = Nothing
 rsMoldInfo.CLOSE
