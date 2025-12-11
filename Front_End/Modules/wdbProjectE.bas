@@ -2418,8 +2418,8 @@ If optionExtra <> "" Then updatedBy = optionExtra
 
 If Len(oldVal) > 255 Then oldVal = Left(oldVal, 255)
 If Len(newVal) > 255 Then newVal = Left(newVal, 255)
-If Len(tag1) > 100 Then newVal = Left(tag1, 100)
-If Len(tag2) > 100 Then newVal = Left(tag2, 100)
+If Len(tag1) > 100 Then tag1 = Left(tag1, 100)
+If Len(tag2) > 100 Then tag2 = Left(tag2, 100)
 If ID = "" Then ID = Null
 
 With rs1
