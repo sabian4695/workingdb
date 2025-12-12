@@ -5,6 +5,7 @@ Public Function runAll()
 On Error Resume Next
 
 Call grabSummaryInfo
+Call grabIssueInfo
 
 Application.Quit
 
@@ -95,27 +96,6 @@ nextStep:
     rsOpenSteps.Close
     Set rsOpenSteps = Nothing
     
-    Dim rsOpenIssues As Recordset
-    Set rsOpenIssues = db.OpenRecordset("SELECT * FROM qryOpenIssues_summaryEmail WHERE inCharge = '" & rsPeople!User & "' AND closeDate is null AND dueDate <= Date()+7")
-    
-    Do While Not rsOpenIssues.EOF
-        Select Case rsOpenIssues!dueDate
-            Case Date 'due today
-                ReDim Preserve todaySteps(ti)
-                todaySteps(ti) = rsOpenIssues!partNumber & ",Open Issue: " & rsOpenIssues!issueType & "-" & rsOpenIssues!issueSource & ",Today"
-                ti = ti + 1
-            Case Is < Date 'over due
-                ReDim Preserve lateSteps(li)
-                lateSteps(li) = rsOpenIssues!partNumber & ",Open Issue: " & rsOpenIssues!issueType & "-" & rsOpenIssues!issueSource & "," & Format(rsOpenIssues!dueDate, "mm/dd/yyyy")
-                li = li + 1
-            Case Is <= (Date + 7) 'due in next week
-                ReDim Preserve nextSteps(ni)
-                nextSteps(ni) = rsOpenIssues!partNumber & ",Open Issue: " & rsOpenIssues!issueType & "-" & rsOpenIssues!issueSource & "," & Format(rsOpenIssues!dueDate, "mm/dd/yyyy")
-                ni = ni + 1
-        End Select
-        rsOpenIssues.MoveNext
-    Loop
-    
     If ti + li + ni > 0 Then
         Set rsNoti = db.OpenRecordset("tblNotificationsSP")
         With rsNoti
@@ -151,7 +131,94 @@ rsNoti.Close: Set rsNoti = Nothing
 
 End Function
 
-Function dailySummary(Title As String, subTitle As String, lates() As String, todays() As String, nexts() As String, lateCount As Long, todayCount As Long, nextCount As Long) As String
+Function grabIssueInfo(Optional specificUser As String = "") As Boolean
+On Error Resume Next
+
+grabIssueInfo = False
+
+Dim db As Database
+Set db = CurrentDb()
+Dim rsPeople As Recordset, rsNoti As Recordset, rsOpenIssues As Recordset
+Dim lateSteps() As String, todaySteps() As String, nextSteps() As String
+Dim li As Long, ti As Long, ni As Long
+Dim strQry
+
+strQry = ""
+If specificUser <> "" Then strQry = " AND user = '" & specificUser & "'"
+
+Set rsPeople = db.OpenRecordset("SELECT * from tblPermissions WHERE Inactive = False" & strQry)
+
+li = 0
+ti = 0
+ni = 0
+ReDim Preserve lateSteps(li)
+ReDim Preserve todaySteps(ti)
+ReDim Preserve nextSteps(ni)
+
+Do While Not rsPeople.EOF 'go through every active person
+    li = 0
+    ti = 0
+    ni = 0
+    Erase lateSteps, todaySteps, nextSteps
+    ReDim lateSteps(li)
+    ReDim todaySteps(ti)
+    ReDim nextSteps(ni)
+    
+    Set rsOpenIssues = db.OpenRecordset("SELECT * FROM qryOpenIssues_summaryEmail WHERE inCharge = '" & rsPeople!User & "' AND closeDate is null AND dueDate <= Date()+7")
+    
+    Do While Not rsOpenIssues.EOF
+        Select Case rsOpenIssues!dueDate
+            Case Date 'due today
+                ReDim Preserve todaySteps(ti)
+                todaySteps(ti) = rsOpenIssues!partNumber & ",Open Issue: " & rsOpenIssues!issueType & "-" & rsOpenIssues!issueSource & ",Today"
+                ti = ti + 1
+            Case Is < Date 'over due
+                ReDim Preserve lateSteps(li)
+                lateSteps(li) = rsOpenIssues!partNumber & ",Open Issue: " & rsOpenIssues!issueType & "-" & rsOpenIssues!issueSource & "," & Format(rsOpenIssues!dueDate, "mm/dd/yyyy")
+                li = li + 1
+            Case Is <= (Date + 7) 'due in next week
+                ReDim Preserve nextSteps(ni)
+                nextSteps(ni) = rsOpenIssues!partNumber & ",Open Issue: " & rsOpenIssues!issueType & "-" & rsOpenIssues!issueSource & "," & Format(rsOpenIssues!dueDate, "mm/dd/yyyy")
+                ni = ni + 1
+        End Select
+        rsOpenIssues.MoveNext
+    Loop
+    
+    If ti + li + ni > 0 Then
+        Set rsNoti = db.OpenRecordset("tblNotificationsSP")
+        With rsNoti
+            .AddNew
+            !recipientUser = rsPeople!User
+            !recipientEmail = rsPeople!userEmail
+            !senderUser = "workingDB"
+            !senderEmail = "workingDB@us.nifco.com"
+            !sentDate = Now()
+            !readDate = Now()
+            !notificationType = 9
+            !notificationPriority = 2
+            !notificationDescription = "Current Open Issues"
+            !emailContent = StrQuoteReplace(dailySummary("Hi " & rsPeople!firstName, "Here are the issues assigned to you...", lateSteps(), todaySteps(), nextSteps(), li, ti, ni, False))
+            .Update
+        End With
+        rsNoti.Close
+        Set rsNoti = Nothing
+        Debug.Print rsPeople!User
+    End If
+    
+nextPerson:
+    rsPeople.MoveNext
+Loop
+
+grabIssueInfo = True
+
+On Error Resume Next
+rsPeople.Close: Set rsPeople = Nothing
+rsOpenIssues.Close: Set rsOpenIssues = Nothing
+rsNoti.Close: Set rsNoti = Nothing
+
+End Function
+
+Function dailySummary(Title As String, subTitle As String, lates() As String, todays() As String, nexts() As String, lateCount As Long, todayCount As Long, nextCount As Long, Optional disclaimer As Boolean = True) As String
 
 Dim tblHeading As String, tblStepOverview As String, strHTMLBody As String
 
@@ -215,6 +282,10 @@ If nexts(0) <> "" Then
                                                             "<tr style=""padding: .1em 2em;""><th style=""text-align: left"">Part Number</th><th style=""text-align: left"">Item</th><th style=""text-align: left"">Due</th></tr>" & nextTable & varStr1 & "</tbody></table>"
 End If
 
+Dim disclaimerTxt As String
+disclaimerTxt = ""
+If disclaimer Then disclaimerTxt = "<tr><td><p style=""color: rgb(192, 192, 192); text-align: center;"">If you wish to no longer receive these emails,  go into your account menu in the workingDB to disable daily summary notifications</p></td></tr>"
+
 strHTMLBody = "" & _
 "<!DOCTYPE html><html lang=""en"" xmlns=""http://www.w3.org/1999/xhtml"" xmlns:v=""urn:schemas-microsoft-com:vml"" xmlns:o=""urn:schemas-microsoft-com:office:office"">" & _
     "<head><meta charset=""utf-8""><title>Working DB Notification</title></head>" & _
@@ -223,7 +294,7 @@ strHTMLBody = "" & _
             "<tbody>" & _
                 "<tr><td>" & tblHeading & "</td></tr>" & _
                 "<tr><td>" & tblStepOverview & "</td></tr>" & _
-                "<tr><td><p style=""color: rgb(192, 192, 192); text-align: center;"">If you wish to no longer receive these emails,  go into your account menu in the workingDB to disable daily summary notifications</p></td></tr>" & _
+                disclaimerTxt & _
                 "<tr><td><p style=""color: rgb(192, 192, 192); text-align: center;"">This email was created by  &copy; workingDB</p></td></tr>" & _
             "</tbody>" & _
         "</table>" & _
