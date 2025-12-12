@@ -662,19 +662,21 @@ Select Case rsStepAction!stepAction
         
         Call toolShipAuthorizationEmail(toolNum, rsStep!recordId, shipMethod, rsStep!partNumber)
     Case "PVtestPlanCreated"
-        If DCount("recordId", "tblPartTesting", "partNumber = '" & rsStep!partNumber & "'") = 0 Then 'are there any tests added?
-            errorText = "Tests need added to the testing tracker for this part!"
-            GoTo errorOut
-        End If
+        '-- PER NOAH TEAL / NEAL STRATON : REMOVE DUE TO SLB NOT USING IT, UNTIL LAB DB IS FINALIZED ---
+'        If DCount("recordId", "tblPartTesting", "partNumber = '" & rsStep!partNumber & "'") = 0 Then 'are there any tests added?
+'            errorText = "Tests need added to the testing tracker for this part!"
+'            GoTo errorOut
+'        End If
     Case "PVtestPlanCompleted"
-        If DCount("recordId", "tblPartTesting", "partNumber = '" & rsStep!partNumber & "'") = 0 Then 'are there any tests added?
-            errorText = "Tests need added to the Testing Tracker for this part!"
-            GoTo errorOut
-        End If
-        If DCount("recordId", "tblPartTesting", "partNumber = '" & rsStep!partNumber & "' AND actualEnd is null") > 0 Then 'are there any not yet complete?
-            errorText = "All tests need to be complete in the Testing Tracker"
-            GoTo errorOut
-        End If
+        '-- PER NOAH TEAL / NEAL STRATON : REMOVE DUE TO SLB NOT USING IT, UNTIL LAB DB IS FINALIZED ---
+'        If DCount("recordId", "tblPartTesting", "partNumber = '" & rsStep!partNumber & "'") = 0 Then 'are there any tests added?
+'            errorText = "Tests need added to the Testing Tracker for this part!"
+'            GoTo errorOut
+'        End If
+'        If DCount("recordId", "tblPartTesting", "partNumber = '" & rsStep!partNumber & "' AND actualEnd is null") > 0 Then 'are there any not yet complete?
+'            errorText = "All tests need to be complete in the Testing Tracker"
+'            GoTo errorOut
+'        End If
     Case "emailPartApprovalNotification"
         Call emailPartApprovalNotification(rsStep!recordId, rsStep!partNumber)
     Case "closeStep"
