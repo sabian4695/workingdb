@@ -378,7 +378,7 @@ Function CreateAppointmentItem(StartAt As Date, Optional duration As Long = 30, 
         
 '-- standard field
         CurrentProperty = "Start"
-        If StartAt >= date Then .start = StartAt
+        If StartAt >= Date Then .start = StartAt
         
         CurrentProperty = "End"
         EndFromDuration = DateAdd("n", duration, StartAt)

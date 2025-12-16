@@ -45,10 +45,10 @@ Dim shp As PowerPoint.Shape
 
 curSlide.Shapes.Range(Array("partNumber")).TextFrame.TextRange.Text = partNumber
 curSlide.Shapes.Range(Array("purpose")).TextFrame.TextRange.Text = changeType
-curSlide.Shapes.Range(Array("issueOpened")).TextFrame.TextRange.Text = date
+curSlide.Shapes.Range(Array("issueOpened")).TextFrame.TextRange.Text = Date
 curSlide.Shapes.Range(Array("ECOimp")).TextFrame.TextRange.Text = "ASAP"
 curSlide.Shapes("tblSignatures").table.Cell(2, 1).Shape.TextFrame.TextRange.Text = getFullName
-curSlide.Shapes("tblSignatures").table.Cell(3, 1).Shape.TextFrame.TextRange.Text = date
+curSlide.Shapes("tblSignatures").table.Cell(3, 1).Shape.TextFrame.TextRange.Text = Date
 
 Dim ecoText As String
 Dim rsECOs As Recordset
@@ -96,7 +96,7 @@ Loop
 
 Do While Not rsPerm.EOF
     Set rsWorkloadTbl = db.OpenRecordset("SELECT Round(Sum([hours]),2) AS totalHours FROM tblWorkloadRanking WHERE " & _
-        "userName = '" & rsPerm!User & "' AND hoursDate < #" & date & "#")
+        "userName = '" & rsPerm!User & "' AND hoursDate < #" & Date & "#")
     Set rsWorkloadTbl1 = db.OpenRecordset("SELECT Round(Sum([hours]),2) AS totalHours FROM tblWorkloadRanking WHERE " & _
         "userName = '" & rsPerm!User & "' AND hoursDate >= #" & issueDate & "# AND hoursDate <= #" & dueDate & "#")
 
