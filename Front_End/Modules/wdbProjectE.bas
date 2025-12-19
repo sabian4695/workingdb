@@ -909,10 +909,25 @@ If Form_DASHBOARD.NAM <> partNum Then
     Exit Function
 End If
 
-If Nz(userData("org"), 0) = 5 Then GoTo openIt 'bypass Oracle restrictions for NCM users
+If Len(partNum) > 10 Then
+    MsgBox "Part number is too long.", vbInformation, "Sorry."
+    Exit Function
+End If
+
+If InStr(partNum, " ") Then
+    MsgBox "Part number cannot contain spaces", vbInformation, "Sorry."
+    Exit Function
+End If
 
 If Form_DASHBOARD.lblErrors.Visible = True And Form_DASHBOARD.lblErrors.Caption = "Part not found in Oracle" Then
-    MsgBox "This part number must show up in Oracle to open the dash", vbInformation, "Sorry."
+    If Nz(userData("org"), 0) = 5 Then
+        If TempVars!NCMtest = "test" Then GoTo openIt 'bypass Oracle restrictions for NCM users
+        TempVars.Add "NCMtest", "test"
+        MsgBox "Please match the Oracle result for the part number.", vbInformation, "Sorry."
+    Else
+        MsgBox "This part number must show up in Oracle to open the dash", vbInformation, "Sorry."
+    End If
+    
     Exit Function
 End If
 
