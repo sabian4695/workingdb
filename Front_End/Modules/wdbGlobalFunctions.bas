@@ -1355,7 +1355,7 @@ On Error GoTo Err_Handler
 
 Dim db As Database
 Set db = CurrentDb()
-Dim rsAnalytics As Recordset, rsRefreshReports As Recordset, rsSummaryEmail As Recordset
+Dim rsAnalytics As Recordset, rsSummaryEmail As Recordset
 
 Set rsAnalytics = db.OpenRecordset("SELECT max(dateUsed) as anaDate from tblAnalytics WHERE module = 'firstTimeRun'")
 If Not DateSerial(Year(rsAnalytics!anaDate), Month(rsAnalytics!anaDate), Day(rsAnalytics!anaDate)) >= Date Then
@@ -1365,9 +1365,6 @@ If Not DateSerial(Year(rsAnalytics!anaDate), Month(rsAnalytics!anaDate), Day(rsA
     db.Execute "INSERT INTO tblAnalytics (module,form,userName,dateUsed) VALUES ('firstTimeRun','Form_frmSplash','" & Environ("username") & "','" & Now() & "')"
 End If
 
-Set rsRefreshReports = db.OpenRecordset("SELECT max(dateUsed) as anaDate from tblAnalytics WHERE module = 'refreshReports'")
-If Not DateSerial(Year(rsRefreshReports!anaDate), Month(rsRefreshReports!anaDate), Day(rsRefreshReports!anaDate)) >= Date Then Call openPath("\\data\mdbdata\WorkingDB\build_temp\refreshReports.vbs")
-
 If Weekday(Date) = 1 Or Weekday(Date) = 7 Then Exit Sub 'only run summaries on weekdays
 
 Set rsSummaryEmail = db.OpenRecordset("SELECT max(dateUsed) as anaDate from tblAnalytics WHERE module = 'summaryEmail'")
@@ -1375,7 +1372,6 @@ If Not DateSerial(Year(rsSummaryEmail!anaDate), Month(rsSummaryEmail!anaDate), D
 
 On Error Resume Next
 rsAnalytics.CLOSE: Set rsAnalytics = Nothing
-rsRefreshReports.CLOSE: Set rsRefreshReports = Nothing
 rsSummaryEmail.CLOSE: Set rsSummaryEmail = Nothing
 Set db = Nothing
 
