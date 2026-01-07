@@ -1008,7 +1008,7 @@ Dim tblHeading As String, tblFooter As String, strHTMLBody As String
 If Link <> "" Then
     primaryMessage = "<a href = '" & Link & "'>" & primaryMessage & "</a>"
 ElseIf appId <> "" Then
-    primaryMessage = "<a href = ""\\data\mdbdata\WorkingDB\build\Repo\Commands\openNotification.vbs"">" & primaryMessage & "</a>"
+    primaryMessage = "<a href = ""\\data\mdbdata\WorkingDB\build\workingdb_commands\openNotification.vbs"">" & primaryMessage & "</a>"
 End If
 
 tblHeading = "<table style=""width: 100%; margin: 0 auto; padding: 2em 3em; text-align: center; background-color: #fafafa;"">" & _
@@ -1150,7 +1150,7 @@ Function emailContentGen(subject As String, Title As String, subTitle As String,
 On Error GoTo Err_Handler
 
 If appId <> "" Then
-    primaryMessage = "<a href = ""\\data\mdbdata\WorkingDB\build\Repo\Commands\openNotification.vbs"">" & primaryMessage & "</a>"
+    primaryMessage = "<a href = ""\\data\mdbdata\WorkingDB\build\workingdb_commands\openNotification.vbs"">" & primaryMessage & "</a>"
 End If
 
 emailContentGen = subject & "," & Title & "," & subTitle & "," & primaryMessage & "," & detail1 & "," & detail2 & "," & detail3 & "," & appName & "," & appId
@@ -1368,7 +1368,7 @@ End If
 If Weekday(Date) = 1 Or Weekday(Date) = 7 Then Exit Sub 'only run summaries on weekdays
 
 Set rsSummaryEmail = db.OpenRecordset("SELECT max(dateUsed) as anaDate from tblAnalytics WHERE module = 'summaryEmail'")
-If Not DateSerial(Year(rsSummaryEmail!anaDate), Month(rsSummaryEmail!anaDate), Day(rsSummaryEmail!anaDate)) >= Date Then Call openPath("\\data\mdbdata\WorkingDB\build_temp\summaryEmail.vbs")
+If Not DateSerial(Year(rsSummaryEmail!anaDate), Month(rsSummaryEmail!anaDate), Day(rsSummaryEmail!anaDate)) >= Date Then Call openPath("\\data\mdbdata\WorkingDB\build\workingdb_commands\summaryEmail.vbs")
 
 On Error Resume Next
 rsAnalytics.CLOSE: Set rsAnalytics = Nothing
