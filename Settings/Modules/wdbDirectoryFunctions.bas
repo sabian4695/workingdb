@@ -6,7 +6,7 @@ Declare PtrSafe Function ShellExecute Lib "shell32.dll" Alias "ShellExecuteA" (B
 Public Sub openPath(Path)
 On Error GoTo Err_Handler
 
-CreateObject("Shell.Application").open CVar(Path)
+CreateObject("Shell.Application").Open CVar(Path)
 
 Exit Sub
 Err_Handler:
