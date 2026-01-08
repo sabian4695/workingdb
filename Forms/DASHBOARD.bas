@@ -1196,7 +1196,7 @@ End If
 Dim db As Database
 Set db = CurrentDb()
 Dim rs1 As Recordset
-Set rs1 = db.OpenRecordset("SELECT max(ID), DatabaseVersion FROM tblReleaseNotes WHERE databaseName = 'Front_End' group by databaseversion")
+Set rs1 = db.OpenRecordset("SELECT max(ID), DatabaseVersion FROM tblReleaseNotes WHERE databaseName = '" & CurrentProject.name & "' group by databaseversion")
 rs1.MoveLast
 
 If grabVersion() <> rs1!DatabaseVersion Then
