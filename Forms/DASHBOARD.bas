@@ -1224,7 +1224,7 @@ Set rs1 = Nothing
 Set db = Nothing
 Exit Sub
 Err_Handler:
-Me.message.Caption = "Good " & dayName & " " & dayTimeVal & "."
+Me.message.Caption = "Hello!"
 End Sub
 
 Private Sub modelV5search_Click()
