@@ -10,7 +10,7 @@ On Error GoTo Err_Handler
 
 Me.partNumberSearch.SetFocus
 
-If TempVars!smallScreen = "False" Then
+If Nz(TempVars!smallScreen, "False") = "False" Then
     Me.appContainer.SourceObject = appName
     Me.appContainer.Visible = True
     
@@ -1051,7 +1051,7 @@ DoCmd.Maximize
 
 closeApp
 
-If TempVars!smallScreen = True Then
+If Nz(TempVars!smallScreen, False) = True Then
     Call smallScreenMode(True)
 End If
 
@@ -1111,7 +1111,6 @@ For Each ctlVar In Me.Controls
 Next ctlVar
 
 Me.appContainer.SourceObject = ""
-Me.toggleTaskTracker.Visible = Not bool
 
 If bool Then
     Me.Detail.Height = 13020
@@ -1489,22 +1488,6 @@ If Len(partNum) = 5 Then
 Else
     Call openPath(mainPath)
 End If
-Exit Sub
-Err_Handler:
-    Call handleError(Me.name, Me.ActiveControl.name, Err.DESCRIPTION, Err.number)
-End Sub
-
-Private Sub toggleTaskTracker_Click()
-On Error GoTo Err_Handler
-
-Me.sfrmTasks.Visible = Not Me.sfrmTasks.Visible
-
-If Me.sfrmTasks.Visible Then
-    Me.toggleTaskTracker.Picture = "\\data\mdbdata\WorkingDB\Pictures\Core\upArrow.ico"
-Else
-    Me.toggleTaskTracker.Picture = "\\data\mdbdata\WorkingDB\Pictures\Core\downArrow.ico"
-End If
-
 Exit Sub
 Err_Handler:
     Call handleError(Me.name, Me.ActiveControl.name, Err.DESCRIPTION, Err.number)
