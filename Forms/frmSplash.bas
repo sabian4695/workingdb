@@ -57,14 +57,14 @@ Set rsUserSettings = db.OpenRecordset("tblUserSettings")
 Set rs1 = db.OpenRecordset("tblPermissions")
 rs1.filter = "[User] = '" & Environ("username") & "'"
 Set rsFiltered = rs1.OpenRecordset
-rsUserSettings.filter = "[User] = '" & Environ("username") & "'"
+rsUserSettings.filter = "[username] = '" & Environ("username") & "'"
 Set rsUserSettings = rsUserSettings.OpenRecordset
 
 '---SETUP USER SETTINGS---
 If rsUserSettings.RecordCount = 0 Then
     With rsUserSettings
         .addNew
-            !User = Environ("username")
+            !userName = Environ("username")
         .Update
         .Bookmark = .lastModified
     End With

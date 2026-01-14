@@ -35,7 +35,7 @@ Private Sub Form_Load()
 On Error GoTo Err_Handler
 
 Call setTheme(Me)
-
+    
 Exit Sub
 Err_Handler:
     Call handleError(Me.name, "Form_Load", Err.DESCRIPTION, Err.number)
@@ -44,13 +44,12 @@ End Sub
 Private Sub themeName_Click()
 On Error GoTo Err_Handler
 
-Form_frmUserView.userTheme = Me.recordId
-
 Dim f As Form, sForm As Control
 Dim i As Integer
 
 TempVars.Add "themePrimary", Me.primaryColor.Value
 TempVars.Add "themeSecondary", Me.secondaryColor.Value
+TempVars.Add "themeAccent", Me.accentColor.Value
 
 If Me.darkMode Then
     TempVars.Add "themeMode", "Dark"
@@ -59,6 +58,10 @@ Else
 End If
 
 TempVars.Add "themeColorLevels", Me.colorLevels.Value
+
+Form_frmUserView.userTheme = Me.recordId
+
+DoEvents
 
 Dim obj
 
@@ -75,9 +78,6 @@ For Each obj In Application.CurrentProject.AllForms
     Next sForm
 nextOne:
 Next obj
-
-Call setTheme(Form_frmUserView)
-Call setTheme(Me)
 
 Exit Sub
 Err_Handler:

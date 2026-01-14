@@ -266,7 +266,7 @@ Do While Not rsOld.EOF
                 rs("partlength") = rsOld(fld.name).Value
             Case "width"
                 rs("partwidth") = rsOld(fld.name).Value
-            Case "packagingteststatus", "NPIFstatus", "customerapprovalstatus", "tooltips", "training_mode", "catiacustomcolor", "designwoid", "autoposition", "notifications", "themeid"
+            Case "packagingteststatus", "NPIFstatus", "customerapprovalstatus", "tooltips", "training_mode", "catiacustomcolor", "designwoid", "autoposition", "notifications"
                 GoTo nextField
             Case "user"
                 rs("username") = rsOld(fld.name).Value
