@@ -44,6 +44,10 @@ End Sub
 Private Sub themeName_Click()
 On Error GoTo Err_Handler
 
+dbPGExecute "UPDATE design.tblusersettings SET themeid = " & Me.recordId & " WHERE username = '" & Form_frmUserView.userName & "'"
+
+Form_frmUserView.Requery
+
 Dim f As Form, sForm As Control
 Dim i As Integer
 
@@ -58,8 +62,6 @@ Else
 End If
 
 TempVars.Add "themeColorLevels", Me.colorLevels.Value
-
-Form_frmUserView.userTheme = Me.recordId
 
 DoEvents
 

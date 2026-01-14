@@ -159,6 +159,28 @@ Err_Handler:
     Call handleError("wdbGlobalFunctions", "dbExecute", Err.DESCRIPTION, Err.number, sql)
 End Function
 
+Function dbPGExecute(sql As String)
+On Error GoTo Err_Handler
+
+Dim db As Database
+Set db = CurrentDb()
+
+Dim qdf As QueryDef, tempRS As Recordset
+
+Set qdf = db.QueryDefs("dbPGExecute")
+qdf.sql = sql
+    
+db.QueryDefs.refresh
+
+qdf.Execute
+
+Set db = Nothing
+
+Exit Function
+Err_Handler:
+    Call handleError("wdbGlobalFunctions", "dbExecute", Err.DESCRIPTION, Err.number, sql)
+End Function
+
 Function findDescription(partNumber As String) As String
 On Error GoTo Err_Handler
 
