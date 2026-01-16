@@ -97,6 +97,10 @@ End Sub
 Private Sub smallScreenMode_Click()
 On Error GoTo Err_Handler
 
+dbPGExecute "UPDATE design.tblusersettings SET smallScreenMode = " & Not Me.smallScreenMode & " WHERE username = '" & Me.userName & "'"
+
+Me.Requery
+
 If TempVars!smallScreen = "True" Then
     TempVars.Add "smallScreen", "False"
     Form_DASHBOARD.smallScreenMode (False)

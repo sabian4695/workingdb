@@ -10,7 +10,7 @@ On Error GoTo Err_Handler
 
 Me.partNumberSearch.SetFocus
 
-If Nz(TempVars!smallScreen, "False") = "False" Then
+If Nz(TempVars!smallScreen, False) = False Then
     Me.appContainer.SourceObject = appName
     Me.appContainer.Visible = True
     
