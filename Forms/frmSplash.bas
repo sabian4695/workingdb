@@ -143,6 +143,7 @@ If Nz(rsUserSettings!themeId, 0) <> 0 Then
     
     TempVars.Add "themePrimary", CStr(rsTheme!primaryColor)
     TempVars.Add "themeSecondary", CStr(rsTheme!secondaryColor)
+    TempVars.Add "themeAccent", CStr(rsTheme!accentColor)
     TempVars.Add "themeColorLevels", CStr(rsTheme!colorLevels)
     
     rsTheme.CLOSE
