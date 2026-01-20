@@ -15,6 +15,26 @@ Err_Handler:
     Call handleError(Me.name, Me.ActiveControl.name, Err.DESCRIPTION, Err.number)
 End Sub
 
+Private Sub export_Click()
+On Error GoTo Err_Handler
+
+Dim FileName As String, sqlString As String, filt As String
+FileName = "H:\Item_Categories_" & nowString & ".xlsx"
+filt = ""
+If Me.Form.filter <> "" And Me.Form.FilterOn Then filt = " WHERE " & Me.Form.filter
+sqlString = Replace(Me.RecordSource, ";", "") & filt
+
+Call exportSQL(sqlString, FileName)
+
+Exit Sub
+Err_Handler:
+Dim db As Database
+Set db = CurrentDb()
+db.QueryDefs.Delete "myExportQueryDef"
+Set db = Nothing
+    Call handleError(Me.name, Me.ActiveControl.name, Err.DESCRIPTION, Err.number)
+End Sub
+
 Private Sub lblCatType_Click()
     Me.category_type.SetFocus
     DoCmd.RunCommand acCmdFilterMenu
@@ -44,10 +64,8 @@ Private Sub NAMsrch_Click()
 On Error GoTo Err_Handler
 Dim partNum
 partNum = Me.NAMsrchBox
-If partNum <> "" Then partNum = idNAM(partNum, "NAM")
-If partNum = "" Then Exit Sub
 
-DoCmd.applyFilter , "[INVENTORY_ITEM_ID] = " & partNum
+DoCmd.applyFilter , "[PN] = '" & partNum & "'"
 Exit Sub
 Err_Handler:
     Call handleError(Me.name, Me.ActiveControl.name, Err.DESCRIPTION, Err.number)

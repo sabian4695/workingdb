@@ -66,11 +66,8 @@ Private Sub itemCategories_Click()
 On Error GoTo Err_Handler
 Call logClick(Me.ActiveControl.name, Me.name, Form_DASHBOARD.partNumberSearch)
 
-Dim filterVal, numId
-filterVal = Form_DASHBOARD.partNumberSearch
-numId = idNAM(Nz(filterVal, "29123"), "NAM")
-If numId = "" Then numId = 6011437 '29123's ID
-filterVal = "[INVENTORY_ITEM_ID] = " & numId
+Dim filterVal
+filterVal = "[PN] = '" & Form_DASHBOARD.partNumberSearch & "'"
 
 DoCmd.OpenForm "frmItemCategories", , , filterVal
 Form_frmItemCategories.NAMsrchBox = Nz(Form_DASHBOARD.partNumberSearch)
