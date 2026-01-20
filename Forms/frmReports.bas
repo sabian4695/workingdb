@@ -209,13 +209,26 @@ End Sub
 
 Private Sub srchBOM_Click()
 On Error GoTo Err_Handler
-Call logClick(Me.ActiveControl.name, Me.name, Form_DASHBOARD.partNumberSearch)
-Dim filterVal, pNum
-filterVal = idNAM(Nz(Form_DASHBOARD.partNumberSearch), "NAM")
-If Nz(filterVal) = "" Then filterVal = "3147035"
-filterVal = "[ASSEMBLY_ITEM_ID] = " & filterVal
 
-DoCmd.OpenForm "frmBOMsearch", , , filterVal
+Dim db As Database
+Set db = CurrentDb()
+
+Dim qdf As QueryDef
+
+Set qdf = db.QueryDefs("sqryBOM")
+
+If Nz(Form_DASHBOARD.partNumberSearch, "") <> "" Then
+    qdf.sql = Split(qdf.sql, "WHERE")(0) & " WHERE (sysItems.SEGMENT1 = '" & Form_DASHBOARD.partNumberSearch & "' AND bomInv.DISABLE_DATE Is Null);"
+Else
+    qdf.sql = Split(qdf.sql, "WHERE")(0) & " WHERE (sysItems.SEGMENT1 <> '' AND bomInv.DISABLE_DATE Is Null);"
+End If
+    
+db.QueryDefs.refresh
+
+Set qdf = Nothing
+Set db = Nothing
+
+DoCmd.OpenForm "frmBOMsearch"
 Form_frmBOMsearch.NAMsrchBox = Nz(Form_DASHBOARD.partNumberSearch)
 
 Exit Sub

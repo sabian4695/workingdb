@@ -16,34 +16,29 @@ Err_Handler:
     Call handleError(Me.name, Me.ActiveControl.name, Err.DESCRIPTION, Err.number)
 End Sub
 
-Private Function getID() As Long
-getID = 0
-
-Dim partNum
-partNum = Me.NAMsrchBox
-If IsNull(partNum) Or partNum = "" Then
-    MsgBox "please type something in to search..", vbInformation, "Can't find it - sorry"
-    Exit Function
-End If
-Dim idVal
-idVal = idNAM(partNum, "NAM")
-If idVal = "" Then
-    MsgBox "Part number not found in System Items Table. Sometimes this happens if the part isn't active yet.", vbInformation, "Sorry about that."
-    Exit Function
-End If
-
-getID = idVal
-
-End Function
 
 Private Sub ComptSrch_Click()
 On Error GoTo Err_Handler
 
-Dim checkIt
-checkIt = getID
-If checkIt = 0 Then Exit Sub
-Me.Form.filter = "[COMPONENT_ITEM_ID] = " & checkIt
-Me.Form.FilterOn = True
+Dim db As Database
+Set db = CurrentDb()
+
+Dim qdf As QueryDef
+
+Set qdf = db.QueryDefs("sqryBOM")
+
+If Nz(Me.NAMsrchBox, "") <> "" Then
+    qdf.sql = Split(qdf.sql, "WHERE")(0) & " WHERE (sysItems1.SEGMENT1 = '" & Me.NAMsrchBox & "' AND bomInv.DISABLE_DATE Is Null);"
+Else
+    qdf.sql = Split(qdf.sql, "WHERE")(0) & " WHERE (sysItems.SEGMENT1 <> '' AND bomInv.DISABLE_DATE Is Null);"
+End If
+    
+db.QueryDefs.refresh
+
+Set qdf = Nothing
+Set db = Nothing
+
+Me.Requery
 
 Exit Sub
 Err_Handler:
@@ -53,11 +48,22 @@ End Sub
 Private Sub export_Click()
 On Error GoTo Err_Handler
 
+Dim db As Database
+Set db = CurrentDb()
+
+Dim qdf As QueryDef
+
+Set qdf = db.QueryDefs("frmBOM")
+
 Dim FileName As String, sqlString As String
 FileName = "H:\BOMsearch_" & nowString & ".xlsx"
-sqlString = "Select Org, Assy, Compt from qryBOM where " & Me.Form.filter
+sqlString = qdf.sql
 
 Call exportSQL(sqlString, FileName)
+
+Set qdf = Nothing
+Set db = Nothing
+
 Exit Sub
 Err_Handler:
     Call handleError(Me.name, Me.ActiveControl.name, Err.DESCRIPTION, Err.number)
@@ -65,11 +71,27 @@ End Sub
 
 Private Sub Assysrch_Click()
 On Error GoTo Err_Handler
-Dim checkIt
-checkIt = getID
-If checkIt = 0 Then Exit Sub
-Me.Form.filter = "[ASSEMBLY_ITEM_ID] = " & checkIt
-Me.Form.FilterOn = True
+
+Dim db As Database
+Set db = CurrentDb()
+
+Dim qdf As QueryDef
+
+Set qdf = db.QueryDefs("sqryBOM")
+
+If Nz(Me.NAMsrchBox, "") <> "" Then
+    qdf.sql = Split(qdf.sql, "WHERE")(0) & " WHERE (sysItems.SEGMENT1 = '" & Me.NAMsrchBox & "' AND bomInv.DISABLE_DATE Is Null);"
+Else
+    qdf.sql = Split(qdf.sql, "WHERE")(0) & " WHERE (sysItems.SEGMENT1 <> '' AND bomInv.DISABLE_DATE Is Null);"
+End If
+    
+db.QueryDefs.refresh
+
+Set qdf = Nothing
+Set db = Nothing
+
+Me.Requery
+
 Exit Sub
 Err_Handler:
     Call handleError(Me.name, Me.ActiveControl.name, Err.DESCRIPTION, Err.number)
@@ -84,6 +106,29 @@ If CurrentProject.AllForms("frmOnHandQty").IsLoaded = True Then DoCmd.CLOSE acFo
 
 DoCmd.OpenForm "frmOnHandQty"
 DoCmd.CLOSE acForm, "frmBOMsearch"
+
+Exit Sub
+Err_Handler:
+    Call handleError(Me.name, Me.ActiveControl.name, Err.DESCRIPTION, Err.number)
+End Sub
+
+Private Sub Form_Current()
+On Error GoTo Err_Handler
+
+Dim db As Database
+Set db = CurrentDb()
+
+Dim qdf As QueryDef
+
+Set qdf = db.QueryDefs("sfrm_sqryBOM")
+qdf.sql = Split(qdf.sql, "WHERE")(0) & " WHERE (sysItems.SEGMENT1 = '" & Me.Compt & "' AND bomInv.DISABLE_DATE Is Null);"
+    
+db.QueryDefs.refresh
+
+Set qdf = Nothing
+Set db = Nothing
+
+Me.sfrmBOMsearch.Requery
 
 Exit Sub
 Err_Handler:

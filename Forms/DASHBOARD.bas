@@ -227,12 +227,25 @@ End Sub
 Private Sub bomSearch_Click()
 On Error GoTo Err_Handler
 
-Dim filterVal, pNum
-filterVal = idNAM(Nz(Me.partNumberSearch), "NAM")
-If Nz(filterVal) = "" Then filterVal = "3147035"
-filterVal = "[ASSEMBLY_ITEM_ID] = " & filterVal
+Dim db As Database
+Set db = CurrentDb()
 
-DoCmd.OpenForm "frmBOMsearch", , , filterVal
+Dim qdf As QueryDef
+
+Set qdf = db.QueryDefs("sqryBOM")
+
+If Nz(Me.partNumberSearch, "") <> "" Then
+    qdf.sql = Split(qdf.sql, "WHERE")(0) & " WHERE (sysItems.SEGMENT1 = '" & Me.partNumberSearch & "' AND bomInv.DISABLE_DATE Is Null);"
+Else
+    qdf.sql = Split(qdf.sql, "WHERE")(0) & " WHERE (sysItems.SEGMENT1 <> '' AND bomInv.DISABLE_DATE Is Null);"
+End If
+    
+db.QueryDefs.refresh
+
+Set qdf = Nothing
+Set db = Nothing
+
+DoCmd.OpenForm "frmBOMsearch"
 Form_frmBOMsearch.NAMsrchBox = Nz(Me.partNumberSearch)
 
 Exit Sub
