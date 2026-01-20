@@ -23,6 +23,7 @@ FileName = "H:\Item_Categories_" & nowString & ".xlsx"
 filt = ""
 If Me.Form.filter <> "" And Me.Form.FilterOn Then filt = " WHERE " & Me.Form.filter
 sqlString = Replace(Me.RecordSource, ";", "") & filt
+sqlString = Replace(sqlString, "_frmItemCategories", "frmItemCategories")
 
 Call exportSQL(sqlString, FileName)
 
