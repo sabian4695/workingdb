@@ -96,6 +96,8 @@ Me.OrderByOn = True
 If (restrict(Environ("username"), "Project") And restrict(Environ("username"), "Service")) Then Me.newPartProject.Visible = False
 Me.nmqDash.Visible = Not restrict(Environ("username"), "New Model Quality")
 
+Me.reports.Visible = Not restrict(Environ("username"), "New Model Quality", "Manager")
+
 Me.chooseDept = Nz(userData("Dept"), "")
 
 Exit Sub
@@ -263,6 +265,16 @@ End Sub
 Public Sub refresh_Click()
 On Error GoTo Err_Handler
 Me.Requery
+Exit Sub
+Err_Handler:
+    Call handleError(Me.name, Me.ActiveControl.name, Err.DESCRIPTION, Err.number)
+End Sub
+
+Private Sub reports_Click()
+On Error GoTo Err_Handler
+
+DoCmd.OpenForm "frmReporting"
+
 Exit Sub
 Err_Handler:
     Call handleError(Me.name, Me.ActiveControl.name, Err.DESCRIPTION, Err.number)
