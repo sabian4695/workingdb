@@ -33,6 +33,49 @@ Select Case Me.permissionslocation
         Me.locationFull = ""
 End Select
 
+Dim db As Database
+Set db = CurrentDb()
+
+Dim rs As Recordset, rsCount As Recordset
+Set rs = db.OpenRecordset("SELECT * FROM tblPartUpdateTracking WHERE updatedBy = '" & Me.User & "'")
+
+'steps closed
+rs.filter = "newData = 'Closed' AND tableName = 'tblPartSteps'"
+Set rsCount = rs.OpenRecordset
+
+If rsCount.EOF Then
+   Me.stepsClosed = 0
+Else
+   rsCount.MoveLast
+   Me.stepsClosed = rsCount.RecordCount
+End If
+
+'steps approved
+rs.filter = "newData <> 'Deleted' AND newData <> 'Created' AND tableName = 'tblPartTrackingApprovals'"
+Set rsCount = rs.OpenRecordset
+
+If rsCount.EOF Then
+   Me.stepsApproved = 0
+Else
+   rsCount.MoveLast
+   Me.stepsApproved = rsCount.RecordCount
+End If
+
+'files uploaded
+rs.filter = "tableName = 'tblPartAttachmentsSP' AND newData = 'Uploaded'"
+Set rsCount = rs.OpenRecordset
+
+If rsCount.EOF Then
+   Me.filesUploaded = 0
+Else
+   rsCount.MoveLast
+   Me.filesUploaded = rsCount.RecordCount
+End If
+
+rs.CLOSE
+Set rs = Nothing
+Set db = Nothing
+
 Exit Sub
 Err_Handler:
     Call handleError(Me.name, "Form_Current", Err.DESCRIPTION, Err.number)
