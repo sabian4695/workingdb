@@ -123,6 +123,16 @@ Err_Handler:
     Call handleError(Me.name, Me.ActiveControl.name, Err.DESCRIPTION, Err.number)
 End Sub
 
+Private Sub imgUser_Click()
+On Error GoTo Err_Handler
+
+DoCmd.OpenForm "frmUserProfile", , , "user = '" & Me.peChampion & "'"
+
+Exit Sub
+Err_Handler:
+    Call handleError(Me.name, Me.ActiveControl.name, Err.DESCRIPTION, Err.number)
+End Sub
+
 Private Sub lblChangeCode_Click()
     Me.changeCode.SetFocus
     DoCmd.RunCommand acCmdFilterMenu

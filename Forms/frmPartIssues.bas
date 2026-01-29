@@ -256,6 +256,46 @@ Err_Handler:
     Call handleError(Me.name, Me.ActiveControl.name, Err.DESCRIPTION, Err.number)
 End Sub
 
+Private Sub Image90_Click()
+On Error GoTo Err_Handler
+
+DoCmd.OpenForm "frmUserProfile", , , "user = '" & Me.inCharge & "'"
+
+Exit Sub
+Err_Handler:
+    Call handleError(Me.name, Me.ActiveControl.name, Err.DESCRIPTION, Err.number)
+End Sub
+
+Private Sub imgFoundBy_Click()
+On Error GoTo Err_Handler
+
+DoCmd.OpenForm "frmUserProfile", , , "user = '" & Me.foundBy & "'"
+
+Exit Sub
+Err_Handler:
+    Call handleError(Me.name, Me.ActiveControl.name, Err.DESCRIPTION, Err.number)
+End Sub
+
+Private Sub imgInCharge_Click()
+On Error GoTo Err_Handler
+
+DoCmd.OpenForm "frmUserProfile", , , "user = '" & Me.inCharge & "'"
+
+Exit Sub
+Err_Handler:
+    Call handleError(Me.name, Me.ActiveControl.name, Err.DESCRIPTION, Err.number)
+End Sub
+
+Private Sub imgOpenedBy_Click()
+On Error GoTo Err_Handler
+
+DoCmd.OpenForm "frmUserProfile", , , "user = '" & Me.issueOpenedBy & "'"
+
+Exit Sub
+Err_Handler:
+    Call handleError(Me.name, Me.ActiveControl.name, Err.DESCRIPTION, Err.number)
+End Sub
+
 Private Sub inCharge_AfterUpdate()
 On Error GoTo Err_Handler
 

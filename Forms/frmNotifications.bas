@@ -44,6 +44,16 @@ Err_Handler:
     Call handleError(Me.name, "Form_Unload", Err.DESCRIPTION, Err.number)
 End Sub
 
+Private Sub imgSender_Click()
+On Error GoTo Err_Handler
+
+DoCmd.OpenForm "frmUserProfile", , , "user = '" & Me.senderUser & "'"
+
+Exit Sub
+Err_Handler:
+    Call handleError(Me.name, Me.ActiveControl.name, Err.DESCRIPTION, Err.number)
+End Sub
+
 Private Sub markAllAsRead_Click()
 On Error GoTo Err_Handler
 

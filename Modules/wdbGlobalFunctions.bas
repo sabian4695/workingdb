@@ -674,6 +674,71 @@ Err_Handler:
     Call handleError("wdbGlobalFunctions", "getAPI", Err.DESCRIPTION, Err.number)
 End Function
 
+Function generateEmailWarray(Title As String, subTitle As String, primaryMessage As String, detailTitle As String, arr() As Variant, Optional addLines As Boolean = False) As String
+On Error GoTo Err_Handler
+
+Dim tblHeading As String, tblFooter As String, strHTMLBody As String, extraFooter As String, detailTable As String
+
+Dim ITEM, i
+i = 0
+detailTable = ""
+For Each ITEM In arr()
+    If i = UBound(arr) Then
+        detailTable = detailTable & "<tr style=""border-collapse: collapse;""><td style=""padding: .1em 2em 1em 2em;"">" & ITEM & "</td></tr>"
+    Else
+        detailTable = detailTable & "<tr style=""border-collapse: collapse;""><td style=""padding: .1em 2em;"">" & ITEM & "</td></tr>"
+    End If
+    i = i + 1
+Next ITEM
+
+tblHeading = "<table style=""width: 100%; margin: 0 auto; padding: 2em 3em; text-align: center; background-color: #fafafa;"">" & _
+                            "<tbody>" & _
+                                "<tr><td><h2 style=""color: #414141; font-size: 28px; margin-top: 0;"">" & Title & "</h2></td></tr>" & _
+                                "<tr><td><p style=""color: rgb(73, 73, 73);"">" & subTitle & "</p></td></tr>" & _
+                                 "<tr><td><table style=""padding: 1em; text-align: center;"">" & _
+                                     "<tr><td style=""padding: 1em 1.5em; background: #FF6B00; "">" & primaryMessage & "</td></tr>" & _
+                                "</table></td></tr>" & _
+                            "</tbody>" & _
+                        "</table>"
+                        
+tblFooter = "<table style=""width: 100%; margin: 0 auto; background: #2b2b2b; color: rgba(255,255,255,.5);"">" & _
+                        "<tbody>" & _
+                            "<tr style=""border-collapse: collapse;""><td style=""padding: 1em; color: #c9c9c9;"">" & detailTitle & "</td></tr>" & _
+                            detailTable & _
+                        "</tbody>" & _
+                    "</table>"
+                    
+Dim addStuff As String
+addStuff = ""
+If addLines Then
+    addStuff = "<table style=""max-width: 600px; margin: 0 auto; padding: 3em; background: #eaeaea; color: rgba(255,255,255,.5);"">" & _
+        "<tr style=""border-collapse: collapse;""><td style=""padding: 1em;"">Extra Notes: type here...</td></tr></table>"
+End If
+                    
+extraFooter = "<tr><td><p style=""color: rgb(192, 192, 192); text-align: center;"">This email address is not monitored, please do not reply to this email</p></td></tr>"
+
+strHTMLBody = "" & _
+"<!DOCTYPE html><html lang=""en"" xmlns=""http://www.w3.org/1999/xhtml"" xmlns:v=""urn:schemas-microsoft-com:vml"" xmlns:o=""urn:schemas-microsoft-com:office:office"">" & _
+    "<head><meta charset=""utf-8""><title>Working DB Notification</title></head>" & _
+    "<body style=""margin: 0 auto; Font-family: 'Montserrat', sans-serif; font-weight: 400; font-size: 15px; line-height: 1.8;"">" & addStuff & _
+        "<table style=""max-width: 600px; margin: 0 auto; text-align: center; "">" & _
+            "<tbody>" & _
+                "<tr><td>" & tblHeading & "</td></tr>" & _
+                "<tr><td>" & tblFooter & "</td></tr>" & _
+                extraFooter & _
+                "<tr><td><p style=""color: rgb(192, 192, 192); text-align: center;"">This email was created by  &copy; workingDB</p></td></tr>" & _
+            "</tbody>" & _
+        "</table>" & _
+    "</body>" & _
+"</html>"
+
+generateEmailWarray = strHTMLBody
+
+Exit Function
+Err_Handler:
+    Call handleError("wdbGlobalFunctions", "generateEmailWarray", Err.DESCRIPTION, Err.number)
+End Function
+
 Function generateHTML(Title As String, subTitle As String, primaryMessage As String, _
         detail1 As String, detail2 As String, detail3 As String, _
         Optional Link As String = "", _

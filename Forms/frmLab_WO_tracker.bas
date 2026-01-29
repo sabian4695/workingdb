@@ -45,6 +45,26 @@ Err_Handler:
     Call handleError(Me.name, "Form_Load", Err.DESCRIPTION, Err.number)
 End Sub
 
+Private Sub imgCreated_Click()
+On Error GoTo Err_Handler
+
+DoCmd.OpenForm "frmUserProfile", , , "user = '" & Me.createdBy & "'"
+
+Exit Sub
+Err_Handler:
+    Call handleError(Me.name, Me.ActiveControl.name, Err.DESCRIPTION, Err.number)
+End Sub
+
+Private Sub imgRequestor_Click()
+On Error GoTo Err_Handler
+
+DoCmd.OpenForm "frmUserProfile", , , "user = '" & Me.Requestor & "'"
+
+Exit Sub
+Err_Handler:
+    Call handleError(Me.name, Me.ActiveControl.name, Err.DESCRIPTION, Err.number)
+End Sub
+
 Private Sub labHelp_Click()
 On Error GoTo Err_Handler
 

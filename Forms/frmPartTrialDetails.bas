@@ -175,6 +175,26 @@ Err_Handler:
     Call handleError(Me.name, "Form_Unload", Err.DESCRIPTION, Err.number)
 End Sub
 
+Private Sub imgCreator_Click()
+On Error GoTo Err_Handler
+
+DoCmd.OpenForm "frmUserProfile", , , "user = '" & Me.creator & "'"
+
+Exit Sub
+Err_Handler:
+    Call handleError(Me.name, Me.ActiveControl.name, Err.DESCRIPTION, Err.number)
+End Sub
+
+Private Sub imgProcessingEngineer_Click()
+On Error GoTo Err_Handler
+
+DoCmd.OpenForm "frmUserProfile", , , "user = '" & Me.processingEngineer & "'"
+
+Exit Sub
+Err_Handler:
+    Call handleError(Me.name, Me.ActiveControl.name, Err.DESCRIPTION, Err.number)
+End Sub
+
 Private Sub notes_AfterUpdate()
 On Error GoTo Err_Handler
 

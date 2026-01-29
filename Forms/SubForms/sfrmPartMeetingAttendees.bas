@@ -26,6 +26,16 @@ Err_Handler:
     Call handleError(Me.name, Me.ActiveControl.name, Err.DESCRIPTION, Err.number)
 End Sub
 
+Private Sub imgAttendee_Click()
+On Error GoTo Err_Handler
+
+DoCmd.OpenForm "frmUserProfile", , , "user = '" & Me.attendeeUsername & "'"
+
+Exit Sub
+Err_Handler:
+    Call handleError(Me.name, Me.ActiveControl.name, Err.DESCRIPTION, Err.number)
+End Sub
+
 Private Sub remove_Click()
 On Error GoTo Err_Handler
 

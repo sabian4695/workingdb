@@ -41,6 +41,16 @@ Err_Handler:
     Call handleError(Me.name, "Form_Unload", Err.DESCRIPTION, Err.number)
 End Sub
 
+Private Sub imgUploadedBy_Click()
+On Error GoTo Err_Handler
+
+DoCmd.OpenForm "frmUserProfile", , , "user = '" & Me.uploadedBy & "'"
+
+Exit Sub
+Err_Handler:
+    Call handleError(Me.name, Me.ActiveControl.name, Err.DESCRIPTION, Err.number)
+End Sub
+
 Private Sub newAttachment_Click()
 On Error GoTo Err_Handler
 

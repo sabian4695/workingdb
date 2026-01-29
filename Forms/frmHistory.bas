@@ -5,4 +5,12 @@ Attribute VB_Exposed = False
 Option Compare Database
 Option Explicit
 
-'do not delete this module. it is referenced
+Private Sub imgUser_Click()
+On Error GoTo Err_Handler
+
+DoCmd.OpenForm "frmUserProfile", , , "user = '" & Me.updatedBy & "'"
+
+Exit Sub
+Err_Handler:
+    Call handleError(Me.name, Me.ActiveControl.name, Err.DESCRIPTION, Err.number)
+End Sub
