@@ -41,6 +41,7 @@ registerWdbUpdates "tblReporting_notes", Me.noteId, "reportNote", Me.reportNote.
 
 Me.updatedBy = Environ("username")
 Me.updatedDate = Now()
+Me.dataTag0 = "nmq_morning_ppap"
 
 Exit Sub
 Err_Handler:
